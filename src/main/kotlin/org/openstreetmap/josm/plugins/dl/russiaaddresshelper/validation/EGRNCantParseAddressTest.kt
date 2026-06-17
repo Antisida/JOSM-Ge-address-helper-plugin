@@ -26,7 +26,9 @@ import javax.swing.JLabel
 import javax.swing.JOptionPane
 import javax.swing.JPanel
 
-
+/**
+ * ЕГРН ошибка разбора Не удалось распознать адрес, но можно попробовать разобрать вручную, или игнорировать эту проблему.
+ */
 class EGRNCantParseAddressTest : Test(
     I18n.tr("EGRN address cannot be parsed"),
     I18n.tr("EGRN information cannot be fully parsed into address")

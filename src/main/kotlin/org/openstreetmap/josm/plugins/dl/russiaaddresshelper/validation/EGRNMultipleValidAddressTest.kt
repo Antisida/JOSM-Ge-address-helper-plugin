@@ -26,7 +26,9 @@ import javax.swing.JPanel
 import javax.swing.JScrollPane
 import javax.swing.JTable
 
-
+/**
+ * Плагин получил в ответе несколько валидных адресов. Для исправления нужно выбрать один
+ */
 class EGRNMultipleValidAddressTest : Test(
     I18n.tr("EGRN multiple addresses"),
     I18n.tr("EGRN test for multiple different valid addresses")

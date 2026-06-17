@@ -19,7 +19,10 @@ import java.awt.GridBagLayout
 import java.awt.event.ActionEvent
 import javax.swing.JPanel
 
-
+/**
+ * ЕГРН не найдена улица. Адрес был распознан, но в данных ОСМ не нашлось линии с подходящим именем.
+ * Возможна ошибка сопоставления плагина, или в данных ОСМ отсутствует линия дороги с подходящим названием.
+ */
 class EGRNStreetNotFoundTest : Test(
     I18n.tr("EGRN street not found"),
     I18n.tr("EGRN test for not found OSM street")
@@ -141,7 +144,10 @@ class EGRNStreetNotFoundTest : Test(
             return null
         }
         if (answer == 2) {
-            RussiaAddressHelperPlugin.cache.ignoreValidator(testError.primitives, EGRNTestCode.getByCode(testError.code)!!)
+            RussiaAddressHelperPlugin.cache.ignoreValidator(
+                testError.primitives,
+                EGRNTestCode.getByCode(testError.code)!!
+            )
             return null
         }
 

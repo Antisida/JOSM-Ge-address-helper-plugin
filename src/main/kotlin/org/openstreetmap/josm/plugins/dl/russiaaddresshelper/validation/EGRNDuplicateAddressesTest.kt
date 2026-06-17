@@ -25,7 +25,11 @@ import java.awt.event.ActionEvent
 import javax.swing.JOptionPane
 import javax.swing.JPanel
 
-
+/**
+ * ЕГРН дубликат адреса Адрес был распознан, но он уже существует в ОСМ или среди других распознанных адресов.
+ * Диалог исправления предложит несколько вариантов разрешения проблемы,
+ * но как правило действие по умолчанию (назначить адрес зданию с максимальной площадью) является правильным.
+ */
 class EGRNDuplicateAddressesTest : Test(
     I18n.tr("EGRN duplicate addresses"),
     I18n.tr("EGRN test for duplicate addresses received from registry")

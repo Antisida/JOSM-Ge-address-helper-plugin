@@ -14,16 +14,14 @@ import org.openstreetmap.josm.data.validation.OsmValidator
 import org.openstreetmap.josm.data.validation.ValidationTask
 import org.openstreetmap.josm.gui.MainApplication
 import org.openstreetmap.josm.gui.MapFrame
-import org.openstreetmap.josm.gui.preferences.PreferenceSetting
 import org.openstreetmap.josm.plugins.Plugin
 import org.openstreetmap.josm.plugins.PluginInformation
-import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.actions.AddNSPDLayersAction
+//import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.actions.AddNSPDLayersAction
 import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.actions.ClickAction
 import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.actions.SelectAction
 import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.api.EgrnApi
 import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.api.NspdApi
 import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.parsers.ParsedAddress
-import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.settings.PluginSetting
 import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.settings.io.CommonSettingsReader
 import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.settings.io.EgrnSettingsReader
 import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.settings.io.ValidationSettingsReader
@@ -38,17 +36,27 @@ import org.openstreetmap.josm.tools.Logging
 import javax.swing.JMenu
 
 class RussiaAddressHelperPlugin(info: PluginInformation) : Plugin(info) {
+//
+//    val fuel: FuelManager = FuelManager()
     init {
         menuInit(MainApplication.getMenu().dataMenu)
 
         versionInfo = info.version
+//
+//        FuelManager.instance.basePath = "https://example.com"
+//        FuelManager.instance.timeoutInMillisecond = 15000
+//        FuelManager.instance.baseHeaders = mapOf(
+//            "Accept" to "application/json"
+//        )
 
         cache.initListener()
         //    addressRegistry.initListener()
     }
 
+
+
     companion object {
-        val ACTION_NAME = I18n.tr("Russia address helper")!!
+        val ACTION_NAME = I18n.tr("Georgia address helper")!!
         val ICON_NAME = "icon.svg"
 
         lateinit var versionInfo: String
@@ -64,7 +72,7 @@ class RussiaAddressHelperPlugin(info: PluginInformation) : Plugin(info) {
 
         val selectAction: SelectAction = SelectAction()
         val clickAction: ClickAction = ClickAction()
-        val addLayersAction: AddNSPDLayersAction = AddNSPDLayersAction()
+//        val addLayersAction: AddNSPDLayersAction = AddNSPDLayersAction()
 
         fun getEgrnClient(): EgrnApi {
             val userAgent = String.format(
@@ -89,6 +97,17 @@ class RussiaAddressHelperPlugin(info: PluginInformation) : Plugin(info) {
                 EgrnSettingsReader.NSPD_SITE_URL.get()
             )
         }
+
+//        val naprClient: NaprApi by lazy {
+//            val userAgent = String.format(
+//                NaprSettingsReader.NAPR_REQUEST_USER_AGENT.get(),
+//                Version.getInstance().versionString,
+//                versionInfo
+//            )
+
+//            NaprApi(NaprSettingsReader.NAPR_URL_REQUEST.get(), userAgent)
+//            NaprApi()
+//        }
 
         fun runEgrnValidation(selection: Collection<OsmPrimitive?>) {
             val map = MainApplication.getMap()
@@ -277,9 +296,9 @@ class RussiaAddressHelperPlugin(info: PluginInformation) : Plugin(info) {
 
     }
 
-    override fun getPreferenceSetting(): PreferenceSetting {
-        return PluginSetting()
-    }
+//    override fun getPreferenceSetting(): PreferenceSetting {
+//        return PluginSetting()
+//    }
 
     override fun mapFrameInitialized(oldFrame: MapFrame?, newFrame: MapFrame?) {
         //this callback fired also everytime last layer is removed, cannot run layer listeners init here
@@ -314,7 +333,7 @@ class RussiaAddressHelperPlugin(info: PluginInformation) : Plugin(info) {
 
         subMenu.add(selectAction)
         subMenu.add(clickAction)
-        subMenu.add(addLayersAction)
+//        subMenu.add(addLayersAction)
 
         menu.add(subMenu)
     }

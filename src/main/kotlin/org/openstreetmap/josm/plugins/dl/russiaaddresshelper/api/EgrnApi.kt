@@ -9,6 +9,7 @@ import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.settings.io.EgrnSet
 import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.settings.io.LayerShiftSettingsReader
 import org.openstreetmap.josm.tools.Logging
 import java.net.MalformedURLException
+import java.net.URI
 import java.net.URL
 import java.security.cert.X509Certificate
 import javax.net.ssl.HostnameVerifier

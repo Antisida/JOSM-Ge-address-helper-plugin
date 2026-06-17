@@ -49,6 +49,7 @@ class EGRNUploadTagFilter : UploadHook {
         }
 
         val discardableKeys: Collection<String> = setOf(
+            "addr:GE:napr",
             "addr:RU:egrn",
             "addr:RU:egrn_type",
             "addr:RU:extracted_name",

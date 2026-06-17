@@ -23,7 +23,10 @@ import org.openstreetmap.josm.tools.I18n
 import java.awt.GridBagLayout
 import javax.swing.JPanel
 
-
+/**
+ * ЕГРН содержит номер квартиры. Адрес успешно присвоен, но в нем содержатся номера квартир.
+ * Не очень применимо
+ */
 class EGRNFlatsInAddressTest : Test(
     I18n.tr("EGRN address has flats"),
     I18n.tr("EGRN test for addresses with flat numbers in it")

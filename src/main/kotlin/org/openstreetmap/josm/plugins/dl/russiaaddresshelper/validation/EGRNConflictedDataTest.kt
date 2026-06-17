@@ -15,7 +15,10 @@ import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.tools.TagHelper
 import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.validation.gui.TagConflictSimpleDialog
 import org.openstreetmap.josm.tools.I18n
 
-
+/**
+ * ЕГРН конфликт данных Полученные из ЕГРН данные конфликтуют с уже существующими в ОСМ.
+ * Необходимо вручную выбрать правильные значения или оставить все как есть.
+ */
 class EGRNConflictedDataTest : Test(
     I18n.tr("EGRN data conflicts with OSM data"),
     I18n.tr("EGRN data conflicts with existing OSM data")

@@ -3,10 +3,8 @@ package org.openstreetmap.josm.plugins.dl.russiaaddresshelper.actions
 import com.github.kittinunf.fuel.jackson.jacksonDeserializerOf
 import com.github.kittinunf.result.Result
 import com.github.kittinunf.result.failure
-import com.github.kittinunf.result.success
 import org.openstreetmap.josm.actions.mapmode.MapMode
 import org.openstreetmap.josm.command.AddCommand
-import org.openstreetmap.josm.command.ChangePropertyCommand
 import org.openstreetmap.josm.command.Command
 import org.openstreetmap.josm.command.SequenceCommand
 import org.openstreetmap.josm.data.UndoRedoHandler
@@ -17,13 +15,9 @@ import org.openstreetmap.josm.gui.Notification
 import org.openstreetmap.josm.gui.util.KeyPressReleaseListener
 import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.RussiaAddressHelperPlugin
 import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.api.*
+import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.parsers.napr.processResponse
 import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.settings.io.ClickActionSettingsReader
-import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.settings.io.LayerFilterSettingsReader
-import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.settings.io.TagSettingsReader
 import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.tools.GeometryHelper
-import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.tools.GeometryHelper.Companion.generateBuildingMultiPolygon
-import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.tools.TagHelper
-import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.tools.TagHelper.Companion.getAddressTagsForClickAction
 import org.openstreetmap.josm.tools.*
 import java.awt.Cursor
 import java.awt.event.KeyEvent
@@ -76,14 +70,14 @@ class ClickAction : MapMode(
         }
         val placeBoundariesMode = e.isAltDown
         mapView.setNewCursor(Cursor(Cursor.WAIT_CURSOR), this)
-        val defaultTagsForNode: Map<String, String> = mapOf("source:addr" to "ЕГРН", "fixme" to "REMOVE ME!")
+        val defaultTagsForNode: Map<String, String> = mapOf("source:addr" to "napr.gov.geЛ", "fixme" to "REMOVE ME!")
         val ds = layerManager.editDataSet
         val cmds: MutableList<Command> = mutableListOf()
         val mouseEN = mapView.getEastNorth(e.x, e.y)
         var index = 0
         var nodes: Set<Node> = setOf()
-        val layersToRequest =
-            if (placeBoundariesMode) setOf(NSPDLayer.PLACES_BOUNDARIES) else LayerFilterSettingsReader.getClickActionEnabledLayers()
+        val layersToRequest = setOf(NSPDLayer.PLACES_BOUNDARIES)
+//            if (placeBoundariesMode) setOf(NSPDLayer.PLACES_BOUNDARIES) else LayerFilterSettingsReader.getClickActionEnabledLayers()
         val projectionBounds = MainApplication.getMap().mapView.state.viewClipRectangle.cornerBounds
         val requestBBox = if (placeBoundariesMode) projectionBounds.toBBox() else null
         val errorMessages: MutableSet<String> = mutableSetOf()
@@ -92,149 +86,65 @@ class ClickAction : MapMode(
         val primitivesToValidate = mutableListOf<OsmPrimitive>()
         val mergeDataOnSingleNode = ClickActionSettingsReader.EGRN_CLICK_MERGE_FEATURES.get()
         val nodeTags: MutableMap<Pair<NSPDLayer, Int>, MutableMap<String, String>> = mutableMapOf()
+        val tagsForNode: MutableMap<String, String> = mutableMapOf()
         var repeatsExhausted = false
-        layersToRequest.forEach { requestLayer ->
-            if (repeatsExhausted) {
-                val notification = Notification(I18n.tr("Data downloading failed, reason: too much request errors, interrupting")).setIcon(JOptionPane.WARNING_MESSAGE)
-                notification.duration = Notification.TIME_LONG
-                notification.show()
-                return@forEach
-            }
-            var needToRepeat = true
-            val clickRetries = 1
-            val clickDelay = 1000L
-            var retries = clickRetries
-            while (needToRepeat) {
-                val (request, response, result) = RussiaAddressHelperPlugin.getNSPDClient()
-                    .request(mouseEN, requestLayer, requestBBox)
-                    .responseObject<GetFeatureInfoResponse>(jacksonDeserializerOf())
-                RussiaAddressHelperPlugin.totalRequestsPerSession++
-                if (response.statusCode == 200) {
-                    needToRepeat = false
-                    result.success { nspdResponse ->
-                        RussiaAddressHelperPlugin.totalSuccessRequestsPerSession++
-                        fullResponse.addResponse(nspdResponse, requestLayer)
-                        if (nspdResponse.features.isEmpty()) {
-                            Logging.info("EGRN PLUGIN empty response for request ${request.url}")
-                            Logging.info("$nspdResponse")
-                        } else {
-                            val features = nspdResponse.features
-                            features.forEachIndexed { localIndex, feature ->
-                                val tagsForNode: MutableMap<String, String> = mutableMapOf()
-                                tagsForNode.putAll(defaultTagsForNode)
-                                val address = feature.parseAddress(mouseEN)
-
-                                tagsForNode.putAll(getAddressTagsForClickAction(address))
-                                tagsForNode.putAll(feature.getTags())
-                                if (!placeBoundariesMode) {
-                                    nodeTags[Pair(requestLayer, localIndex)] = tagsForNode
-                                }
-                                if (feature.geometry != null) {
-                                    if (exportGeometry && (requestLayer == NSPDLayer.BUILDING || requestLayer == NSPDLayer.UNFINISHED)) {
-                                        val buildTags: MutableMap<String, String> =
-                                            TagHelper.getBuildingTags(feature, requestLayer)
-                                        val generatedBuilding =
-                                            generateBuildingMultiPolygon(feature.geometry, ds, buildTags, mutableMapOf(), ClickActionSettingsReader.EGRN_CLICK_GEOMETRY_IMPORT_THRESHOLD.get())
-                                        cmds.addAll(generatedBuilding.first)
-                                        buildingPrimitive = generatedBuilding.second
-                                    } else if (e.isControlDown) {
-                                        val geometryTags = mutableMapOf<String, String>(
-                                            "fixme" to "REMOVE ME!",
-                                            "source:geometry" to "ЕГРН",
-                                            "autoremove:source:geometry" to requestLayer.name
-                                        )
-                                        geometryTags.putAll(TagHelper.getLotTags(feature))
-
-                                        val generatedGeometry =
-                                            generateBuildingMultiPolygon(feature.geometry, ds, geometryTags, mutableMapOf(), ClickActionSettingsReader.EGRN_CLICK_GEOMETRY_IMPORT_THRESHOLD.get())
-                                        cmds.addAll(generatedGeometry.first)
-                                    } else if (requestLayer == NSPDLayer.PLACES_BOUNDARIES && placeBoundariesMode) {
-                                        val geometryTags = mutableMapOf<String, String>(
-                                            "fixme" to "REMOVE ME!",
-                                            "autoremove:source:geometry" to requestLayer.name,
-                                        )
-                                        val placeTags = TagHelper.getPlaceTags(feature).toMutableMap()
-                                        placeTags["source:geometry"] = "ЕГРН"
-                                        geometryTags.putAll(placeTags)
-                                        val generatedGeometry =
-                                            generateBuildingMultiPolygon(feature.geometry, ds, geometryTags, placeTags, ClickActionSettingsReader.EGRN_CLICK_BOUNDARY_IMPORT_THRESHOLD.get())
-                                        cmds.addAll(generatedGeometry.first)
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    result.failure {
-                        needToRepeat = false
-                        retries = 0
-                        val errorMessage = (result as Result.Failure).error.message
-                        errorMessages.plusAssign(errorMessage ?: "")
-                        Logging.error("EGRN-Plugin $errorMessage")
-                    }
-                } else {
-                    result.failure {
-                        needToRepeat = if (retries > 0) {
-                            true
-                        } else {
-                            repeatsExhausted = true
-                            val errorMessage = (result as Result.Failure).error.message
-                            errorMessages.plusAssign(errorMessage ?: "")
-                            Logging.error("EGRN-Plugin $errorMessage")
-                            false
-                        }
-                        if (response.statusCode == -1) {
-                            Logging.warn("EGRN-Plugin Error connection refused, retries $retries")
-                        } else {
-                            Logging.warn("EGRN-Plugin Error on request: ${response.statusCode}")
-                        }
-                        retries--
-                        Thread.sleep(clickDelay)
-                    }
-                }
-            }
-            index++
+        if (repeatsExhausted) {
+            val notification =
+                Notification(I18n.tr("Data downloading failed, reason: too much request errors, interrupting")).setIcon(
+                    JOptionPane.WARNING_MESSAGE
+                )
+            notification.duration = Notification.TIME_LONG
+            notification.show()
+//            return@forEach
         }
+        var needToRepeat = true
+        val clickRetries = 1
+        val clickDelay = 1000L
+        var retries = clickRetries
+        Logging.info("Executing request")
+        val (request, response, result) = NaprClient
+            .createRequest(mouseEN)
+            .responseObject<NaprBody>(jacksonDeserializerOf())
+        RussiaAddressHelperPlugin.totalRequestsPerSession++
+        if (response.statusCode == 200) {
+            tagsForNode.putAll(processResponse(result))
+            needToRepeat = true
+
+            result.failure {
+                needToRepeat = false
+                retries = 0
+                val errorMessage = (result as Result.Failure).error.message
+                errorMessages.plusAssign(errorMessage ?: "")
+                Logging.error("EGRN-Plugin $errorMessage")
+            }
+        } else {
+            result.failure {
+                needToRepeat = if (retries > 0) {
+                    true
+                } else {
+                    repeatsExhausted = true
+                    val errorMessage = (result as Result.Failure).error.message
+                    errorMessages.plusAssign(errorMessage ?: "")
+                    Logging.error("EGRN-Plugin $errorMessage")
+                    false
+                }
+                if (response.statusCode == -1) {
+                    Logging.warn("EGRN-Plugin Error connection refused, retries $retries")
+                } else {
+                    Logging.warn("EGRN-Plugin Error on request: ${response.statusCode}")
+                }
+                retries--
+                Thread.sleep(clickDelay)
+            }
+        }
+        index++
 
         //generate nodes
-        if (nodeTags.isNotEmpty()) {
-            if (mergeDataOnSingleNode) {
-                nodes = nodes.plus(Node(GeometryHelper.getNodePlacement(mouseEN, 0)))
-                nodes.first().putAll(getMergedTags(nodeTags))
-            } else {
-                nodes = nodes.plus(getAllNodesWithTags(mouseEN, nodeTags))
-            }
+        if (tagsForNode.isNotEmpty()) {
+            nodes = nodes.plus(getAllNodesWithTags1(mouseEN, tagsForNode))
         }
 
         nodes.forEach { node -> cmds.add(AddCommand(ds, node)) }
-
-        if (buildingPrimitive != null) {
-            val parsedAddressInfo = fullResponse.parseAddresses(mouseEN)
-            RussiaAddressHelperPlugin.cache.add(
-                buildingPrimitive!!,
-                mouseEN,
-                fullResponse,
-                parsedAddressInfo
-            )
-            val buildingsToCheck: MutableList<OsmPrimitive> = mutableListOf(buildingPrimitive!!)
-            primitivesToValidate.add(buildingPrimitive!!)
-            RussiaAddressHelperPlugin.cleanFromDoubles(buildingsToCheck)
-            if (buildingsToCheck.isNotEmpty() && parsedAddressInfo.canAssignAddress()) {
-                val addressTags = mutableMapOf<String, String>()
-                val preferredAddress = parsedAddressInfo.getPreferredAddress()!!
-                if (TagSettingsReader.EGRN_ADDR_RECORD.get()) {
-                    addressTags["addr:RU:egrn"] = preferredAddress.egrnAddress
-                }
-                addressTags.putAll(preferredAddress.getOsmAddress().getBaseAddressTagsWithSource())
-                cmds.add(
-                    ChangePropertyCommand(
-                        ds,
-                        listOf(buildingPrimitive),
-                        addressTags
-                    )
-                )
-            }
-        }
 
         errorMessages.forEach { err ->
             val msg = I18n.tr("Data downloading failed, reason:")
@@ -247,19 +157,6 @@ class ClickAction : MapMode(
             val c: Command =
                 SequenceCommand(I18n.tr("Added node from RussiaAddressHelper"), cmds)
             UndoRedoHandler.getInstance().add(c)
-        }
-
-        val simplifyCommands = GeometryHelper.simplifyWays(buildingPrimitive)
-        if (simplifyCommands.isNotEmpty()) {
-            UndoRedoHandler.getInstance().add(SequenceCommand(I18n.tr("Simplify imported geometry"), simplifyCommands))
-            val msg = I18n.tr("Imported geometry was simplified, nodes removed")
-            val notification = Notification(msg + ": ${simplifyCommands.size}").setIcon(JOptionPane.INFORMATION_MESSAGE)
-            notification.duration = Notification.TIME_LONG
-            notification.show()
-        }
-
-        if (primitivesToValidate.isNotEmpty()) {
-            RussiaAddressHelperPlugin.runEgrnValidation(RussiaAddressHelperPlugin.cache.responses.keys)
         }
 
         if (buildingPrimitive != null) {
@@ -304,22 +201,31 @@ class ClickAction : MapMode(
         return result
     }
 
-    private fun getAllNodesWithTags(
+    private fun getAllNodesWithTags1(
         mouseEN: EastNorth,
-        nodeTags: MutableMap<Pair<NSPDLayer, Int>, MutableMap<String, String>>
-    ): List<Node> {
-        val result = mutableListOf<Node>()
-        var index = 0
-        nodeTags.forEach { (info, tags) ->
-            val n = Node(GeometryHelper.getNodePlacement(mouseEN, index))
-            n.putAll(tags)
-            n.put("addr:RU:layer", info.first.name)
-            result.add(n)
-            index++
-        }
-
-        return result
+        nodeTags: MutableMap<String, String>
+    ): Node {
+        val node = Node(GeometryHelper.getNodePlacement(mouseEN, 0))
+        node.putAll(nodeTags)
+        return node
     }
+
+//    private fun getAllNodesWithTags(
+//        mouseEN: EastNorth,
+//        nodeTags: MutableMap<Pair<NSPDLayer, Int>, MutableMap<String, String>>
+//    ): List<Node> {
+//        val result = mutableListOf<Node>()
+//        var index = 0
+//        nodeTags.forEach { (info, tags) ->
+//            val n = Node(GeometryHelper.getNodePlacement(mouseEN, index))
+//            n.putAll(tags)
+//            n.put("addr:RU:layer", info.first.name)
+//            result.add(n)
+//            index++
+//        }
+//
+//        return result
+//    }
 
     override fun doKeyPressed(e: KeyEvent) {
         if (e.keyCode == KeyEvent.VK_ESCAPE) {

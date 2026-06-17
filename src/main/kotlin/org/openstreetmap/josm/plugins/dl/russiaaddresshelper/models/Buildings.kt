@@ -94,6 +94,7 @@ class Buildings(objects: List<OsmPrimitive>) {
             val map = MainApplication.getMap()
             val ds = map.mapView.layerManager.editDataSet
             val cmds: MutableList<Command> = mutableListOf()
+            //добавление точек
             for (building in items) {
                 building.addressNodes.forEach { node ->
                     cmds.add(AddCommand(ds, node))
@@ -103,8 +104,8 @@ class Buildings(objects: List<OsmPrimitive>) {
             sanitize()
 
             val changedBuildings: MutableList<OsmPrimitive> = mutableListOf()
-
-            if (items.size > 0) {
+                //добавление адресных тегов к зданию
+            if (items.isNotEmpty()) {
                 for (building in items) {
                     building.preparedTags.forEach { (key, value) ->
                         if (!building.osmPrimitive.hasTag(key)) {
@@ -183,8 +184,7 @@ class Buildings(objects: List<OsmPrimitive>) {
                                         if (retries > 0) {
                                             needToRepeat = true
                                             retriesTotal++
-                                            val msg =
-                                                I18n.tr("Data request error, retries left $retries")
+                                            val msg = I18n.tr("Data request error, retries left $retries")
                                             Notification(msg).setIcon(JOptionPane.WARNING_MESSAGE).show()
                                         } else {
                                             loadListener?.onResponse?.invoke(response)

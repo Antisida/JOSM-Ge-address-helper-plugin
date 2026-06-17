@@ -19,7 +19,10 @@ import java.awt.GridBagLayout
 import java.awt.event.ActionEvent
 import javax.swing.JPanel
 
-
+/**
+ * ЕГРН не найдено место. Адрес был распознан,
+ * но в данных ОСМ не нашлось объекта (точки, полигона или мультиполигона) с подходящим именем и тэгами.
+ */
 class EGRNPlaceNotFoundTest : Test(
     I18n.tr("EGRN not found place in OSM"),
     I18n.tr("EGRN test for address not matched with place object in loaded OSM data")

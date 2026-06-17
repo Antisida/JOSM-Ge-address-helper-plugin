@@ -23,7 +23,10 @@ import javax.swing.JLabel
 import javax.swing.JOptionPane
 import javax.swing.JPanel
 
-
+/**
+ * ЕГРН адрес найден. Это предупреждение генерируется, если адрес успешно распознан и присвоен.
+ * Но такие предупреждения все равно нужно обработать - просмотреть глазами и убедиться, что алгоритм разбора не ошибся.
+ */
 class EGRNAddressAddedTest : Test(
     I18n.tr("EGRN address added to OSM"),
     I18n.tr("EGRN information for address parsed and added")

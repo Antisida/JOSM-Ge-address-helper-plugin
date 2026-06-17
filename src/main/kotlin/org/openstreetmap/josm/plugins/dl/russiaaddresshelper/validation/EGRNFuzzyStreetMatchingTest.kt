@@ -23,7 +23,10 @@ import java.awt.GridBagLayout
 import javax.swing.JLabel
 import javax.swing.JPanel
 
-
+/**
+ * ЕГРН нечеткое совпадение. Плагин сопоставил адрес с улицей или местом по алгоритму нечеткого совпадения,
+ * и теперь надо убедиться, что это не ложное срабатывание.
+ */
 class EGRNFuzzyStreetMatchingTest : Test(
     I18n.tr("EGRN fuzzy street match"),
     I18n.tr("EGRN test for parsed street name fuzzy match with OSM")
