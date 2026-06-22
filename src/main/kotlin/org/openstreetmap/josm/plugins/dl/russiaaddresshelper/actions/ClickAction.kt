@@ -70,7 +70,7 @@ class ClickAction : MapMode(
         }
         val placeBoundariesMode = e.isAltDown
         mapView.setNewCursor(Cursor(Cursor.WAIT_CURSOR), this)
-        val defaultTagsForNode: Map<String, String> = mapOf("source:addr" to "napr.gov.geЛ", "fixme" to "REMOVE ME!")
+        val defaultTagsForNode: Map<String, String> = mapOf("source:addr" to "napr.gov.ge", "fixme" to "REMOVE ME!")
         val ds = layerManager.editDataSet
         val cmds: MutableList<Command> = mutableListOf()
         val mouseEN = mapView.getEastNorth(e.x, e.y)

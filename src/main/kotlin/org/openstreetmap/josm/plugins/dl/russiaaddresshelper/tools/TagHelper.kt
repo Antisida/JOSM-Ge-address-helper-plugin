@@ -46,7 +46,7 @@ class TagHelper {
             return "yes"
         }
 
-        fun overwriteValue(key: String, oldvalue: String, value: String): Boolean {
+        fun isOverwriteEnabled(key: String, oldvalue: String, value: String): Boolean {
             val forceAddressOverwrite = TagSettingsReader.OVERWRITE_ADDRESS.get()
             return when (key) {
                 "building" -> if (oldvalue == "yes") return true else false

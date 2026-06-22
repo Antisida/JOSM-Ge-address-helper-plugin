@@ -39,12 +39,11 @@ object NaprClient {
         )
     }
 
-    fun executeRequest(coordinate: EastNorth): Pair<EastNorth, NaprBody>? = try {
-        val (_, response, result) = NaprClient
-            .createRequest(coordinate)
+    fun executeRequest(coordinate: EastNorth): NaprBody? = try {
+        val (_, response, result) = createRequest(coordinate)
             .responseObject<NaprBody>(jacksonDeserializerOf())
         if (response.statusCode == 200) {
-            Pair(coordinate, result.get())
+            result.get()
         } else {
             Logging.error("Ошибка для координаты $coordinate: ${response.statusCode}")
             null
@@ -53,16 +52,27 @@ object NaprClient {
         Logging.error("Не удалось обработать координату $coordinate: ${e.message}")
         null
     }
-//сделать приватным после рефакторинга клика
+
+    //сделать приватным после рефакторинга клика
     fun createRequest(coordinate: EastNorth/*, layer: NSPDLayer, bbox: BBox?*/): Request {
 //        val layerShiftCoordinate = getLayerShift(coordinate)
         val (lonStr, latStr) = toLonLatString(coordinate)
         val formData = listOf("keyword" to "$lonStr,$latStr")
         Logging.info("keyword: $lonStr,$latStr")
-        return fuelClient.request(Method.POST,  "/map/portal/search", formData)
+        return fuelClient.request(Method.POST, "/map/portal/search", formData)
     }
-
+    // Объединять ქალაქი ზუგდიდი , ქუჩა დ. შენგელაია , შესახვევი 1, N12  - г. Зугдиди, улица Д. Шенгелая, переулок 1, N12
+    // დ. შენგელაია -> დემნა შენგელაიას Демна Шенгелаия
+// ქალაქი - город
+    // მუნიციპალიტეტი - муниципалитет
     // todo это недо убрать заполнять урл при создании фуэл клиента
+    // todo заменять сокращения,
+    // todo переставлять улицу в конец
+    // туду проверять "с" должна быть последней перед улецей
+    // удалять все внутри скобок ქალაქი ფოთი, შალვა ამირანაშვილის ქ N 3 (ყოფ. ორჯონიკიძის ქ N 3)
+    // туду сокращение წმინდა -> წმ. святой
+    // туду შესახვევი პირველი / შესახვევი ''პირველი'' ->  I შესახვევი  первый переулок
+    // туду ქალაქი ზუგდიდი , ქუჩა სხულუხია , შესახვევი I , N 21 - улица и переулок через запятую
     private fun makeUrl(url: String/*, lat: String, lon: String*/): URL {
         return try {
             URI(url).toURL()

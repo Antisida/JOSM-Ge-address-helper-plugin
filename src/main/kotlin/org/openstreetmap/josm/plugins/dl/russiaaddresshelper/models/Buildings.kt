@@ -111,7 +111,7 @@ class Buildings(objects: List<OsmPrimitive>) {
                         if (!building.osmPrimitive.hasTag(key)) {
                             cmds.add(ChangePropertyCommand(building.osmPrimitive, key, value))
                         } else {
-                            if (TagHelper.overwriteValue(key, building.osmPrimitive[key], value)) {
+                            if (TagHelper.isOverwriteEnabled(key, building.osmPrimitive[key], value)) {
                                 cmds.add(ChangePropertyCommand(building.osmPrimitive, key, value))
                             }
                         }

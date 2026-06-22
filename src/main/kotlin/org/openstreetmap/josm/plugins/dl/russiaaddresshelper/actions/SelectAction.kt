@@ -1,5 +1,6 @@
 package org.openstreetmap.josm.plugins.dl.russiaaddresshelper.actions
 
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking
@@ -7,6 +8,7 @@ import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 import org.openstreetmap.josm.actions.JosmAction
 import org.openstreetmap.josm.command.AddCommand
+import org.openstreetmap.josm.command.ChangePropertyCommand
 import org.openstreetmap.josm.command.Command
 import org.openstreetmap.josm.command.SequenceCommand
 import org.openstreetmap.josm.data.UndoRedoHandler
@@ -14,16 +16,16 @@ import org.openstreetmap.josm.data.coor.EastNorth
 import org.openstreetmap.josm.data.osm.DataSet
 import org.openstreetmap.josm.data.osm.Node
 import org.openstreetmap.josm.data.osm.OsmDataManager
-import org.openstreetmap.josm.data.osm.Way
 import org.openstreetmap.josm.gui.MainApplication
 import org.openstreetmap.josm.gui.Notification
 import org.openstreetmap.josm.gui.PleaseWaitRunnable
 import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.api.NaprClient
-import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.api.NaprBody
+import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.models.BuildingDataDto
 import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.parsers.napr.parseResponse
 import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.settings.io.EgrnSettingsReader
 import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.settings.io.MassActionSettingsReader
 import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.tools.GeometryHelper
+import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.tools.TagHelper
 import org.openstreetmap.josm.tools.I18n
 import org.openstreetmap.josm.tools.Logging
 import org.openstreetmap.josm.tools.Shortcut
@@ -166,45 +168,61 @@ class SelectAction : JosmAction(
             Notification(msg).setIcon(JOptionPane.WARNING_MESSAGE).show()
         }
 
-        val eastNorths = selected.map { b -> GeometryHelper.getPointIntoPolygon(b) }
-        Logging.info("eastNorths: $eastNorths")
+            //создание
+        val processingBuildings: Set<BuildingDataDto> = selected
+            .map { building -> BuildingDataDto(building, GeometryHelper.getPointIntoPolygon(building)) }
+            .toSet()
+//        val centerToBuilding: Map<EastNorth, OsmPrimitive> = selected.associateBy { osmPrimitive ->
+//            GeometryHelper.getPointIntoPolygon(osmPrimitive)
+//        }
+
+//        val eastNorths = selected.map { b -> GeometryHelper.getPointIntoPolygon(b) }
+//        Logging.info("eastNorths: $eastNorths")
 
         object : PleaseWaitRunnable(I18n.tr("Fetching data from napr.gov.ge...")) {
-            private var coordinateToResult: List<Pair<EastNorth, NaprBody>> = emptyList()
             override fun realRun() {
-                runBlocking {
-                    coordinateToResult = eastNorths
-                        .map { coordinate -> async { Semaphore(5).withPermit { NaprClient.executeRequest(coordinate) } } }
-                        .awaitAll()
-                        .filterNotNull()
+                runBlocking(Dispatchers.IO) {
+                    val semaphore = Semaphore(10)
+                    processingBuildings
+                        .map { buildingDto ->
+                            async {
+                                semaphore.withPermit {
+                                    buildingDto.naprResponseBody = NaprClient.executeRequest(buildingDto.center)
+                                    buildingDto
+                                }
+                            }
+                        }
+                        .awaitAll()//.filter { it.naprResponseBody != null }
                 }
             }
 
             override fun finish() {
-                if (coordinateToResult.isEmpty()) {
+                if (processingBuildings.map { it.naprResponseBody }.none { it != null }) {
                     Logging.info("Нет успешных данных для добавления.")
-                    return
+                    return@finish
                 }
-
-                val nodes = mutableSetOf<Node>()
-                for (pair in coordinateToResult) {
-                    val tags = parseResponse(pair.second)
+                val commands: MutableList<Command> = mutableListOf()
+                for (buildingDto in processingBuildings) {
+                    val tags = parseResponse(buildingDto.naprResponseBody)
                     if (tags.isNotEmpty()) {
+                        tags.put("source:addr", "napr.gov.ge")
+                        for (tag in tags.filter { it.key == "addr:street" || it.key == "addr:housenumber" ||  it.key == "source:addr" }) {
+                            if (!buildingDto.building.hasTag(tag.key)) {
+                                commands.add(ChangePropertyCommand(buildingDto.building, tag.key, tag.value))
+                            } else {
+                                if (TagHelper.isOverwriteEnabled(tag.key, buildingDto.building[tag.key], tag.value)) {
+                                    commands.add(ChangePropertyCommand(buildingDto.building, tag.key, tag.value))
+                                }
+                            }
+                        }
                         tags.putAll(defaultTagsForNode)
-                        val node = createTaggedNode(pair.first, tags)
-                        nodes.add(node)
-                    }
-                }
-
-                if (nodes.isNotEmpty()) {
-                    val commands: MutableList<Command> = mutableListOf()
-                    for (node in nodes) {
+                        val node = createTempTaggedNode(buildingDto.center, tags)
                         commands.add(AddCommand(dataSet, node))
                     }
-
-                    val command: Command = SequenceCommand(I18n.tr("Added node from GeorgiaAddressHelper"), commands)
-                    UndoRedoHandler.getInstance().add(command)
                 }
+                val command: Command = SequenceCommand(I18n.tr("Added node from GeorgiaAddressHelper"), commands)
+                UndoRedoHandler.getInstance().add(command)
+
             }
 
             override fun cancel() {
@@ -213,9 +231,13 @@ class SelectAction : JosmAction(
         }.run()
     }
 
-    private fun createTaggedNode(eastNorth: EastNorth, nodeTags: MutableMap<String, String>): Node {
+    private fun createTempTaggedNode(eastNorth: EastNorth, tags: MutableMap<String, String>): Node {
         val node = Node(GeometryHelper.getNodePlacement(eastNorth, 0))
-        node.putAll(nodeTags)
+        if (tags.contains("addr:street") && tags.contains("addr:housenumber")) {
+            node.putAll(tags.filter { it.key != "addr:housenumber" && it.key != "addr:street" })
+        } else {
+            node.putAll(tags)
+        }
         return node
     }
 
