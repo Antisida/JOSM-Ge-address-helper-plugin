@@ -16,8 +16,23 @@ class NAddressParser {
     val statuses =
         setOf("ქუჩა", "ქ.", "გამზირი", "გამზ.", "ბულვარი", "ჩიხი", "შესახვევი", "შეს.", "გასასვლელი", "აღმართი")
 
+    /**
+     * Удаляет из строки круглые скобки и всё, что находится внутри них.
+     * Также очищает лишние двойные пробелы, которые могли образоваться после удаления.
+     */
+    fun String.removeParenthesesContent(): String {
+        // Регулярное выражение находит ( и ) и всё между ними (жадный поиск исключая закрывающую скобку)
+        val regex = """(?U)\([^)]*\)""".toRegex()
+
+        return this.replace(regex, "")
+            .replace("""(?U)\s+""".toRegex(), " ") // Схлопываем разбежавшиеся пробелы в один
+            .trim()                            // Убираем пробелы по краям, если скобки были в начале/конце
+    }
+
+
+    //todo написать тест для этого ქალაქი ფოთი , ქუჩა ერთობა , N 43 (ყოფ.ძნელაძის ქ. N 43)
     fun parse(sourceFullString: String): N_ParsedAddress {
-        val split = splitAddress(sourceFullString.insertMissingComma().removeCommasBetweenStatuses(statuses.toList()))
+        val split = splitAddress(sourceFullString.removeParenthesesContent().insertMissingComma().removeCommasBetweenStatuses(statuses.toList()))
         if (split.size == 2) {
             val parsedStreet: N_ParsedStreet = NStreetParser().parse(split[0])
             val parsedNumber: ParsedHouseNumber = NHouseNumberParser().parse(split[1])

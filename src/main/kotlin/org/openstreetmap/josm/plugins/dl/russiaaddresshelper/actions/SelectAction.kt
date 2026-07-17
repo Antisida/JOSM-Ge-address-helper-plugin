@@ -126,7 +126,7 @@ class SelectAction : JosmAction(
                             if (streetFromDataSet != address.parsedStreet.extractedName) {
                                 address.parsedStreet.flags.add(ParsingFlags.STREET_NAME_FUZZY_MATCH)
                             }
-                            val tags: Map<String, String> = toBuildingTags(streetFromDataSet, address)
+                            val tags: Map<String, String> = toBuildingTags(streetFromDataSet, address, usefulString)
                             val changeBuildingCommand = createChangeBuildingCommands(tags, osmPrimitive)
                             commands.addAll(changeBuildingCommand)
 
@@ -144,7 +144,7 @@ class SelectAction : JosmAction(
                         }
                     } else {//несколько строк
                         if (usefulString.isNotEmpty()) {
-                            val tags: Map<String, String> = toNodeTagsMulti(usefulString)
+                            val tags: Map<String, String> = toNodeTagsMultiNode(usefulString)
                             val addNodeCommand = toAddNodeCommand(eastNorth, tags, dataSet)
                             commands.addAll(listOf(addNodeCommand))
                         }
@@ -192,6 +192,14 @@ class SelectAction : JosmAction(
         return allAddrStrings
     }
 
+    private fun toNodeTagsMultiNode(
+        rawString: List<String>
+    ): Map<String, String> = buildMap {
+        // 1. Наполняем мапу сырыми адресами
+        putAll(toNodeTagsMulti(rawString))
+        put("fixme", "REMOVE ME!")
+    }
+
     private fun toNodeTagsMulti(
         rawString: List<String>
     ): Map<String, String> = buildMap {
@@ -199,7 +207,6 @@ class SelectAction : JosmAction(
         rawString.distinct().forEachIndexed { index, string ->
             put("napr:addr:raw:${index + 1}", string)
         }
-        put("fixme", "REMOVE ME!")
     }
 
     private fun toNodeTags(
@@ -223,15 +230,21 @@ class SelectAction : JosmAction(
 
     private fun toBuildingTags(
         streetFromDataSet: String,
-        address: N_ParsedAddress
+        address: N_ParsedAddress,
+        rawString: List<String>
     ): Map<String, String> {
-        return composeBuildingTag(address.naprFullString, streetFromDataSet, address.parsedHouseNumber.extractedNumber)
+        return composeBuildingTag(
+            address.naprFullString,
+            streetFromDataSet,
+            address.parsedHouseNumber.extractedNumber,
+            rawString)
     }
 
     fun composeBuildingTag(
         sourceFullString: String,
         street: String,
-        number: String
+        number: String,
+        rawString: List<String>
     ): MutableMap<String, String> {
         val tags = mutableMapOf<String, String>()
         if (number != null) {//fixme
@@ -239,6 +252,7 @@ class SelectAction : JosmAction(
         }
         tags.put("addr:street", street)
         tags.put("napr:addr", sourceFullString)
+        tags.putAll(toNodeTagsMulti(rawString))
         return tags
     }
 
