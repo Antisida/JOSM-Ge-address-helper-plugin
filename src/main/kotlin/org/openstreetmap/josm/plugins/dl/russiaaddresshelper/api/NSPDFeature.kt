@@ -1,3 +1,4 @@
+/*
 package org.openstreetmap.josm.plugins.dl.russiaaddresshelper.api
 
 import com.fasterxml.jackson.annotation.JsonSubTypes
@@ -60,3 +61,4 @@ data class Crs(
 
 @kotlinx.serialization.Serializable
 data class CRSProperties(var name: String?)
+*/

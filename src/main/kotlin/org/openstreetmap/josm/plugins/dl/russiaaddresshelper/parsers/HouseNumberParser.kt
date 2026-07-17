@@ -1,3 +1,4 @@
+/*
 package org.openstreetmap.josm.plugins.dl.russiaaddresshelper.parsers
 
 import org.apache.commons.lang3.StringUtils
@@ -63,4 +64,4 @@ class HouseNumberParser : IParser<ParsedHouseNumber> {
         }
         return ParsedHouseNumber("", "", null, parsingFlags)
     }
-}
+}*/

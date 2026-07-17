@@ -12,10 +12,10 @@ import org.openstreetmap.josm.tools.Logging
 class EGRNCleanPluginCache : UploadHook {
     override fun checkUpload(apiDataSet: APIDataSet): Boolean {
         val removedCount = RussiaAddressHelperPlugin.cache.size()
-        if (CommonSettingsReader.EXPORT_PARSED_DATA_TO_CSV.get()) {
-            val filename = FileHelper.getCurrentExportFilename()
-            RussiaAddressHelperPlugin.cache.exportData(filename)
-        }
+//        if (CommonSettingsReader.EXPORT_PARSED_DATA_TO_CSV.get()) {
+//            val filename = FileHelper.getCurrentExportFilename()
+//            RussiaAddressHelperPlugin.cache.exportData(filename)
+//        }
         RussiaAddressHelperPlugin.cache.emptyCache()
         val editLayer = MainApplication.getLayerManager().editLayer
         editLayer?.validationErrors?.clear()

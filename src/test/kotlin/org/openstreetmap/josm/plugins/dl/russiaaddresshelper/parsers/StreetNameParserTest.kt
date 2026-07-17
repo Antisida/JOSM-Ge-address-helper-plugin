@@ -59,15 +59,15 @@ internal class StreetNameParserTest {
         testData.forEach { osmStreet, egrnStreet ->
             assertEquals(
                 osmStreet,
-                ParsedStreet.identify(egrnStreet, streetTypes, testData.keys.map { Pair(it, Pair(it, listOf<OsmPrimitive>())) }.toMap()).name
+                ParsedStreet.identify(egrnStreet, streetTypes, testData.keys.map { Pair(it, Pair(it, listOf<OsmPrimitive>())) }.toMap()).mostRelevantOsmName
             )
         }
 
         assertEquals("улица Пупкина",
-            ParsedStreet.identify("Москва сити, улица Васимира Пупкина", streetTypes, mapOf("улица Васимира Пупкина" to Pair("улица Пупкина", listOf<OsmPrimitive>()))).name)
+            ParsedStreet.identify("Москва сити, улица Васимира Пупкина", streetTypes, mapOf("улица Васимира Пупкина" to Pair("улица Пупкина", listOf<OsmPrimitive>()))).mostRelevantOsmName)
 
         val parsedNumeredStreet = ParsedStreet.identify("Москва сити, проезд 2й Родниковый, 35", streetTypes, mapOf("2-й Родниковый проезд" to Pair("2-й Родниковый проезд", listOf<OsmPrimitive>())))
-        assertEquals("2-й Родниковый проезд", parsedNumeredStreet.name)
+        assertEquals("2-й Родниковый проезд", parsedNumeredStreet.mostRelevantOsmName)
         assertFalse(parsedNumeredStreet.flags.contains(ParsingFlags.STREET_NAME_FUZZY_MATCH))
 
     }

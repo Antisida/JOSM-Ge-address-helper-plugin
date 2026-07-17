@@ -39,19 +39,17 @@ object NaprClient {
         )
     }
 
-    fun executeRequest(coordinate: EastNorth): NaprBody? = try {
-        val (_, response, result) = createRequest(coordinate)
-            .responseObject<NaprBody>(jacksonDeserializerOf())
-        if (response.statusCode == 200) {
-            result.get()
-        } else {
-            Logging.error("Ошибка для координаты $coordinate: ${response.statusCode}")
-            null
-        }
-    } catch (e: Exception) {
-        Logging.error("Не удалось обработать координату $coordinate: ${e.message}")
-        null
-    }
+    fun executeRequest(coordinate: EastNorth): RawNaprDto? =
+        createRequest(coordinate)
+            .responseObject<RawNaprDto>(jacksonDeserializerOf())
+            .third //Result
+            .fold(
+                success = { data -> data },
+                failure = { error ->
+                    Logging.error("Ошибка для координаты $coordinate: ${error.message}")
+                    null
+                }
+            )
 
     //сделать приватным после рефакторинга клика
     fun createRequest(coordinate: EastNorth/*, layer: NSPDLayer, bbox: BBox?*/): Request {

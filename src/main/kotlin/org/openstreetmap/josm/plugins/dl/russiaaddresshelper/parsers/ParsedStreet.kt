@@ -10,17 +10,17 @@ import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.models.StreetTypes
 import org.openstreetmap.josm.tools.Logging
 
 class ParsedStreet(
-    val name: String,
+    val mostRelevantOsmName: String, //наиболее подходящая из слоя
     val extractedName: String,
     val extractedType: StreetType?,
-    val matchedPrimitives: List<OsmPrimitive>,
+    val matchingPrimitives: List<OsmPrimitive>,
     val flags: MutableList<ParsingFlags>
 ) {
     companion object {
         fun identify(
             sourceAddress: String,
             streetTypes: StreetTypes,
-            osmObjectNames: Map<String, Pair<String, List<OsmPrimitive>>>
+            osmObjectNames: Map<String, Pair<String, List<OsmPrimitive>>> // улицы из слоя
         ): ParsedStreet {
 
             var streetType: StreetType? = null
@@ -48,7 +48,7 @@ class ParsedStreet(
                     }
                 }
             }
-
+                //ничего не извлекли
             if (egrnStreetName == "") {
                 Logging.warn("EGRN-PLUGIN Cannot extract street name from EGRN address $sourceAddress")
                 flags.add(ParsingFlags.CANNOT_EXTRACT_STREET_NAME)
@@ -61,7 +61,7 @@ class ParsedStreet(
 
             var maxSimilarity = 0.0
             var mostSimilar = ""
-            // Ищем соответствующий адресу примитив
+            // Ищем соответствующий адресу примитив // улицы из слоя
 
             for (street in osmObjectNames.keys) {
 
@@ -78,9 +78,10 @@ class ParsedStreet(
                     continue
                 }
 
+                    //если точное совпадение нашлось
                 if (filteredEGRNStreetName.lowercase() == filteredOsmStreetName.lowercase()) {
                     if (street != osmObjectNames[street]?.first) {
-                        flags.add(ParsingFlags.MATCHED_STREET_BY_SECONDARY_TAGS)
+                        flags.add(ParsingFlags.MATCHED_STREET_BY_SECONDARY_TAGS) // заполняем флаг
                     }
                     return ParsedStreet(
                         osmObjectNames[street]!!.first,
@@ -237,10 +238,10 @@ class ParsedStreet(
     }
 
     fun getMatchingPrimitives(): Set<OsmPrimitive> {
-        if (extractedType == null || extractedName.isEmpty() || name.isEmpty()) {
+        if (extractedType == null || extractedName.isEmpty() || mostRelevantOsmName.isEmpty()) {
             return emptySet()
         }
-        return getOsmObjectsByType(extractedType).filter { name == it["name"] || name == it["egrn_name"] }
+        return getOsmObjectsByType(extractedType).filter { mostRelevantOsmName == it["name"] || mostRelevantOsmName == it["egrn_name"] }
             .toSet()
     }
 

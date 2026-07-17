@@ -1,3 +1,4 @@
+/*
 package org.openstreetmap.josm.plugins.dl.russiaaddresshelper.api
 
 import org.openstreetmap.josm.data.coor.EastNorth
@@ -88,3 +89,4 @@ data class EGRNAttribute(
 data class EGRNFeatureExtDataResponse(
     val feature: EGRNFeature?
 )
+*/

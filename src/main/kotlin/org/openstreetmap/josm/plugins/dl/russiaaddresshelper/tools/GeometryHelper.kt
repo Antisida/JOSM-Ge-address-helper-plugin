@@ -12,9 +12,9 @@ import org.openstreetmap.josm.data.osm.*
 import org.openstreetmap.josm.data.osm.visitor.paint.relations.MultipolygonCache
 import org.openstreetmap.josm.gui.Notification
 import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.RussiaAddressHelperPlugin
-import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.api.NSPDFeature
-import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.api.NSPDMultiPolygon
-import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.api.NSPDPolygon
+//import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.api.NSPDFeature
+//import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.api.NSPDMultiPolygon
+//import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.api.NSPDPolygon
 import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.settings.io.ClickActionSettingsReader
 import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.settings.io.CommonSettingsReader
 import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.settings.io.LayerShiftSettingsReader
@@ -166,7 +166,7 @@ class GeometryHelper {
             return emptyList()
         }
 
-        fun generateBuildingMultiPolygon(
+       /* fun generateBuildingMultiPolygon(
             geometry: NSPDFeature.NSPDGeometry,
             ds: DataSet,
             tags: Map<String, String>,
@@ -238,6 +238,6 @@ class GeometryHelper {
                     return Pair(listOf(ChangePropertyCommand(ds, listOf(biggestWay), tags)), biggestWay)
                 }
             }
-        }
+        }*/
     }
 }

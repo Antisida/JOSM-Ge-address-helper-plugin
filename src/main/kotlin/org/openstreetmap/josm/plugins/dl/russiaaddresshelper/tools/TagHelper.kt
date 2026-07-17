@@ -1,16 +1,16 @@
 package org.openstreetmap.josm.plugins.dl.russiaaddresshelper.tools
 
-import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.api.NSPDFeature
+//import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.api.NSPDFeature
 import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.api.NSPDLayer
 import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.api.NSPDOptions
-import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.parsers.ParsedAddress
+//import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.parsers.ParsedAddress
 import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.settings.io.TagSettingsReader
 import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.settings.io.TagSettingsReader.Companion.EGRN_BUILDING_TYPES_SETTINGS
 
 class TagHelper {
     companion object {
 
-        fun getBuildingTags(feature: NSPDFeature?, layer: NSPDLayer) : MutableMap<String, String>{
+       /* fun getBuildingTags(feature: NSPDFeature?, layer: NSPDLayer) : MutableMap<String, String>{
             val buildTags: MutableMap<String, String> = mutableMapOf()
             if (feature?.properties?.options != null) {
                 val options: NSPDOptions = feature.properties.options
@@ -35,16 +35,16 @@ class TagHelper {
                 }
             }
             return buildTags
-        }
+        }*/
 
-        private fun getPossibleBuildingValue(feature: NSPDFeature): String {
+        /*private fun getPossibleBuildingValue(feature: NSPDFeature): String {
             val rules = EGRN_BUILDING_TYPES_SETTINGS.get()
             val options = feature.properties?.options
             rules.forEach{ (key, value) ->
                 if (value.any { (feature.properties?.descr?.contains(it, true) == true)
                 || options?.purpose?.contains(it, true) == true }) return key }
             return "yes"
-        }
+        }*/
 
         fun isOverwriteEnabled(key: String, oldvalue: String, value: String): Boolean {
             val forceAddressOverwrite = TagSettingsReader.OVERWRITE_ADDRESS.get()
@@ -57,7 +57,7 @@ class TagHelper {
             }
         }
 
-        fun getPlaceTags(feature: NSPDFeature?): Map<String, String> {
+        /*fun getPlaceTags(feature: NSPDFeature?): Map<String, String> {
             val placeTags: MutableMap<String, String> = mutableMapOf()
             if (feature?.properties?.options != null) {
                 val options: NSPDOptions = feature.properties.options
@@ -78,9 +78,9 @@ class TagHelper {
                 }
             }
             return placeTags
-        }
+        }*/
 
-        fun getLotTags(feature: NSPDFeature?): Map<String, String> {
+        /*fun getLotTags(feature: NSPDFeature?): Map<String, String> {
             val placeTags: MutableMap<String, String> = mutableMapOf()
             if (feature?.properties?.options != null) {
                 val options: NSPDOptions = feature.properties.options
@@ -101,9 +101,9 @@ class TagHelper {
                 }
             }
             return placeTags
-        }
+        }*/
 
-        fun getAddressTagsForClickAction(address: ParsedAddress?): MutableMap<String, String> {
+       /* fun getAddressTagsForClickAction(address: ParsedAddress?): MutableMap<String, String> {
             val result: MutableMap<String, String> = mutableMapOf()
             if (address != null) {
                 if (address.isMatchedByStreetOrPlace()) {
@@ -113,13 +113,13 @@ class TagHelper {
                     result["addr:RU:extracted_street_type"] = address.parsedStreet.extractedType?.name ?: ""
                     result["addr:RU:extracted_place_name"] = address.parsedPlace.extractedName
                     result["addr:RU:extracted_place_type"] = address.parsedPlace.extractedType?.name ?: ""
-                    result["addr:RU:parsed_housenumber"] = address.parsedHouseNumber.houseNumber
+                    result["addr:RU:parsed_housenumber"] = address.parsedHouseNumber.extractedNumber
                     result["addr:RU:parsed_flats"] = address.parsedHouseNumber.flats
                 }
                 if (TagSettingsReader.EGRN_ADDR_RECORD.get())
                     result["addr:RU:egrn"] = address.egrnAddress
             }
             return result
-        }
+        }*/
     }
 }

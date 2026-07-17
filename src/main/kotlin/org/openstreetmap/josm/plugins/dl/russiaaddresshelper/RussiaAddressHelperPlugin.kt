@@ -21,7 +21,7 @@ import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.actions.ClickAction
 import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.actions.SelectAction
 import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.api.EgrnApi
 import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.api.NspdApi
-import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.parsers.ParsedAddress
+//import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.parsers.ParsedAddress
 import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.settings.io.CommonSettingsReader
 import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.settings.io.EgrnSettingsReader
 import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.settings.io.ValidationSettingsReader
@@ -61,7 +61,7 @@ class RussiaAddressHelperPlugin(info: PluginInformation) : Plugin(info) {
 
         lateinit var versionInfo: String
 
-        val cache: ValidatorCache = ValidatorCache()
+        val cache: N_ValidationCache = N_ValidationCache()
         //  val addressRegistry: AddressRegistryCache = AddressRegistryCache()
 
         val egrnUploadTagFilterHook: EGRNUploadTagFilter = EGRNUploadTagFilter()
@@ -118,9 +118,9 @@ class RussiaAddressHelperPlugin(info: PluginInformation) : Plugin(info) {
             //лучше бы фильтровать более надежным методом, но я его не придумал, код теста Test не возвращает.
             //возможно надо унаследовать его
             val egrnTests = OsmValidator.getEnabledTests(false)
-                .filter { test -> test.name.contains("ЕГРН") || test.name.contains("EGRN") }
+                .filter { test -> test.name.contains("NAPR") || test.name.contains("NAPR") }
             if (egrnTests.isEmpty()) return
-
+            Logging.info("runEgrnValidation: $egrnTests $selection")
             MainApplication.worker.submit(ValidationTask(egrnTests, selection, null))
         }
 
@@ -128,38 +128,39 @@ class RussiaAddressHelperPlugin(info: PluginInformation) : Plugin(info) {
             //получает на вход мутабельный список примитивов, которым хотим присвоить адрес.
             //удаляем из него все примитивы, для которых есть дубликат предпочитаемого адреса в ОСМ или среди них самих
             //возвращаем список дублей
-            val needToAssignAddressPrimitives = primitives.filter {
-                cache.contains(it)
-                        && cache.get(it)?.addressInfo?.getPreferredAddress() != null
-                        && !it.hasKey("addr:housenumber")
-            }
-            val needToAssignAddressPrimitivesMap = needToAssignAddressPrimitives.groupBy { getParsedInlineAddress(it) }
-
-            val doubleAddressPrimitives: MutableSet<OsmPrimitive> = mutableSetOf()
-            val osmBuildingsAddressMap = getOsmAddressesMap()
-
-            needToAssignAddressPrimitivesMap.forEach { (address, listToProcess) ->
-                if (listToProcess.isEmpty()) return@forEach
-                if (osmBuildingsAddressMap.containsKey(address)) {
-                    //уже есть дубль в данных ОСМ
-                    primitives.removeAll(listToProcess)
-                    doubleAddressPrimitives.addAll(listToProcess)
-                    return@forEach
-                }
-
-                val assignToPrimitive = listToProcess.filterIsInstance<Way>().maxByOrNull { Geometry.computeArea(it) }
-                if (assignToPrimitive == null) {
-                    Logging.error("EGRN PLUGIN Something went wrong when finding doubles, building has no area")
-                    primitives.removeAll(listToProcess)
-                    return@forEach
-                }
-                val doubles = listToProcess.minus(assignToPrimitive)
-                primitives.removeAll(doubles)
-                doubleAddressPrimitives.addAll(doubles)
-            }
-
-            cache.markProcessed(doubleAddressPrimitives, EGRNTestCode.EGRN_ADDRESS_DOUBLE_FOUND)
-            return doubleAddressPrimitives
+//            val needToAssignAddressPrimitives = primitives.filter {
+//                cache.contains(it)
+//                        && cache.get(it)?.addressInfo?.getPreferredAddress() != null
+//                        && !it.hasKey("addr:housenumber")
+//            }
+//            val needToAssignAddressPrimitivesMap = needToAssignAddressPrimitives.groupBy { getParsedInlineAddress(it) }
+//
+//            val doubleAddressPrimitives: MutableSet<OsmPrimitive> = mutableSetOf()
+//            val osmBuildingsAddressMap = getOsmAddressesMap()
+//
+//            needToAssignAddressPrimitivesMap.forEach { (address, listToProcess) ->
+//                if (listToProcess.isEmpty()) return@forEach
+//                if (osmBuildingsAddressMap.containsKey(address)) {
+//                    //уже есть дубль в данных ОСМ
+//                    primitives.removeAll(listToProcess)
+//                    doubleAddressPrimitives.addAll(listToProcess)
+//                    return@forEach
+//                }
+//
+//                val assignToPrimitive = listToProcess.filterIsInstance<Way>().maxByOrNull { Geometry.computeArea(it) }
+//                if (assignToPrimitive == null) {
+//                    Logging.error("EGRN PLUGIN Something went wrong when finding doubles, building has no area")
+//                    primitives.removeAll(listToProcess)
+//                    return@forEach
+//                }
+//                val doubles = listToProcess.minus(assignToPrimitive)
+//                primitives.removeAll(doubles)
+//                doubleAddressPrimitives.addAll(doubles)
+//            }
+//
+//            cache.markProcessed(doubleAddressPrimitives, EGRNTestCode.EGRN_ADDRESS_DOUBLE_FOUND)
+//            return doubleAddressPrimitives
+            return primitives.toSet()
         }
 
         fun cleanFromDoublesWithRespectForDistance(primitives: MutableList<OsmPrimitive>): Set<OsmPrimitive> {
@@ -172,44 +173,45 @@ class RussiaAddressHelperPlugin(info: PluginInformation) : Plugin(info) {
             // с учетом расстояния поиска дублей. Адрес считается дублем,
             // если есть обьект с таким же адресом на расстоянии меньше заданного в настройках
             //возвращаем список дублей
-            val needToAssignAddressPrimitives = primitives.filter {
-                cache.contains(it)
-                        && cache.get(it)?.addressInfo?.getPreferredAddress() != null
-                        && !it.hasKey("addr:housenumber")
-            }
-            val needToAssignAddressPrimitivesMap = needToAssignAddressPrimitives.groupBy { getParsedInlineAddress(it) }
-            val isAddressByPlace =
-                needToAssignAddressPrimitives.associate { Pair(getParsedInlineAddress(it), isPlaceAddress(it)) }
-
-            val doubleAddressPrimitives: MutableSet<OsmPrimitive> = mutableSetOf()
-            val osmBuildingsAddressMap = getOsmAddressesMap()
-
-            needToAssignAddressPrimitivesMap.forEach { (address, listToProcess) ->
-                if (listToProcess.isEmpty()) return@forEach
-                if (osmBuildingsAddressMap.containsKey(address)) {
-                    //уже есть дубль в данных ОСМ
-                    //ищем примитивы которые слишком близко
-                    val realDoubles = getDuplicatesByDistance(
-                        osmBuildingsAddressMap[address], listToProcess,
-                        isAddressByPlace[address]
-                    )
-                    primitives.removeAll(realDoubles)
-                    doubleAddressPrimitives.addAll(realDoubles)
-                    return@forEach
-                }
-
-                val assignToPrimitive = listToProcess.filterIsInstance<Way>().maxByOrNull { Geometry.computeArea(it) }
-                if (assignToPrimitive == null) {
-                    Logging.error("EGRN PLUGIN Something went wrong when finding doubles, building has no area")
-                    primitives.removeAll(listToProcess)
-                    return@forEach
-                }
-                val doubles = listToProcess.minus(assignToPrimitive)
-                primitives.removeAll(doubles)
-                doubleAddressPrimitives.addAll(doubles)
-            }
-            cache.markProcessed(doubleAddressPrimitives, EGRNTestCode.EGRN_ADDRESS_DOUBLE_FOUND)
-            return doubleAddressPrimitives
+//            val needToAssignAddressPrimitives = primitives.filter {
+//                cache.contains(it)
+//                        && cache.get(it)?.addressInfo?.getPreferredAddress() != null
+//                        && !it.hasKey("addr:housenumber")
+//            }
+//            val needToAssignAddressPrimitivesMap = needToAssignAddressPrimitives.groupBy { getParsedInlineAddress(it) }
+//            val isAddressByPlace =
+//                needToAssignAddressPrimitives.associate { Pair(getParsedInlineAddress(it), isPlaceAddress(it)) }
+//
+//            val doubleAddressPrimitives: MutableSet<OsmPrimitive> = mutableSetOf()
+//            val osmBuildingsAddressMap = getOsmAddressesMap()
+//
+//            needToAssignAddressPrimitivesMap.forEach { (address, listToProcess) ->
+//                if (listToProcess.isEmpty()) return@forEach
+//                if (osmBuildingsAddressMap.containsKey(address)) {
+//                    //уже есть дубль в данных ОСМ
+//                    //ищем примитивы которые слишком близко
+//                    val realDoubles = getDuplicatesByDistance(
+//                        osmBuildingsAddressMap[address], listToProcess,
+//                        isAddressByPlace[address]
+//                    )
+//                    primitives.removeAll(realDoubles)
+//                    doubleAddressPrimitives.addAll(realDoubles)
+//                    return@forEach
+//                }
+//
+//                val assignToPrimitive = listToProcess.filterIsInstance<Way>().maxByOrNull { Geometry.computeArea(it) }
+//                if (assignToPrimitive == null) {
+//                    Logging.error("EGRN PLUGIN Something went wrong when finding doubles, building has no area")
+//                    primitives.removeAll(listToProcess)
+//                    return@forEach
+//                }
+//                val doubles = listToProcess.minus(assignToPrimitive)
+//                primitives.removeAll(doubles)
+//                doubleAddressPrimitives.addAll(doubles)
+//            }
+//            cache.markProcessed(doubleAddressPrimitives, EGRNTestCode.EGRN_ADDRESS_DOUBLE_FOUND)
+//            return doubleAddressPrimitives
+            return primitives.toSet()
         }
 
         private fun getDuplicatesByDistance(
@@ -236,7 +238,7 @@ class RussiaAddressHelperPlugin(info: PluginInformation) : Plugin(info) {
             }
         }
 
-        fun findDoubledAddresses(addresses: MutableList<ParsedAddress>): Set<ParsedAddress> {
+      /*  fun findDoubledAddresses(addresses: MutableList<ParsedAddress>): Set<ParsedAddress> {
             //получает на вход мутабельный список адресов, которым хотим проверить на дубликаты среди данных ОСМ.
             //удаляем из него все примитивы, для которых есть дубликат предпочитаемого адреса в ОСМ
             //возвращаем список дублей
@@ -252,7 +254,7 @@ class RussiaAddressHelperPlugin(info: PluginInformation) : Plugin(info) {
                 }
             }
             return doubleAddresses
-        }
+        }*/
 
         private fun getOsmAddressesMap(): Map<String, List<OsmPrimitive>> {
             val osmBuildingsWithAddress = OsmDataManager.getInstance().editDataSet.allNonDeletedCompletePrimitives()
@@ -266,17 +268,17 @@ class RussiaAddressHelperPlugin(info: PluginInformation) : Plugin(info) {
         }
 
 
-        private fun getParsedInlineAddress(primitive: OsmPrimitive): String {
-            val prefAddress = cache.get(primitive)?.addressInfo?.getPreferredAddress() ?: return ""
-            return prefAddress.getOsmAddress().getInlineAddress(",") ?: ""
-        }
-
-        private fun isPlaceAddress(primitive: OsmPrimitive): Boolean {
-            val prefAddress = cache.get(primitive)?.addressInfo?.getPreferredAddress() ?: return false
-            return if (prefAddress.isMatchedByStreet()) {
-                false
-            } else prefAddress.isMatchedByPlace()
-        }
+//        private fun getParsedInlineAddress(primitive: OsmPrimitive): String {
+//            val prefAddress = cache.get(primitive)?.addressInfo?.getPreferredAddress() ?: return ""
+//            return prefAddress.getOsmAddress().getInlineAddress(",") ?: ""
+//        }
+//
+//        private fun isPlaceAddress(primitive: OsmPrimitive): Boolean {
+//            val prefAddress = cache.get(primitive)?.addressInfo?.getPreferredAddress() ?: return false
+//            return if (prefAddress.isMatchedByStreet()) {
+//                false
+//            } else prefAddress.isMatchedByPlace()
+//        }
 
         private fun getOsmInlineAddress(p: OsmPrimitive): String {
             return if (p.hasKey("addr:street")) {
@@ -302,19 +304,21 @@ class RussiaAddressHelperPlugin(info: PluginInformation) : Plugin(info) {
 
     override fun mapFrameInitialized(oldFrame: MapFrame?, newFrame: MapFrame?) {
         //this callback fired also everytime last layer is removed, cannot run layer listeners init here
-        OsmValidator.addTest(EGRNEmptyResponseTest::class.java)
-        OsmValidator.addTest(EGRNFuzzyStreetMatchingTest::class.java)
-        OsmValidator.addTest(EGRNInitialsStreetMatchingTest::class.java)
-        OsmValidator.addTest(EGRNMultipleValidAddressTest::class.java)
-        OsmValidator.addTest(EGRNStreetNotFoundTest::class.java)
-        OsmValidator.addTest(EGRNAddressAddedTest::class.java)
-        OsmValidator.addTest(EGRNCantParseAddressTest::class.java)
-        OsmValidator.addTest(EGRNFlatsInAddressTest::class.java)
-        OsmValidator.addTest(EGRNPlaceNotFoundTest::class.java)
-        OsmValidator.addTest(EGRNFuzzyOrInitialsPlaceMatchTest::class.java)
-        OsmValidator.addTest(EGRNDuplicateAddressesTest::class.java)
-        OsmValidator.addTest(EGRNStreetOrPlaceTooFarTest::class.java)
-        OsmValidator.addTest(EGRNConflictedDataTest::class.java)
+        OsmValidator.addTest(NaprFuzzyStreetMatchingTest::class.java)
+//        OsmValidator.addTest(EGRNEmptyResponseTest::class.java)
+//        OsmValidator.addTest(EGRNFuzzyStreetMatchingTest::class.java)
+//        OsmValidator.addTest(EGRN___FuzzyStreetMatchingTest::class.java)
+//        OsmValidator.addTest(EGRNInitialsStreetMatchingTest::class.java)
+//        OsmValidator.addTest(EGRNMultipleValidAddressTest::class.java)
+//        OsmValidator.addTest(EGRNStreetNotFoundTest::class.java)
+//        OsmValidator.addTest(EGRNAddressAddedTest::class.java)
+//        OsmValidator.addTest(EGRNCantParseAddressTest::class.java)
+//        OsmValidator.addTest(EGRNFlatsInAddressTest::class.java)
+//        OsmValidator.addTest(EGRNPlaceNotFoundTest::class.java)
+//        OsmValidator.addTest(EGRNFuzzyOrInitialsPlaceMatchTest::class.java)
+//        OsmValidator.addTest(EGRNDuplicateAddressesTest::class.java)
+//        OsmValidator.addTest(EGRNStreetOrPlaceTooFarTest::class.java)
+//        OsmValidator.addTest(EGRNConflictedDataTest::class.java)
 
         UploadAction.registerUploadHook(cleanPluginCacheHook, true)
         UploadAction.registerUploadHook(egrnUploadTagFilterHook, true)

@@ -1,11 +1,8 @@
 package org.openstreetmap.josm.plugins.dl.russiaaddresshelper.api
 
-import org.openstreetmap.josm.data.coor.EastNorth
-import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.parsers.ParsedAddress
+data class NaprResponse(val responses: MutableList<RawNaprDto> = mutableListOf()) {
 
-data class NaprResponse(val responses: MutableList<NaprBody> = mutableListOf()) {
-
-    fun addResponse(res: NaprBody) {
+    fun addResponse(res: RawNaprDto) {
         responses.add(res)
     }
 

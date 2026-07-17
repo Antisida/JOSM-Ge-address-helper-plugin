@@ -9,22 +9,28 @@ import org.openstreetmap.josm.command.Command
 import org.openstreetmap.josm.command.SequenceCommand
 import org.openstreetmap.josm.data.UndoRedoHandler
 import org.openstreetmap.josm.data.coor.EastNorth
-import org.openstreetmap.josm.data.osm.*
+import org.openstreetmap.josm.data.osm.Node
+import org.openstreetmap.josm.data.osm.OsmPrimitive
 import org.openstreetmap.josm.gui.MainApplication
 import org.openstreetmap.josm.gui.Notification
 import org.openstreetmap.josm.gui.util.KeyPressReleaseListener
 import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.RussiaAddressHelperPlugin
-import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.api.*
-import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.parsers.napr.processResponse
+import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.api.NSPDLayer
+//import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.api.NSPDResponse
+import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.api.RawNaprDto
+import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.api.NaprClient
+import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.parsers.napr.NAddressParser
 import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.settings.io.ClickActionSettingsReader
 import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.tools.GeometryHelper
-import org.openstreetmap.josm.tools.*
+import org.openstreetmap.josm.tools.I18n
+import org.openstreetmap.josm.tools.ImageProvider
+import org.openstreetmap.josm.tools.Logging
+import org.openstreetmap.josm.tools.Shortcut
 import java.awt.Cursor
 import java.awt.event.KeyEvent
 import java.awt.event.MouseEvent
 import javax.swing.JOptionPane
 import javax.swing.SwingUtilities
-import kotlin.Pair
 
 class ClickAction : MapMode(
     ACTION_NAME, ICON_NAME, null, Shortcut.registerShortcut(
@@ -82,7 +88,7 @@ class ClickAction : MapMode(
         val requestBBox = if (placeBoundariesMode) projectionBounds.toBBox() else null
         val errorMessages: MutableSet<String> = mutableSetOf()
         var buildingPrimitive: OsmPrimitive? = null
-        val fullResponse = NSPDResponse()
+//        val fullResponse = NSPDResponse()
         val primitivesToValidate = mutableListOf<OsmPrimitive>()
         val mergeDataOnSingleNode = ClickActionSettingsReader.EGRN_CLICK_MERGE_FEATURES.get()
         val nodeTags: MutableMap<Pair<NSPDLayer, Int>, MutableMap<String, String>> = mutableMapOf()
@@ -104,10 +110,10 @@ class ClickAction : MapMode(
         Logging.info("Executing request")
         val (request, response, result) = NaprClient
             .createRequest(mouseEN)
-            .responseObject<NaprBody>(jacksonDeserializerOf())
+            .responseObject<RawNaprDto>(jacksonDeserializerOf())
         RussiaAddressHelperPlugin.totalRequestsPerSession++
         if (response.statusCode == 200) {
-            tagsForNode.putAll(processResponse(result))
+//            tagsForNode.putAll(NAddressParser().processResponse(result))
             needToRepeat = true
 
             result.failure {

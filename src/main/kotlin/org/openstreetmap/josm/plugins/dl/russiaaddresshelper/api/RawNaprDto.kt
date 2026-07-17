@@ -3,10 +3,18 @@ package org.openstreetmap.josm.plugins.dl.russiaaddresshelper.api
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class NaprBody(
+data class RawNaprDto(
     val status: Boolean?,
     val result: List<NaprResult>?
-)
+) {
+    fun isUseful(): Boolean {
+        return result?.any {
+            it.descript.orEmpty().isNotEmpty()
+                    || it.resulttext.orEmpty().isNotEmpty()
+                    || it.name.orEmpty().isNotEmpty()
+        } ?: false
+    }
+}
 
 @Serializable
 @SuppressWarnings("kotlin:S117")
@@ -37,8 +45,7 @@ data class NaprDetails(
 )
 
 
-
 @Serializable
 data class NaprFeatureExtDataResponse(
-    val feature: NaprBody?
+    val feature: RawNaprDto?
 )
