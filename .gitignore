@@ -281,3 +281,7 @@ hs_err_pid*
 #josm test files
 src/test/config/unit-josm.home/*
 !src/test/config/unit-josm.home/preferences.xml
+/.PVS-Studio/ide-warnings.json
+/JOSM-Ge-address-helper-plugin.iml
+/src/main/resources/images/select-ge.svg
+/.PVS-Studio/settings.json

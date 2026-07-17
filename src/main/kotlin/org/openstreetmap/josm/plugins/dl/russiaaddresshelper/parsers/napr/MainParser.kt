@@ -3,7 +3,7 @@ package org.openstreetmap.josm.plugins.dl.russiaaddresshelper.parsers.napr
 import org.openstreetmap.josm.data.coor.EastNorth
 import org.openstreetmap.josm.data.osm.OsmDataManager
 import org.openstreetmap.josm.data.osm.OsmPrimitive
-import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.actions.OsmMatcher2
+import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.actions.checkMatch
 import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.api.N_ParsedAddresses
 import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.api.RawNaprDto
 import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.api.ParsingFlags
@@ -103,7 +103,7 @@ class MainParser {
             // 2. Ищем все более длинные строки, которые подходят под наш запрос
             val matchingCandidates = sorted.drop(i + 1).filter { candidate ->
                 candidate !in toRemove
-                        && OsmMatcher2().checkMatch(candidate.parsedStreet.extractedName, query) != null //fixme
+                        && checkMatch(candidate.parsedStreet.extractedName, query) != null //fixme
             }
 
             if (matchingCandidates.isNotEmpty()) {

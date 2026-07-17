@@ -112,14 +112,14 @@ class SelectAction : JosmAction(
                     val usefulString = getUsefulString(naprDto)
                     val parsedAddressList: List<N_ParsedAddress> = mainParser.parse(usefulString)
 
-                    val filter = parsedAddressList.filter {
-                        findBestMatchingAddress(it.parsedStreet.extractedName, dataSet) != null
-                    }
+//                    val filter = parsedAddressList.filter {
+//                        findBestMatchingAddress(it.parsedStreet.extractedName, dataSet) != null
+//                    }
 
-                    if (filter.size == 1) { //todo реализовать когда больше 1
-                        val address: N_ParsedAddress = filter.first()
+                    if (parsedAddressList.size == 1) { //todo реализовать когда больше 1
+                        val address: N_ParsedAddress = parsedAddressList.first()
                         val streetFromDataSet: String? =
-                            findBestMatchingAddress(address.parsedStreet.extractedName, dataSet)
+                            findBestMatchingAddressXXX(address.parsedStreet.extractedName, dataSet)
 
                         if (streetFromDataSet != null) {
                             //если сматчилось кидаем теги на здание

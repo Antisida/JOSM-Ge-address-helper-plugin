@@ -4,7 +4,7 @@ import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.parsers.napr.findBe
 import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.parsers.napr.getOsmStreetName
 import kotlin.math.abs
 
-    fun findBestMatchingAddress(query: String, dataSet: DataSet) : String? {
+    fun findBestMatchingAddressXXX(query: String, dataSet: DataSet) : String? {
         return findBestMatch(query, getOsmStreetName(dataSet))
     }
 
