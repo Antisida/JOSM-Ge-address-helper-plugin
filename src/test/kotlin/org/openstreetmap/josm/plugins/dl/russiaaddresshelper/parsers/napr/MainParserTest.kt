@@ -12,7 +12,7 @@ class MainParserTest {
         val listOf = listOf(
             N_ParsedAddress(
                 "sourceFullString",
-                N_ParsedStreet("", "улица Ильи Соколова", listOf(), false),
+                N_ParsedStreet("", "улица Ильи Соколова", mutableListOf(), false),
                 ParsedHouseNumber("", "", listOf(), false),
                 mutableListOf(ParsingFlags.SPLIT_FAILED),
                 emptyMap<String, String>().toMutableMap(),
@@ -20,7 +20,7 @@ class MainParserTest {
             ),
             N_ParsedAddress(
                 "sourceFullString",
-                N_ParsedStreet("", "улица Соколова", listOf(), false),
+                N_ParsedStreet("", "улица Соколова", mutableListOf(), false),
                 ParsedHouseNumber("", "", listOf(), false),
                 mutableListOf(ParsingFlags.SPLIT_FAILED),
                 emptyMap<String, String>().toMutableMap(),
