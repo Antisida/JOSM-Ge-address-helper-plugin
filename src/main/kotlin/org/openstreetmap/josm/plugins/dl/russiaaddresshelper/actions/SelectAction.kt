@@ -17,20 +17,23 @@ import org.openstreetmap.josm.gui.MainApplication
 import org.openstreetmap.josm.gui.Notification
 import org.openstreetmap.josm.gui.PleaseWaitRunnable
 import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.RussiaAddressHelperPlugin
-import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.api.N_ParsedAddresses
 import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.api.RawNaprDto
 import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.api.NaprService
-import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.api.ParsingFlags
-import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.parsers.ParsedHouseNumber
-import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.parsers.napr.MainParser
-import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.parsers.napr.N_ParsedAddress
-import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.parsers.napr.N_ParsedStreet
-import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.parsers.napr.dto.ParsingResult
-import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.parsers.napr.findBestMatchingAddress
+import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.parsers.ParsingFlags
+import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.parsers.MainParser
+import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.parsers.Address
 import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.settings.io.EgrnSettingsReader
 import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.settings.io.MassActionSettingsReader
+import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.settings.io.ValidationSettingsReader.Companion.DISTANCE_FOR_STREET_WAY_SEARCH
 import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.tools.GeometryHelper
 import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.tools.TagHelper
+import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.utils.OsmStreetMatcher
+import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.tools.TagCreator
+import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.tools.TagCreator.BUILDING_TAG
+import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.tools.TagCreator.FIXME_TAG
+import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.tools.TagCreator.REMOVE_ME
+import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.tools.TagCreator.TagType.*
+import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.tools.TagCreator.STATUSES_AND_ABBR_SET
 import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.validation.N_ValidationRecord
 import org.openstreetmap.josm.tools.I18n
 import org.openstreetmap.josm.tools.Logging
@@ -38,6 +41,8 @@ import org.openstreetmap.josm.tools.Shortcut
 import java.awt.event.ActionEvent
 import java.awt.event.KeyEvent
 import javax.swing.JOptionPane
+import kotlin.collections.component1
+import kotlin.collections.component2
 
 class SelectAction : JosmAction(
     ACTION_NAME, ICON_NAME, null, Shortcut.registerShortcut(
@@ -47,7 +52,7 @@ class SelectAction : JosmAction(
     companion object {
         val ACTION_NAME = I18n.tr("For selected objects")
         val ICON_NAME = "select.svg"
-        val defaultTagsForNode: Map<String, String> = mapOf("source:addr" to "napr.gov.ge", "fixme" to "REMOVE ME!")
+
     }
 
     override fun updateEnabledState() {
@@ -56,18 +61,11 @@ class SelectAction : JosmAction(
 
     private val naprService = NaprService()
 
-    override fun actionPerformed(e: ActionEvent?) {
-        val dataSet: DataSet = OsmDataManager.getInstance().editDataSet ?: return
-        var selected = dataSet.selected.toList()
-        val nodeForRemove = selected.filter {
-            it is Node && it.hasTag("fixme", "REMOVE ME!")
-        }
-
-        val buildingBadValues = MassActionSettingsReader.EGRN_MASS_ACTION_FILTER_LIST.get()
-        selected = selected.filter {
+    private fun List<OsmPrimitive>.getBuildings(ignoreTags: Map<String, List<String>>): List<OsmPrimitive> {
+        return this.filter {
             it !is Node &&
-                    it.hasTag("building")
-                    && buildingBadValues.all { (key, values) ->
+                    it.hasTag(BUILDING_TAG)
+                    && ignoreTags.all { (key, values) ->
                 values.none { tagValue ->
                     it.hasTag(
                         key,
@@ -76,21 +74,29 @@ class SelectAction : JosmAction(
                 }
             }
         }
+    }
 
-        if (selected.isEmpty()) {
+    override fun actionPerformed(e: ActionEvent?) {
+        val dataSet: DataSet = OsmDataManager.getInstance().editDataSet ?: return
+        val selected = dataSet.selected.toList()
+        val nodesForRemove = selected.filter { it is Node && it.hasTag(FIXME_TAG, REMOVE_ME) }
+
+        var buildings = selected.getBuildings(MassActionSettingsReader.EGRN_MASS_ACTION_FILTER_LIST.get())
+
+        if (buildings.isEmpty()) {
             val msg = I18n.tr("All selected buildings are not eligible for request!")
             Notification(msg).setIcon(JOptionPane.WARNING_MESSAGE).show()
             return
         }
 
-        if (selected.size > EgrnSettingsReader.REQUEST_LIMIT_PER_SELECTION.get()) { //fixme
-            selected = selected.dropLast(selected.size - EgrnSettingsReader.REQUEST_LIMIT_PER_SELECTION.get())
+        if (buildings.size > EgrnSettingsReader.REQUEST_LIMIT_PER_SELECTION.get()) {
+            buildings = buildings.dropLast(buildings.size - EgrnSettingsReader.REQUEST_LIMIT_PER_SELECTION.get())
             val msg = I18n.tr("Selected more than set limit buildings, only first %s will be processed")
                 .format(EgrnSettingsReader.REQUEST_LIMIT_PER_SELECTION.get().toString())
             Notification(msg).setIcon(JOptionPane.WARNING_MESSAGE).show()
         }
 
-        val centerToBuilding: List<Pair<EastNorth, OsmPrimitive>> = selected.map { osmPrimitive ->
+        val centerToBuilding: List<Pair<EastNorth, OsmPrimitive>> = buildings.map { osmPrimitive ->
             Pair(GeometryHelper.getPointIntoPolygon(osmPrimitive), osmPrimitive)
         }
 
@@ -101,65 +107,63 @@ class SelectAction : JosmAction(
             }
 
             override fun finish() {
-                val mainParser = MainParser()
-
                 val commands: MutableList<Command> = mutableListOf()
                 for (naprResult in naprResults.filter { it.third.isUseful() }) {
-                    val eastNorth: EastNorth = naprResult.first
-                    val osmPrimitive: OsmPrimitive = naprResult.second
+                    val centerCoord: EastNorth = naprResult.first
+                    val building: OsmPrimitive = naprResult.second
                     val naprDto: RawNaprDto = naprResult.third
 
                     val usefulString = getUsefulString(naprDto)
-                    val parsedAddressList: List<N_ParsedAddress> = mainParser.parse(usefulString)
+                    val parsedAddressList: List<Address> = MainParser.parse(usefulString)
 
-//                    val filter = parsedAddressList.filter {
-//                        findBestMatchingAddress(it.parsedStreet.extractedName, dataSet) != null
-//                    }
+                    if (parsedAddressList.size == 1) {
+                        val parsedAddress: Address = parsedAddressList.first()
+                        val matchedOsmStreetName: String? = OsmStreetMatcher.findByNameAndDistance(
+                            dataSet,
+                            parsedAddress.parsedStreet.extractedName,
+                            building,
+                            DISTANCE_FOR_STREET_WAY_SEARCH.get()
+                        )
 
-                    if (parsedAddressList.size == 1) { //todo реализовать когда больше 1
-                        val address: N_ParsedAddress = parsedAddressList.first()
-                        val streetFromDataSet: String? =
-                            findBestMatchingAddressXXX(address.parsedStreet.extractedName, dataSet)
-
-                        if (streetFromDataSet != null) {
+                        if (matchedOsmStreetName != null) {
                             //если сматчилось кидаем теги на здание
-                            if (streetFromDataSet != address.parsedStreet.extractedName) {
-                                address.parsedStreet.flags.add(ParsingFlags.STREET_NAME_FUZZY_MATCH)
+                            if (matchedOsmStreetName != parsedAddress.parsedStreet.extractedName) {
+                                parsedAddress.parsedStreet.flags.add(ParsingFlags.STREET_NAME_FUZZY_MATCH)
                             }
-                            val tags: Map<String, String> = toBuildingTags(streetFromDataSet, address, usefulString)
-                            val changeBuildingCommand = createChangeBuildingCommands(tags, osmPrimitive)
+                            val tags: Map<String, String> =
+                                TagCreator.create(BUILDING, matchedOsmStreetName, parsedAddress, usefulString)
+                            val changeBuildingCommand = toChangeBuildingCommands(tags, building)
                             commands.addAll(changeBuildingCommand)
 
-                            if (address.getValidatedFlags().isNotEmpty()) {
-                                val validationRecords: List<N_ValidationRecord> = createValidationRecords(eastNorth, address)
-                                RussiaAddressHelperPlugin.cache.add(osmPrimitive, validationRecords)
+                            if (parsedAddress.getValidatedFlags().isNotEmpty()) {
+                                val validationRecords: List<N_ValidationRecord> =
+                                    toValidationRecords(centerCoord, parsedAddress)
+                                RussiaAddressHelperPlugin.cache.add(building, validationRecords)
                             }
-
                         } else {
                             //если не сматчилось создаем точку
-                            //todo теги для точки и команда создания точки
-                            val tags: Map<String, String> = toNodeTags(usefulString, address)
-                            val addNodeCommand = toAddNodeCommand(eastNorth, tags, dataSet)
+                            val tags: Map<String, String> = TagCreator.create(NODE, null, parsedAddress, usefulString)
+                            val addNodeCommand = toAddNodeCommand(centerCoord, tags, dataSet)
                             commands.addAll(listOf(addNodeCommand))
                         }
-                    } else {//несколько строк
+                    } else {//если имеем несколько разных адресов - создаем точку с сырыми данными напр
                         if (usefulString.isNotEmpty()) {
-                            val tags: Map<String, String> = toNodeTagsMultiNode(usefulString)
-                            val addNodeCommand = toAddNodeCommand(eastNorth, tags, dataSet)
+                            val tags: Map<String, String> = TagCreator.create(NODE, null, null, usefulString)
+                            val addNodeCommand = toAddNodeCommand(centerCoord, tags, dataSet)
                             commands.addAll(listOf(addNodeCommand))
                         }
                     }
                 }
 
                 //удаление выбранных точек
-                if (nodeForRemove.isNotEmpty()) {
-                    commands.add(DeleteCommand(nodeForRemove))
+                if (nodesForRemove.isNotEmpty()) {
+                    commands.add(DeleteCommand(nodesForRemove))
                 }
 
                 val primitivesToValidate = RussiaAddressHelperPlugin.cache.responses.keys.filter { !it.isDeleted }
-                Logging.info("finish validate: $primitivesToValidate")
                 if (primitivesToValidate.isNotEmpty()) {
                     RussiaAddressHelperPlugin.runEgrnValidation(primitivesToValidate)
+                    Logging.info("finish validate: $primitivesToValidate")
                 }
 
                 if (commands.isNotEmpty()) {
@@ -167,8 +171,7 @@ class SelectAction : JosmAction(
                     UndoRedoHandler.getInstance().add(command)
                 }
 
-                dataSet.clearSelection();
-
+                if (buildings.size != 1) dataSet.clearSelection();
             }
 
 
@@ -178,87 +181,20 @@ class SelectAction : JosmAction(
         }.run()
     }
 
-    val statuses =
-        setOf("ქუჩა", "ქ.", "გამზირი", "გამზ.", "ბულვარი", "ჩიხი", "შესახვევი", "შეს.", "გასასვლელი", "აღმართი")
-
-    fun getUsefulString(naprBody: RawNaprDto): List<String> {
+    private fun getUsefulString(naprBody: RawNaprDto): List<String> {
         val allAddrStrings = naprBody.result
             ?.flatMap { listOfNotNull(it.descript, it.resulttext, it.name) }
             ?.filter { it.isNotEmpty() }
             ?.filter { line -> "N" in line } //todo не теряем ли мы номера без N
-            ?.filter { line -> statuses.any { status -> status in line } }
+            ?.filter { line -> STATUSES_AND_ABBR_SET.any { status -> status in line } }
         //    ?.filter { line -> !line.contains("ნაკვეთი") } //todo участок удалять при сплите
             ?: emptyList()
         return allAddrStrings
     }
 
-    private fun toNodeTagsMultiNode(
-        rawString: List<String>
-    ): Map<String, String> = buildMap {
-        // 1. Наполняем мапу сырыми адресами
-        putAll(toNodeTagsMulti(rawString))
-        put("fixme", "REMOVE ME!")
-    }
-
-    private fun toNodeTagsMulti(
-        rawString: List<String>
-    ): Map<String, String> = buildMap {
-        // 1. Наполняем мапу сырыми адресами
-        rawString.distinct().forEachIndexed { index, string ->
-            put("napr:addr:raw:${index + 1}", string)
-        }
-    }
-
-    private fun toNodeTags(
-        rawString: List<String>,
-        address: N_ParsedAddress
-    ): Map<String, String> = buildMap {
-        // 1. Наполняем мапу сырыми адресами
-        rawString.distinct().forEachIndexed { index, string ->
-            put("napr:addr:raw:${index + 1}", string)
-        }
-        if (address.parsedStreet.flags.contains(ParsingFlags.GENITIVE_APPLIED)) {
-            put("warn:1", "to genitive case")
-        }
-
-
-        // 2. Добавляем фиксированные теги
-        put("addr:housenumber", address.parsedHouseNumber.extractedNumber)
-        put("addr:street", address.parsedStreet.extractedName)
-        put("fixme", "REMOVE ME!")
-    }
-
-    private fun toBuildingTags(
-        streetFromDataSet: String,
-        address: N_ParsedAddress,
-        rawString: List<String>
-    ): Map<String, String> {
-        return composeBuildingTag(
-            address.naprFullString,
-            streetFromDataSet,
-            address.parsedHouseNumber.extractedNumber,
-            rawString)
-    }
-
-    fun composeBuildingTag(
-        sourceFullString: String,
-        street: String,
-        number: String,
-        rawString: List<String>
-    ): MutableMap<String, String> {
-        val tags = mutableMapOf<String, String>()
-        if (number != null) {//fixme
-            tags.put("addr:housenumber", number)
-        }
-        tags.put("addr:street", street)
-        tags.put("napr:addr", sourceFullString)
-        tags.putAll(toNodeTagsMulti(rawString))
-        return tags
-    }
-
-    private fun createValidationRecords(
+    private fun toValidationRecords(
         eastNorth: EastNorth,
-        address: N_ParsedAddress
+        address: Address
     ): List<N_ValidationRecord> {
         return listOf(
             N_ValidationRecord(
@@ -268,8 +204,7 @@ class SelectAction : JosmAction(
         )
     }
 
-
-    private fun createChangeBuildingCommands(tags: Map<String, String>, osmPrimitive: OsmPrimitive): List<Command> {
+    private fun toChangeBuildingCommands(tags: Map<String, String>, osmPrimitive: OsmPrimitive): List<Command> {
         val commands: MutableList<Command> = mutableListOf()
         for (tag in tags) {
             val command: Command? = createComm(tag, osmPrimitive)
@@ -290,88 +225,14 @@ class SelectAction : JosmAction(
         }
     }
 
-    private fun createChangeBuildingCommand1(parseResult: ParsingResult): List<Command> {
-        val commands: MutableList<Command> = mutableListOf()
-        val building = parseResult.osmPrimitive
-        for (tag in parseResult.bulgingTags) {
-            val command: Command? = createComm(tag, building)
-            if (command != null) {
-                commands.add(command)
-            }
-        }
-        return commands
-    }
-
-    private fun createChangeBuildingCommands(parseResults: List<ParsingResult>): List<Command> {
-        return parseResults.flatMap { createChangeBuildingCommand(it) }
-    }
-
-
-    private fun createChangeBuildingCommand(parseResult: ParsingResult): List<Command> {
-        val commands: MutableList<Command> = mutableListOf()
-        val building = parseResult.osmPrimitive
-        for (tag in parseResult.bulgingTags) {
-            val command: Command? = createComm(tag, building)
-            if (command != null) {
-                commands.add(command)
-            }
-        }
-        return commands
-    }
-
-//    private fun createComm(tag: Pair<String, String>, building: OsmPrimitive): Command? {
-//        return if (!building.hasTag(tag.first)) {
-//            ChangePropertyCommand(building, tag.first, tag.second)
-//        } else {
-//            return if (TagHelper.isOverwriteEnabled(tag.first, building[tag.first], tag.second)) {
-//                ChangePropertyCommand(building, tag.first, tag.second)
-//            } else {
-//                null
-//            }
-//        }
-//    }
-
-    private fun createComm(tag: Pair<String, String>, building: OsmPrimitive): Command? {
-        if (!building.hasTag(tag.first)
-            || TagHelper.isOverwriteEnabled(tag.first, building.get(tag.first), tag.second)
-        ) {
-            return ChangePropertyCommand(building, tag.first, tag.second)
-        } else {
-            return null
-        }
-    }
-
     private fun toAddNodeCommand(eastNorth: EastNorth, tags: Map<String, String>, dataSet: DataSet): Command {
         val node = createNode(eastNorth, tags)
         return AddCommand(dataSet, node)
     }
 
-    private fun toAddNodeCommands(parseResults: List<ParsingResult>, dataSet: DataSet): List<Command> {
-        return parseResults
-            .map { createNode(it.eastNorth, it.nodeTags) }
-            .map { AddCommand(dataSet, it) }
-            .toList()
-    }
-
     private fun createNode(eastNorth: EastNorth, tags: Map<String, String>): Node {
         val node = Node(GeometryHelper.getNodePlacement(eastNorth, 0))
         node.putAll(tags)
-        return node
-    }
-
-    private fun createNode(eastNorth: EastNorth, tags: List<Pair<String, String>>): Node {
-        val node = Node(GeometryHelper.getNodePlacement(eastNorth, 0))
-        node.putAll(tags.associate { it.first to it.second })
-        return node
-    }
-
-    private fun createTempTaggedNode(eastNorth: EastNorth, tags: MutableMap<String, String>): Node {
-        val node = Node(GeometryHelper.getNodePlacement(eastNorth, 0))
-        if (tags.contains("addr:street") && tags.contains("addr:housenumber")) {
-            node.putAll(tags.filter { it.key != "addr:housenumber" && it.key != "addr:street" })
-        } else {
-            node.putAll(tags)
-        }
         return node
     }
 

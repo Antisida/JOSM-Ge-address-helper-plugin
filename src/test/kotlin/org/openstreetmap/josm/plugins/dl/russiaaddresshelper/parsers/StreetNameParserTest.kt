@@ -4,7 +4,7 @@ import org.junit.Test
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.params.provider.Arguments
 import org.openstreetmap.josm.data.osm.OsmPrimitive
-import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.api.ParsingFlags
+import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.parsers.ParsingFlags
 import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.models.StreetTypes
 
 internal class StreetNameParserTest {

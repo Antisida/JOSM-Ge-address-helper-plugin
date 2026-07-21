@@ -1,34 +1,30 @@
 package org.openstreetmap.josm.plugins.dl.russiaaddresshelper
 
+//import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.actions.AddNSPDLayersAction
+//import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.parsers.ParsedAddress
 import org.openstreetmap.josm.actions.UploadAction
 import org.openstreetmap.josm.command.AddCommand
 import org.openstreetmap.josm.command.SequenceCommand
 import org.openstreetmap.josm.data.UndoRedoHandler
-import org.openstreetmap.josm.data.Version
 import org.openstreetmap.josm.data.coor.EastNorth
 import org.openstreetmap.josm.data.osm.Node
 import org.openstreetmap.josm.data.osm.OsmDataManager
 import org.openstreetmap.josm.data.osm.OsmPrimitive
-import org.openstreetmap.josm.data.osm.Way
 import org.openstreetmap.josm.data.validation.OsmValidator
 import org.openstreetmap.josm.data.validation.ValidationTask
 import org.openstreetmap.josm.gui.MainApplication
 import org.openstreetmap.josm.gui.MapFrame
 import org.openstreetmap.josm.plugins.Plugin
 import org.openstreetmap.josm.plugins.PluginInformation
-//import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.actions.AddNSPDLayersAction
 import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.actions.ClickAction
 import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.actions.SelectAction
-import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.api.EgrnApi
-import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.api.NspdApi
-//import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.parsers.ParsedAddress
 import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.settings.io.CommonSettingsReader
-import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.settings.io.EgrnSettingsReader
 import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.settings.io.ValidationSettingsReader
 import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.tools.GeometryHelper
 import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.uploadhooks.EGRNCleanPluginCache
 import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.uploadhooks.EGRNUploadTagFilter
-import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.validation.*
+import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.validation.N_ValidationCache
+import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.validation.NaprFuzzyStreetMatchingTest
 import org.openstreetmap.josm.tools.Geometry
 import org.openstreetmap.josm.tools.I18n
 import org.openstreetmap.josm.tools.ImageProvider
@@ -74,40 +70,8 @@ class RussiaAddressHelperPlugin(info: PluginInformation) : Plugin(info) {
         val clickAction: ClickAction = ClickAction()
 //        val addLayersAction: AddNSPDLayersAction = AddNSPDLayersAction()
 
-        fun getEgrnClient(): EgrnApi {
-            val userAgent = String.format(
-                EgrnSettingsReader.EGRN_REQUEST_USER_AGENT.get(),
-                Version.getInstance().versionString,
-                versionInfo
-            )
 
-            return EgrnApi(EgrnSettingsReader.EGRN_URL_REQUEST.get(), userAgent)
-        }
 
-        fun getNSPDClient(): NspdApi {
-            val userAgent = String.format(
-                EgrnSettingsReader.EGRN_REQUEST_USER_AGENT.get(),
-                Version.getInstance().versionString,
-                versionInfo
-            )
-
-            return NspdApi(
-                EgrnSettingsReader.NSPD_GET_FEATURE_REQUEST_URL.get(),
-                userAgent,
-                EgrnSettingsReader.NSPD_SITE_URL.get()
-            )
-        }
-
-//        val naprClient: NaprApi by lazy {
-//            val userAgent = String.format(
-//                NaprSettingsReader.NAPR_REQUEST_USER_AGENT.get(),
-//                Version.getInstance().versionString,
-//                versionInfo
-//            )
-
-//            NaprApi(NaprSettingsReader.NAPR_URL_REQUEST.get(), userAgent)
-//            NaprApi()
-//        }
 
         fun runEgrnValidation(selection: Collection<OsmPrimitive?>) {
             val map = MainApplication.getMap()

@@ -43,9 +43,3 @@ data class NaprDetails(
     val info_link: String?,          //  "/lr/bo/mg/getinfo.alpha?lbl=lr_parcels:AAArWyACtAAAnd2AAQ"
     val geometry_link: String?       //  "/lr/bo/mg/getinfo.alpha?lbl=lr_parcels:AAArWyACtAAAnd2AAQ&res=shp"
 )
-
-
-@Serializable
-data class NaprFeatureExtDataResponse(
-    val feature: RawNaprDto?
-)

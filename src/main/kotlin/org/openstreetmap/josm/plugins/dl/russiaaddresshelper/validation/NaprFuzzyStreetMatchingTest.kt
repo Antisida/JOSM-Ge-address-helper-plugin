@@ -1,29 +1,19 @@
 package org.openstreetmap.josm.plugins.dl.russiaaddresshelper.validation
 
-import org.openstreetmap.josm.command.ChangePropertyCommand
 import org.openstreetmap.josm.command.Command
-import org.openstreetmap.josm.command.SequenceCommand
 import org.openstreetmap.josm.data.osm.OsmPrimitive
 import org.openstreetmap.josm.data.osm.Relation
 import org.openstreetmap.josm.data.osm.Way
 import org.openstreetmap.josm.data.validation.Severity
 import org.openstreetmap.josm.data.validation.Test
 import org.openstreetmap.josm.data.validation.TestError
-import org.openstreetmap.josm.gui.ExtendedDialog
-import org.openstreetmap.josm.gui.MainApplication
-import org.openstreetmap.josm.gui.widgets.JMultilineLabel
 import org.openstreetmap.josm.gui.widgets.JosmTextField
 import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.RussiaAddressHelperPlugin
-import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.api.N_ParsedAddresses
-import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.api.ParsingFlags
-import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.parsers.napr.N_ParsedAddress
+import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.parsers.ParsingFlags
+import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.parsers.Address
 import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.tools.GeometryHelper
-import org.openstreetmap.josm.tools.GBC
 import org.openstreetmap.josm.tools.I18n
 import org.openstreetmap.josm.tools.Logging
-import java.awt.GridBagLayout
-import javax.swing.JLabel
-import javax.swing.JPanel
 
 /**
  * ЕГРН нечеткое совпадение. Плагин сопоставил адрес с улицей или местом по алгоритму нечеткого совпадения,
@@ -54,7 +44,7 @@ class NaprFuzzyStreetMatchingTest : Test(
         RussiaAddressHelperPlugin.cache.responses.forEach { entry ->
             Logging.info("EGRNFuzzyStreetMatchingTest entry: $entry")
             val primitive: OsmPrimitive = entry.key
-            val address: N_ParsedAddress = entry.value.address
+            val address: Address = entry.value.address
             Logging.info("address: $address")
             if (address.getValidatedFlags().contains(ParsingFlags.STREET_NAME_FUZZY_MATCH)
 //                && !primitive.hasTag("addr:street")

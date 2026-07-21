@@ -49,32 +49,13 @@ class EGRNUploadTagFilter : UploadHook {
         }
 
         val discardableKeys: Collection<String> = setOf(
+            "warn:1",
             "napr:addr:raw:1",
             "napr:addr:raw:2",
             "napr:addr:raw:3",
             "napr:addr:raw:4",
             "addr:GE:napr",
-            "napr:addr",
-            "addr:RU:egrn",
-            "addr:RU:egrn_type",
-            "addr:RU:extracted_name",
-            "addr:RU:extracted_street_name",
-            "addr:RU:extracted_street_type",
-            "addr:RU:extracted_place_name",
-            "addr:RU:extracted_place_type",
-            "addr:RU:extracted_type",
-            "addr:RU:parsed_housenumber",
-            "addr:RU:parsed_flats",
-            "egrn_name",
-            "autoremove:description",
-            "autoremove:loc",
-            "autoremove:name",
-            "autoremove:geometry:docName",
-            "autoremove:source:geometry",
-            "autoremove:ownershipType",
-            "autoremove:permittedUseName",
-            "autoremove:permittedUseByDoc"
-
+            "napr:addr"
         )
         val needsChange = apiDataSet.primitives.stream().flatMap { obj: OsmPrimitive -> obj.keys() }
             .anyMatch { o: String -> discardableKeys.contains(o) }

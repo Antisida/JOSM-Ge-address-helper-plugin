@@ -1,5 +1,7 @@
+/*
 package org.openstreetmap.josm.plugins.dl.russiaaddresshelper.actions
 
+//import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.api.NSPDResponse
 import com.github.kittinunf.fuel.jackson.jacksonDeserializerOf
 import com.github.kittinunf.result.Result
 import com.github.kittinunf.result.failure
@@ -16,10 +18,8 @@ import org.openstreetmap.josm.gui.Notification
 import org.openstreetmap.josm.gui.util.KeyPressReleaseListener
 import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.RussiaAddressHelperPlugin
 import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.api.NSPDLayer
-//import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.api.NSPDResponse
-import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.api.RawNaprDto
 import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.api.NaprClient
-import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.parsers.napr.NAddressParser
+import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.api.RawNaprDto
 import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.settings.io.ClickActionSettingsReader
 import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.tools.GeometryHelper
 import org.openstreetmap.josm.tools.I18n
@@ -243,4 +243,4 @@ class ClickAction : MapMode(
     override fun doKeyReleased(e: KeyEvent?) {
         // Do nothing
     }
-}
+}*/

@@ -1,6 +1,5 @@
-package org.openstreetmap.josm.plugins.dl.russiaaddresshelper.actions
+package org.openstreetmap.josm.plugins.dl.russiaaddresshelper.utils
 import org.openstreetmap.josm.data.osm.DataSet
-import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.parsers.napr.findBestMatchingAddress
 import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.parsers.napr.getOsmStreetName
 import kotlin.math.abs
 class OsmMatcher1 {

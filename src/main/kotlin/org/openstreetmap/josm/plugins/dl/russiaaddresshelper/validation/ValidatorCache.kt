@@ -12,7 +12,7 @@
 //import org.openstreetmap.josm.gui.layer.OsmDataLayer
 //import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.api.NSPDResponse
 //import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.api.N_ParsedAddresses
-//import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.api.ParsingFlags
+//import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.parsers.ParsingFlags
 //import java.io.File
 //import java.io.FileOutputStream
 //import java.io.OutputStream

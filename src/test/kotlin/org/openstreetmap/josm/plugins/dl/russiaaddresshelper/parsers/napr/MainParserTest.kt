@@ -2,26 +2,28 @@ package org.openstreetmap.josm.plugins.dl.russiaaddresshelper.parsers.napr
 
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
-import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.api.ParsingFlags
-import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.parsers.ParsedHouseNumber
+import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.parsers.ParsingFlags
+import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.parsers.Address
+import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.parsers.HouseNumber
+import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.parsers.Street
 
 class MainParserTest {
     @Test
     fun dropDuble() {
         val mainParser = MainParser() // Убедитесь, что методы выше лежат внутри этого класса
         val listOf = listOf(
-            N_ParsedAddress(
+            Address(
                 "sourceFullString",
-                N_ParsedStreet("", "улица Ильи Соколова", mutableListOf(), false),
-                ParsedHouseNumber("", "", listOf(), false),
+                Street("", "улица Ильи Соколова", mutableListOf(), false),
+                HouseNumber("", "", listOf(), false),
                 mutableListOf(ParsingFlags.SPLIT_FAILED),
                 emptyMap<String, String>().toMutableMap(),
                 false
             ),
-            N_ParsedAddress(
+            Address(
                 "sourceFullString",
-                N_ParsedStreet("", "улица Соколова", mutableListOf(), false),
-                ParsedHouseNumber("", "", listOf(), false),
+                Street("", "улица Соколова", mutableListOf(), false),
+                HouseNumber("", "", listOf(), false),
                 mutableListOf(ParsingFlags.SPLIT_FAILED),
                 emptyMap<String, String>().toMutableMap(),
                 false

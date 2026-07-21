@@ -15,7 +15,7 @@
 //import org.openstreetmap.josm.gui.widgets.JosmTextField
 //import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.RussiaAddressHelperPlugin
 //import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.api.N_ParsedAddresses
-//import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.api.ParsingFlags
+//import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.parsers.ParsingFlags
 //import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.parsers.napr.N_ParsedAddress
 //import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.tools.GeometryHelper
 //import org.openstreetmap.josm.tools.GBC

@@ -10,7 +10,7 @@
 //import org.openstreetmap.josm.gui.MainApplication
 //import org.openstreetmap.josm.gui.widgets.JMultilineLabel
 //import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.RussiaAddressHelperPlugin
-//import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.api.ParsingFlags
+//import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.parsers.ParsingFlags
 //import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.parsers.ParsedAddress
 //import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.tools.GeometryHelper
 //import org.openstreetmap.josm.tools.GBC

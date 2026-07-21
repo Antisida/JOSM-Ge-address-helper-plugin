@@ -1,22 +1,11 @@
-package org.openstreetmap.josm.plugins.dl.russiaaddresshelper.parsers.napr
+package org.openstreetmap.josm.plugins.dl.russiaaddresshelper.parsers
 
-import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.api.ParsingFlags
+import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.tools.TagCreator.STATUSES_SET
 import org.openstreetmap.josm.tools.Logging
 
 data class ParseContext(
     var str: String,
     val flags: List<ParsingFlags> = listOf()
-)
-
-val statuses = setOf(
-    "ქუჩა", //улица
-    "გამზირი", //проспект
-    "ბულვარი", //Бульвар
-    "ჩიხი", //тупик
-    "შესახვევი", //переулок
-    "გასასვლელი", //съезд
-    "აღმართი", //склон, подъем, спуск
-    "ხევი" //овраг
 )
 
 /**
@@ -124,11 +113,11 @@ fun ParseContext.trim(vararg availableFlags: ParsingFlags): ParseContext =
 fun ParseContext.moveStatusToBack(vararg availableFlags: ParsingFlags): ParseContext =
     modifyAndFlag { s, addedFlags ->
         //логика выполняется если содержится только один статус (исключаем 1 переулок 1 улицы)
-        if (statuses.count { s.contains(it) } > 1) return@modifyAndFlag s
+        if (STATUSES_SET.count { s.contains(it) } > 1) return@modifyAndFlag s
 
         Logging.info("4: $s")
 
-        val keywordsPattern = statuses.joinToString("|") { Regex.escape(it) }
+        val keywordsPattern = STATUSES_SET.joinToString("|") { Regex.escape(it) }
         Logging.info("5: $keywordsPattern")
         // Регулярное выражение ищет статус в начале строки
         val regex = """(?U)^($keywordsPattern)\b\s*(.*)""".toRegex(RegexOption.IGNORE_CASE)
@@ -263,7 +252,7 @@ fun toGeorgianGenitive(noun: String): String {
         'ო', 'უ' -> word + "ვის"
 
         // На случай, если слово передано в виде основы без окончания падежа
-      //  else -> word + "ის"
+        //  else -> word + "ის"
         else -> word
     }
 }
@@ -276,7 +265,7 @@ fun ParseContext.normalizeIdioms(vararg availableFlags: ParsingFlags): ParseCont
             .replace("ზ. გამსახურდია", "ზვიად გამსახურდია")
             .replace("ც. დადიანი", "ცოტნე დადიანი")
             .replace("ნ. ბარათაშვილი", "ნიკოლოზ ბარათაშვილი")
-           // .replace("პუშკინი", "ალექსანდრე პუშკინი")
+        // .replace("პუშკინი", "ალექსანდრე პუშკინი")
     }
 
 fun ParseContext.replace(oldVal: String, newVal: String, vararg availableFlags: ParsingFlags): ParseContext =

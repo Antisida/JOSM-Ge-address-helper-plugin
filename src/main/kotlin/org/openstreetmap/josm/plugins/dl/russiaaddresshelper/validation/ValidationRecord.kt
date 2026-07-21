@@ -3,7 +3,7 @@
 //import org.openstreetmap.josm.data.coor.EastNorth
 //import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.api.NSPDResponse
 //import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.api.N_ParsedAddresses
-//import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.api.ParsingFlags
+//import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.parsers.ParsingFlags
 //
 //data class ValidationRecord(
 //    val data: NSPDResponse,

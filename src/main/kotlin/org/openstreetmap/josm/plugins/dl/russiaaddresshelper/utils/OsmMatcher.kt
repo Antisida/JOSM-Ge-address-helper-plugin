@@ -1,4 +1,5 @@
-package org.openstreetmap.josm.plugins.dl.russiaaddresshelper.actions
+/*
+package org.openstreetmap.josm.plugins.dl.russiaaddresshelper.utils
 
 import org.openstreetmap.josm.data.osm.DataSet
 import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.parsers.napr.MatchScore
@@ -12,9 +13,11 @@ class OsmMatcher {
         return findBestMatchingAddress(query, getOsmStreetName(dataSet))
     }
 
-    /**
+    */
+/**
      * Ищет наиболее близкую строку из списка на основе весов MatchScore.
-     */
+     *//*
+
     fun findBestMatchingAddress(query: String, list: List<String>): String? {
         return list
             .mapNotNull { candidate ->
@@ -25,10 +28,12 @@ class OsmMatcher {
             ?.first
     }
 
-    /**
+    */
+/**
      * Вычисляет оценку схожести между кандидатом и запросом.
      * Возвращает null, если строки не соответствуют базовым правилам.
-     */
+     *//*
+
     fun getMatchScore(candidate: String, query: String): MatchScore? {
         val candWords = normalize(candidate)
         val queryWords = normalize(query)
@@ -47,9 +52,11 @@ class OsmMatcher {
         return calculateBestAlignment(smaller, larger)
     }
 
-    /**
+    */
+/**
      * Перебором находит наилучший вариант сопоставления слов меньшей строки с большей.
-     */
+     *//*
+
     private fun calculateBestAlignment(sWords: List<String>, lWords: List<String>): MatchScore? {
         val n = sWords.size
         val m = lWords.size
@@ -139,4 +146,4 @@ class OsmMatcher {
 
 
 
-}
+}*/

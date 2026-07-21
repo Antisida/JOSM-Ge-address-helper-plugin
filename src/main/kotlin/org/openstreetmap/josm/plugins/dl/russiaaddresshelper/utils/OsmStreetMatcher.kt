@@ -1,32 +1,103 @@
-package org.openstreetmap.josm.plugins.dl.russiaaddresshelper.actions
-import org.openstreetmap.josm.data.osm.DataSet
-import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.parsers.napr.findBestMatchingAddress
-import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.parsers.napr.getOsmStreetName
-import kotlin.math.abs
+package org.openstreetmap.josm.plugins.dl.russiaaddresshelper.utils
 
-    fun findBestMatchingAddressXXX(query: String, dataSet: DataSet) : String? {
-        return findBestMatch(query, getOsmStreetName(dataSet))
+import org.openstreetmap.josm.data.osm.DataSet
+import org.openstreetmap.josm.data.osm.OsmPrimitive
+import org.openstreetmap.josm.data.osm.OsmPrimitiveType
+import org.openstreetmap.josm.tools.Geometry.getDistance
+
+object OsmStreetMatcher {
+
+    data class MatchResult(val wordCountDiff: Int, val totalLevenshtein: Int)
+
+    //без расстояния (не используется)
+    fun findByName(dataSet: DataSet, query: String): String? {
+        return findBestMatch(query, dataSet.getOsmStreetName())
     }
 
-    fun main() {
-        val list = listOf(
-            "улица Михаила Лермонтова!", // +1 слово к запросу "улица Лермонтов" -> ПОДХОДИТ
-            "улица Лермонтова...",       // Равна по количеству слов -> ПОДХОДИТ
-            "Лермонтова"                 // Меньше запроса "улица Лермонтов" -> НЕ ПОДХОДИТ
-        )
+    fun findByNameAndDistance(dataSet: DataSet, query: String, building: OsmPrimitive, distance: Int): String? {
+        val byDistance: List<Triple<String, OsmPrimitive, MatchResult>> =
+            findBestMatch(dataSet.getNamedStreets(), query)
+                .filter { getDistance(building, it.second) < distance }
 
-        val query = "улица Лермонтов"
+        if (byDistance.isNotEmpty()) {
+            val best = byDistance.minWithOrNull(
+                compareBy<Triple<String, OsmPrimitive, MatchResult>> { it.third.wordCountDiff }
+                    .thenBy { it.third.totalLevenshtein }
+            )
+            //имя в osm
+            if (best != null) return best.first
+        }
+        return null
+    }
 
-        // В тесте "Лермонтова" (1 слово) отсеется сразу, так как она меньше запроса (2 слова)
-        println("Запрос: \"$query\"")
-        println("Найдено:  \"${findBestMatch(query, list)}\"")
-        // Ожидаемо выведет: "улица Лермонтова..." (так как у нее разница в словах 0, а у Михаила — 1)
+    private fun DataSet.getOsmStreetName(): List<String> {
+        return this.allNonDeletedCompletePrimitives()
+            .filter { p ->
+                p.hasKey("highway")
+                        && p.hasKey("name")
+                        && p.type == OsmPrimitiveType.WAY
+            }.flatMap {
+                listOfNotNull(it.get("name"), it.get("alt_name"), it.get("old_name"), it.get("short_name"))
+            }
+    }
+
+    private fun DataSet.getNamedStreets(): List<OsmPrimitive> {
+        return this.allNonDeletedCompletePrimitives()
+            .filter { p ->
+                p.hasKey("highway")
+                        && p.hasKey("name")
+                        && p.type == OsmPrimitiveType.WAY
+            }
     }
 
     /**
-     * Ищет самую близкую подходящую строку из списка. Тут  кандидат должен быть равен по длине запросу или быть длиннее ровно на 1 слово.
+     * @return: Лист найденных улиц. <имя в осм, вей, результат>
+     * Близкий OsmPrimitive (вей) по 'name', 'alt_name', 'old_name', 'short_name' или null
+     * кандидат должен быть равен по длине запросу или быть длиннее ровно на 1 слово,
+     * одно слово должно совпадать точно(статусная часть), другие могут отличаться на 1 символ
      */
-    fun findBestMatch(query: String, list: List<String>): String? {
+    private fun findBestMatch(
+        list: List<OsmPrimitive>,
+        query: String
+    ): List<Triple<String, OsmPrimitive, MatchResult>> {
+        val matches = list.mapNotNull { osmCandidateWay ->
+            val osmNameToMatchResult: Pair<String, MatchResult>? =
+                checkMatch(osmCandidateWay, query)
+            //имя в osm -- way с этим именем -- matchResult
+            if (osmNameToMatchResult != null) Triple(
+                osmNameToMatchResult.first,
+                osmCandidateWay,
+                osmNameToMatchResult.second
+            )
+            else null
+        }
+
+        return matches
+    }
+
+    /** @return: MatchResult для одного OsmPrimitive или null*/
+    private fun checkMatch(candidate: OsmPrimitive, query: String): Pair<String, MatchResult>? {
+        val names = listOfNotNull(
+            candidate.get("name"),
+            candidate.get("alt_name"),
+            candidate.get("old_name"),
+            candidate.get("short_name")
+        )
+        val candidateToResult: Pair<String, MatchResult>? = names.mapNotNull { candidate ->
+            val result = checkMatch(candidate, query)
+            if (result != null) candidate to result else null
+        }.minWithOrNull(
+            compareBy<Pair<String, MatchResult>> { it.second.wordCountDiff }
+                .thenBy { it.second.totalLevenshtein }
+        )
+        return candidateToResult
+    }
+
+    /**
+     * Ищет самую близкую подходящую строку из списка.
+     * Тут кандидат должен быть равен по длине запросу или быть длиннее ровно на 1 слово.
+     */
+    private fun findBestMatch(query: String, list: List<String>): String? {
         val matches = list.mapNotNull { candidate ->
             val result = checkMatch(candidate, query)
             if (result != null) candidate to result else null
@@ -38,9 +109,7 @@ import kotlin.math.abs
         )?.first
     }
 
-    data class MatchResult(val wordCountDiff: Int, val totalLevenshtein: Int)
-
-    fun cleanString(text: String): String {
+    private fun cleanString(text: String): String {
         return text.filter { it.isLetterOrDigit() || it.isWhitespace() }
     }
 
@@ -126,7 +195,7 @@ import kotlin.math.abs
         return MatchResult(wordCountDiff = diff, totalLevenshtein = totalLev)
     }
 
-    fun isForbiddenWord(word: String): Boolean {
+    private fun isForbiddenWord(word: String): Boolean {
         val clean = word.lowercase().trim('.', ',', '-', ' ')
         if (clean.any { it.isDigit() }) return true
 
@@ -134,7 +203,7 @@ import kotlin.math.abs
         return romanRegex.matches(clean)
     }
 
-    fun levenshtein(s1: String, s2: String): Int {
+    private fun levenshtein(s1: String, s2: String): Int {
         if (s1 == s2) return 0
         val dp = IntArray(s2.length + 1) { it }
         for (i in 1..s1.length) {
@@ -148,9 +217,6 @@ import kotlin.math.abs
         }
         return dp[s2.length]
     }
-
-
-
 
     fun filterUniqueStrings(list: List<String>): List<String> {
         // 1. Сортируем по длине строки (от коротких к длинным)
@@ -185,6 +251,7 @@ import kotlin.math.abs
         // Возвращаем только те строки, которые не попали в список на удаление
         return sorted.filter { it !in toRemove }
     }
+}
 
 
 

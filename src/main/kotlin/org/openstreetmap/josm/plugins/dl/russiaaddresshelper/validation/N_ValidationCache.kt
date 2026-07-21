@@ -3,15 +3,18 @@ package org.openstreetmap.josm.plugins.dl.russiaaddresshelper.validation
 import org.openstreetmap.josm.data.coor.EastNorth
 import org.openstreetmap.josm.data.coor.conversion.DecimalDegreesCoordinateFormat
 import org.openstreetmap.josm.data.osm.OsmPrimitive
-import org.openstreetmap.josm.data.osm.event.*
+import org.openstreetmap.josm.data.osm.event.AbstractDatasetChangedEvent
+import org.openstreetmap.josm.data.osm.event.DataChangedEvent
+import org.openstreetmap.josm.data.osm.event.DataSetListenerAdapter
+import org.openstreetmap.josm.data.osm.event.DatasetEventManager
+import org.openstreetmap.josm.data.osm.event.PrimitivesRemovedEvent
 import org.openstreetmap.josm.data.projection.Projections
 import org.openstreetmap.josm.gui.MainApplication
 import org.openstreetmap.josm.gui.layer.LayerManager
 import org.openstreetmap.josm.gui.layer.LayerManager.LayerChangeListener
 import org.openstreetmap.josm.gui.layer.LayerManager.LayerRemoveEvent
 import org.openstreetmap.josm.gui.layer.OsmDataLayer
-import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.api.N_ParsedAddresses
-import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.api.ParsingFlags
+import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.parsers.ParsingFlags
 
 
 class N_ValidationCache : DataSetListenerAdapter.Listener, LayerChangeListener {

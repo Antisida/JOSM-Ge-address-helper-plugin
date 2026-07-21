@@ -9,18 +9,11 @@ import org.openstreetmap.josm.data.Version
 import org.openstreetmap.josm.data.coor.EastNorth
 import org.openstreetmap.josm.data.coor.conversion.DecimalDegreesCoordinateFormat
 import org.openstreetmap.josm.data.projection.Projections
-import org.openstreetmap.josm.io.OsmTransferException
 import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.RussiaAddressHelperPlugin.Companion.versionInfo
 import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.settings.io.EgrnSettingsReader
-import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.settings.io.LayerShiftSettingsReader
 import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.settings.io.NaprSettingsReader
 import org.openstreetmap.josm.tools.Logging
-import java.net.MalformedURLException
-import java.net.URI
-import java.net.URL
-import kotlin.collections.mapOf
 
-//class NaprApi(/*private val url: String, private val userAgent: String, private val referer: String*/) {
 object NaprClient {
     //инициация клиента
     private val fuelClient = FuelManager().apply {
@@ -51,32 +44,12 @@ object NaprClient {
                 }
             )
 
-    //сделать приватным после рефакторинга клика
-    fun createRequest(coordinate: EastNorth/*, layer: NSPDLayer, bbox: BBox?*/): Request {
-//        val layerShiftCoordinate = getLayerShift(coordinate)
+    //todo сделать приватным после рефакторинга клика
+    fun createRequest(coordinate: EastNorth): Request {
         val (lonStr, latStr) = toLonLatString(coordinate)
         val formData = listOf("keyword" to "$lonStr,$latStr")
         Logging.info("keyword: $lonStr,$latStr")
         return fuelClient.request(Method.POST, "/map/portal/search", formData)
-    }
-    // Объединять ქალაქი ზუგდიდი , ქუჩა დ. შენგელაია , შესახვევი 1, N12  - г. Зугдиди, улица Д. Шенгелая, переулок 1, N12
-    // დ. შენგელაია -> დემნა შენგელაიას Демна Шенгелаия
-// ქალაქი - город
-    // მუნიციპალიტეტი - муниципалитет
-    // todo это недо убрать заполнять урл при создании фуэл клиента
-    // todo заменять сокращения,
-    // todo переставлять улицу в конец
-    // туду проверять "с" должна быть последней перед улецей
-    // удалять все внутри скобок ქალაქი ფოთი, შალვა ამირანაშვილის ქ N 3 (ყოფ. ორჯონიკიძის ქ N 3)
-    // туду сокращение წმინდა -> წმ. святой
-    // туду შესახვევი პირველი / შესახვევი ''პირველი'' ->  I შესახვევი  первый переулок
-    // туду ქალაქი ზუგდიდი , ქუჩა სხულუხია , შესახვევი I , N 21 - улица и переулок через запятую
-    private fun makeUrl(url: String/*, lat: String, lon: String*/): URL {
-        return try {
-            URI(url).toURL()
-        } catch (e: MalformedURLException) {
-            throw OsmTransferException(e)
-        }
     }
 
     private fun toLonLatString(coordinate: EastNorth): Pair<String, String> {
@@ -89,15 +62,4 @@ object NaprClient {
         return Pair(lon, lat)
     }
 
-
-    private fun getLayerShift(coordinate: EastNorth): EastNorth {
-//        Logging.info("RequestURL $coordinate")
-
-        val shiftLayerSetting = LayerShiftSettingsReader.LAYER_SHIFT_SOURCE
-
-        val shiftLayer = LayerShiftSettingsReader.getValidShiftLayer(shiftLayerSetting) ?: return coordinate
-        val subtract = coordinate.subtract(shiftLayer.displaySettings.displacement)
-//        Logging.info("RequestURL $subtract")
-        return subtract
-    }
 }
