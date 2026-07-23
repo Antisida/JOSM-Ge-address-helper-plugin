@@ -5,9 +5,9 @@
 В программе реализованы 4 действия 
 1. **запрос по клику** (он же "Пипетка") (`Запрос на месте клика`) <img height="16" src="src/main/resources/images/mapmode/g_click.svg" width="16"/>
    позволяет узнать адресную информацию в произвольной точке.
-2. **массовая загрузка адресов**  (`Для выделенных объектов`) <img height="16" src="src/main/resources/images/ge_select.svg" width="16"/>
-3. **удаление временных данных**   <img height="16" src="src/main/resources/images/ge_delete.svg" width="16"/>
-4. **проставление name:ru, name:ka, name:en c помощью словаря**  <img height="16" src="src/main/resources/images/ge_dist.svg" width="16"/>
+2. **массовая загрузка адресов**  (`Для выделенных объектов`) <img height="16" src="src/main/resources/images/g_select.svg" width="16"/>
+3. **удаление временных данных**   <img height="16" src="src/main/resources/images/g_delete.svg" width="16"/>
+4. **проставление name:ru, name:ka, name:en c помощью словаря**  <img height="16" src="src/main/resources/images/g_dict.svg" width="16"/>
     Ищет в словаре грузинских улица улицу по name и проставляет name:ru, name:ka, name:en если их нет
 
 Клик на карте отправляет координату запроса в NAPR, и, при получении не пустого ответа, пытается с помощью эвристик и регулярных выражений
