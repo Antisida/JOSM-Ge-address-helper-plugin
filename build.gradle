@@ -62,7 +62,7 @@ sourceSets {
 }
 
 josm {
-    pluginName = "ge-address-helper"
+    pluginName = "georgian-address-helper"
     debugPort = 1729
     josmCompileVersion = 18902
     manifest {
