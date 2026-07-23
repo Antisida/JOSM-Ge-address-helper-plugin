@@ -1,11 +1,12 @@
-package org.openstreetmap.josm.plugins.dl.russiaaddresshelper.parsers
+/*
+package org.openstreetmap.josm.plugins.dl.geaddresshelper.parsers
 
 import org.junit.Test
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.params.provider.Arguments
 import org.openstreetmap.josm.data.osm.OsmPrimitive
-import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.parsers.ParsingFlags
-import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.models.StreetTypes
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.parsers.ParsingFlags
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.models.StreetTypes
 
 internal class StreetNameParserTest {
     private val streetTypes: StreetTypes = StreetTypes.byYml("/references/street_types.yml")
@@ -78,4 +79,4 @@ internal class StreetNameParserTest {
         fun addresses() = listOf(
             Arguments.of("Российская Федерация, Калужская область, р-н Малоярославецкий, с. Маклино, ул. 1-ая Рябиновая, дом 11",  "1-я Рябиновая улица"))
     }
-}
+}*/

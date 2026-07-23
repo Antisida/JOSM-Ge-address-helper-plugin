@@ -1,5 +1,5 @@
 /*
-package org.openstreetmap.josm.plugins.dl.russiaaddresshelper.parsers
+package org.openstreetmap.josm.plugins.dl.geaddresshelper.parsers
 
 import org.junit.Test
 import org.junit.jupiter.api.Assertions.*
@@ -9,7 +9,7 @@ import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 import org.openstreetmap.josm.data.coor.EastNorth
 import org.openstreetmap.josm.data.osm.DataSet
-import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.api.ParsingFlags
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.api.ParsingFlags
 @Disabled
 internal class HouseNumberIParserTest {
     private val parser: HouseNumberParser = HouseNumberParser()

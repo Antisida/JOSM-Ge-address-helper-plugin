@@ -1,4 +1,4 @@
-package org.openstreetmap.josm.plugins.dl.russiaaddresshelper.parsers.napr
+package org.openstreetmap.josm.plugins.dl.geaddresshelper.parsers.napr
 import org.junit.jupiter.api.Test
 import kotlin.math.abs
 import kotlin.math.min

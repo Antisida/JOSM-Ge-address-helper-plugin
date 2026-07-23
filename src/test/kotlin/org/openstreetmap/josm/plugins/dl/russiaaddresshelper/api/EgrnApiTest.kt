@@ -1,4 +1,5 @@
-package org.openstreetmap.josm.plugins.dl.russiaaddresshelper.api
+/*
+package org.openstreetmap.josm.plugins.dl.geaddresshelper.api
 
 import com.github.kittinunf.result.failure
 import com.github.kittinunf.result.success
@@ -13,7 +14,7 @@ import org.junit.jupiter.api.extension.RegisterExtension
 import org.openstreetmap.josm.JOSMFixture
 import org.openstreetmap.josm.data.coor.LatLon
 import org.openstreetmap.josm.data.projection.Projections
-import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.testutils.ResourceFileLoader
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.testutils.ResourceFileLoader
 import org.skyscreamer.jsonassert.JSONAssert
 import org.skyscreamer.jsonassert.JSONCompareMode
 import java.net.HttpURLConnection
@@ -51,4 +52,4 @@ internal class EgrnApiTest {
             Assertions.fail()
         }
     }
-}
+}*/

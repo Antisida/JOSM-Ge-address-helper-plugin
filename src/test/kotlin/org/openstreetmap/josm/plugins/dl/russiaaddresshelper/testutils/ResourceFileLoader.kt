@@ -1,4 +1,4 @@
-package org.openstreetmap.josm.plugins.dl.russiaaddresshelper.testutils
+package org.openstreetmap.josm.plugins.dl.geaddresshelper.testutils
 
 import java.io.IOException
 import java.net.URISyntaxException

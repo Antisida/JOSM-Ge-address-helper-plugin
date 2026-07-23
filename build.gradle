@@ -7,8 +7,8 @@ plugins {
     id 'org.openstreetmap.josm' version '0.8.2'
 }
 
-group 'org.openstreetmap.josm.plugins.dl.russiaaddresshelper'
-version '0.9.6.7'
+group 'org.openstreetmap.josm.plugins.dl.geaddresshelper'
+version '0.3'
 
 repositories {
     mavenCentral()
@@ -66,10 +66,10 @@ josm {
     debugPort = 1729
     josmCompileVersion = 18902
     manifest {
-        description = "Плагин JOSM для загрузки адресов из ЕГРН "
-        mainClass = "org.openstreetmap.josm.plugins.dl.russiaaddresshelper.RussiaAddressHelperPlugin"
+        description = "Плагин JOSM для загрузки адресов из NAPR"
+        mainClass = "org.openstreetmap.josm.plugins.dl.geaddresshelper.GeAddressHelperPlugin"
         minJosmVersion = 17919
-        author = "Stepan I. and TakutoRU"
+        author = "Antisida"
         canLoadAtRuntime = true
         iconPath = "images/icon.svg"
     }

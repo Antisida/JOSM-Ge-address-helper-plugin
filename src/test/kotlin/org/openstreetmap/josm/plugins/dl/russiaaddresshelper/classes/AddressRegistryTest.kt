@@ -1,4 +1,4 @@
-package org.openstreetmap.josm.plugins.dl.russiaaddresshelper.classes
+package org.openstreetmap.josm.plugins.dl.geaddresshelper.classes
 
 
 import org.junit.jupiter.api.Assertions.*
@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test
 import org.openstreetmap.josm.JOSMFixture
 import org.openstreetmap.josm.data.coor.EastNorth
 import org.openstreetmap.josm.data.osm.Node
-import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.tools.AddressRegistry
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.AddressRegistry
 
 class AddressRegistryTest {
 

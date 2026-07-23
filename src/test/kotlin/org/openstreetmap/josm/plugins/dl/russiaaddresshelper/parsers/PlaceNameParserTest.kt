@@ -1,4 +1,5 @@
-package org.openstreetmap.josm.plugins.dl.russiaaddresshelper.parsers
+/*
+package org.openstreetmap.josm.plugins.dl.geaddresshelper.parsers
 
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -8,7 +9,7 @@ import org.openstreetmap.josm.JOSMFixture
 import org.openstreetmap.josm.data.coor.EastNorth
 import org.openstreetmap.josm.data.osm.Node
 import org.openstreetmap.josm.data.osm.OsmPrimitive
-import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.models.PlaceTypes
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.models.PlaceTypes
 @Disabled
 internal class PlaceNameParserTest {
     private val placeTypes: PlaceTypes = PlaceTypes.byYml("/references/place_types.yml")
@@ -65,4 +66,4 @@ internal class PlaceNameParserTest {
         node.put("name", name)
         return node
     }
-}
+}*/

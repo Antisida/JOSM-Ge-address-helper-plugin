@@ -1,4 +1,4 @@
-//package org.openstreetmap.josm.plugins.dl.russiaaddresshelper.parsers.napr
+//package org.openstreetmap.josm.plugins.dl.geaddresshelper.parsers.napr
 //
 //import org.apache.commons.text.similarity.JaroWinklerSimilarity
 //import org.junit.jupiter.api.Assertions.*

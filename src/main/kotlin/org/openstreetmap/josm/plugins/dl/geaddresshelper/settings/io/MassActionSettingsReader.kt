@@ -1,0 +1,31 @@
+package org.openstreetmap.josm.plugins.dl.geaddresshelper.settings.io
+
+
+import org.openstreetmap.josm.data.preferences.BooleanProperty
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.settings.model.MapStringListProperty
+
+class MassActionSettingsReader {
+    companion object {
+
+        /**
+         * Store list of maps of lists of tags to filter out when doing mass request.
+         * @since 0.9.4.8
+         */
+       val EGRN_MASS_ACTION_FILTER_LIST = MapStringListProperty(
+            "dl.geaddresshelper.mass.filtering_tag_map",
+            mapOf("fixme" to listOf("*"), "building" to listOf("garage","shed","roof","shack"), "addr:housenumber" to listOf("*"))
+         )
+
+        /**
+         * Determine secondary building info (building type, start date and so on) and change it when doing mass request.
+         * @since 0.9.4.8
+         */
+        val EGRN_MASS_ACTION_USE_EXT_ATTRIBUTES = BooleanProperty("dl.geaddresshelper.mass.use_extednded_attributes", true)
+
+        /**
+         * Hidden settings to enable old feature - select updated buildings after mass request. Conflicts with filtering, can cause hangup!
+         * @since 0.9.6.5
+         */
+        val EGRN_MASS_ACTION_SELECT_UPDATED_AFTER = BooleanProperty("dl.geaddresshelper.mass.select_updated", false)
+    }
+}

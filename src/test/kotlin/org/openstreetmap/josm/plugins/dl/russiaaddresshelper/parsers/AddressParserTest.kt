@@ -1,5 +1,5 @@
 /*
-package org.openstreetmap.josm.plugins.dl.russiaaddresshelper.parsers
+package org.openstreetmap.josm.plugins.dl.geaddresshelper.parsers
 
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeAll
@@ -14,7 +14,7 @@ import org.openstreetmap.josm.data.coor.EastNorth
 import org.openstreetmap.josm.data.osm.DataSet
 import org.openstreetmap.josm.data.osm.Node
 import org.openstreetmap.josm.data.osm.Way
-import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.api.ParsingFlags
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.api.ParsingFlags
 
 @Disabled
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)

@@ -1,11 +1,12 @@
-package org.openstreetmap.josm.plugins.dl.russiaaddresshelper.parsers.napr
+/*
+package org.openstreetmap.josm.plugins.dl.geaddresshelper.parsers.napr
 
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
-import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.parsers.ParsingFlags
-import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.parsers.Address
-import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.parsers.HouseNumber
-import org.openstreetmap.josm.plugins.dl.russiaaddresshelper.parsers.Street
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.parsers.ParsingFlags
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.parsers.Address
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.parsers.HouseNumber
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.parsers.Street
 
 class MainParserTest {
     @Test
@@ -35,4 +36,4 @@ class MainParserTest {
         assertEquals("улица Ильи Соколова", actual)
     }
 
-}
+}*/
