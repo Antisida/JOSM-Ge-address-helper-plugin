@@ -8,7 +8,7 @@ plugins {
 }
 
 group 'org.openstreetmap.josm.plugins.dl.geaddresshelper'
-version '0.3'
+version '0.5'
 
 repositories {
     mavenCentral()
@@ -71,6 +71,6 @@ josm {
         minJosmVersion = 17919
         author = "Antisida"
         canLoadAtRuntime = true
-        iconPath = "images/icon.svg"
+        iconPath = "images/flag_georgia.svg"
     }
 }

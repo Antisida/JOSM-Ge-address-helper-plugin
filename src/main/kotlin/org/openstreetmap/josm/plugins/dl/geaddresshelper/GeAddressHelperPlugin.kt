@@ -50,8 +50,8 @@ class GeAddressHelperPlugin(info: PluginInformation) : Plugin(info) {
   }
 
   companion object {
-    val ACTION_NAME = I18n.tr("Georgia address helper")!!
-    val ICON_NAME = "icon.svg"
+    val ACTION_NAME = I18n.tr("Georgian address helper")!!
+    val ICON_NAME = "flag_georgia.svg"
 
     lateinit var versionInfo: String
 
