@@ -22,7 +22,7 @@ class DeleteTmpAction :
     JosmAction(
         ACTION_NAME,
         ICON_NAME,
-        null,
+        "Delete temporary tags and objects",
         Shortcut.registerShortcut(
             "data:napr_delete",
             I18n.tr("Data: {0}", I18n.tr(ACTION_NAME)),

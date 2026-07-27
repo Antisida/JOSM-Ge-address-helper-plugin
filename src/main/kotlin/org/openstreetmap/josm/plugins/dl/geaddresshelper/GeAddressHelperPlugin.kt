@@ -18,6 +18,7 @@ import org.openstreetmap.josm.plugins.PluginInformation
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.actions.ClickAction
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.actions.DeleteTmpAction
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.actions.DictionaryAction
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.actions.NumberedStreetAction
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.actions.SelectAction
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.settings.io.CommonSettingsReader
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.settings.io.ValidationSettingsReader
@@ -68,6 +69,7 @@ class GeAddressHelperPlugin(info: PluginInformation) : Plugin(info) {
     val clickAction: ClickAction = ClickAction()
     val dictionaryAction: DictionaryAction = DictionaryAction()
     val deleteTmpAction: DeleteTmpAction = DeleteTmpAction()
+    val numberedStreetAction: NumberedStreetAction = NumberedStreetAction()
 
     fun runEgrnValidation(selection: Collection<OsmPrimitive?>) {
       val map = MainApplication.getMap()
@@ -319,6 +321,7 @@ class GeAddressHelperPlugin(info: PluginInformation) : Plugin(info) {
     subMenu.add(clickAction)
     subMenu.add(dictionaryAction)
     subMenu.add(deleteTmpAction)
+    subMenu.add(numberedStreetAction)
 
     menu.add(subMenu)
   }

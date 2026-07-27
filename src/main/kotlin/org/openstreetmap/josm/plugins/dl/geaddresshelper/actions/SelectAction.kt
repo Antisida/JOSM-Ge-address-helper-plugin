@@ -1,8 +1,5 @@
 package org.openstreetmap.josm.plugins.dl.geaddresshelper.actions
 
-import java.awt.event.ActionEvent
-import java.awt.event.KeyEvent
-import javax.swing.JOptionPane
 import kotlinx.coroutines.runBlocking
 import org.openstreetmap.josm.actions.JosmAction
 import org.openstreetmap.josm.command.AddCommand
@@ -41,12 +38,15 @@ import org.openstreetmap.josm.plugins.dl.geaddresshelper.validation.N_Validation
 import org.openstreetmap.josm.tools.I18n
 import org.openstreetmap.josm.tools.Logging
 import org.openstreetmap.josm.tools.Shortcut
+import java.awt.event.ActionEvent
+import java.awt.event.KeyEvent
+import javax.swing.JOptionPane
 
 class SelectAction :
     JosmAction(
         ACTION_NAME,
         ICON_NAME,
-        null,
+        "Get NAPR data for selected buildings",
         Shortcut.registerShortcut(
             "data:napr_selected",
             I18n.tr("Data: {0}", I18n.tr(ACTION_NAME)),

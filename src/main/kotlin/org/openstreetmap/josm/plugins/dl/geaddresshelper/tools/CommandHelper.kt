@@ -15,4 +15,20 @@ object CommandHelper {
         }
         return commands
     }
+
+    fun toChangeCommandsSimple(tags: Map<String, String>, osmPrimitives: List<OsmPrimitive>): List<Command> {
+        val commands: MutableList<Command> = mutableListOf()
+        for (osmPrimitive in osmPrimitives) {
+            toChangeCommandsSimple(tags, osmPrimitive).forEach { commands.add(it) }
+        }
+        return commands
+    }
+
+    fun toChangeCommandsSimple(tags: Map<String, String>, osmPrimitive: OsmPrimitive): List<Command> {
+        val commands: MutableList<Command> = mutableListOf()
+        for (tag in tags) {
+                commands.add(ChangePropertyCommand(osmPrimitive, tag.key, tag.value))
+        }
+        return commands
+    }
 }

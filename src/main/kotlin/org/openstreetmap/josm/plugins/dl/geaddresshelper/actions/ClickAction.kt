@@ -26,7 +26,7 @@ import java.awt.event.MouseEvent
 import javax.swing.SwingUtilities
 
 class ClickAction : MapMode(
-    ACTION_NAME, ICON_NAME, null, Shortcut.registerShortcut(
+    ACTION_NAME, ICON_NAME, "Get NAPR data for click location", Shortcut.registerShortcut(
         "data:napr_click", I18n.tr("Data: {0}", I18n.tr(ACTION_NAME)), KeyEvent.KEY_LOCATION_UNKNOWN, Shortcut.NONE
     ), ImageProvider.getCursor("crosshair", "create_note")
 ), KeyPressReleaseListener {

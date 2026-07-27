@@ -19,7 +19,7 @@ class DictionaryAction :
     JosmAction(
         ACTION_NAME,
         ICON_NAME,
-        null,
+        "Set the 'name:ka', 'name:ru','name:en' for streets from the dictionary",
         Shortcut.registerShortcut(
             "data:napr_dict",
             I18n.tr("Data: {0}", I18n.tr(ACTION_NAME)),
