@@ -8,9 +8,10 @@ import org.openstreetmap.josm.command.SequenceCommand
 import org.openstreetmap.josm.data.UndoRedoHandler
 import org.openstreetmap.josm.data.osm.DataSet
 import org.openstreetmap.josm.data.osm.OsmDataManager
+import org.openstreetmap.josm.data.osm.OsmPrimitive
+import org.openstreetmap.josm.data.osm.OsmPrimitiveType
 import org.openstreetmap.josm.gui.MainApplication
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.CommandHelper
-import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.dataset.getNamedStreets
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.validation.vocabulary.StreetDictionary
 import org.openstreetmap.josm.tools.I18n
 import org.openstreetmap.josm.tools.Shortcut
@@ -41,20 +42,25 @@ class DictionaryAction :
 
   override fun actionPerformed(e: ActionEvent?) {
     val dataSet: DataSet = OsmDataManager.getInstance().editDataSet ?: return
-    val namedStreet = dataSet.getNamedStreets()
+    val selectedStreets =
+        dataSet.selected.filter { p ->
+          p.hasKey("highway") && p.hasKey("name") && p.type == OsmPrimitiveType.WAY
+        }
     val commands: MutableList<Command> = mutableListOf()
-    for (street in namedStreet) {
+    val changed: MutableList<OsmPrimitive> = mutableListOf()
+    for (street in selectedStreets) {
       val name: String? = street.get("name")
       val nameKa: String? = street.get("name:ka")
       val nameEn: String? = street.get("name:en")
       val nameRu: String? = street.get("name:ru")
       if (nameKa == null || nameEn == null || nameRu == null) {
         val tags = mutableMapOf<String, String>()
-        val found = StreetDictionary.streets.get(name)
+        val found = StreetDictionary.streets[name]
         if (found != null) {
           if (nameKa == null) tags.put("name:ka", found.nameKa)
           if (nameEn == null) tags.put("name:en", found.nameEn)
           if (nameRu == null) tags.put("name:ru", found.nameRu)
+          changed.add(street)
         }
         val changeBuildingCommands = CommandHelper.toChangeCommands(tags, street)
         commands.addAll(changeBuildingCommands)
@@ -67,6 +73,7 @@ class DictionaryAction :
               commands,
           )
       UndoRedoHandler.getInstance().add(command)
+      dataSet.setSelected(changed)
     }
   }
 }
