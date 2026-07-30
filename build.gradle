@@ -8,7 +8,7 @@ plugins {
 }
 
 group 'org.openstreetmap.josm.plugins.dl.geaddresshelper'
-version '0.7'
+version '8'
 
 repositories {
     mavenCentral()
