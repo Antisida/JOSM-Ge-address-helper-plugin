@@ -23,6 +23,10 @@ import javax.swing.JScrollPane
 import javax.swing.JSpinner
 import javax.swing.JTextArea
 import javax.swing.SpinnerNumberModel
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.numberedstreet.GenType
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.numberedstreet.enName
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.numberedstreet.geName
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.numberedstreet.ruName
 
 class StreetNameDialog(owner: Frame, streetsSize: Int, buildingsSize: Int) :
     JDialog(owner, "Numbered street name generator", true) {
@@ -261,41 +265,17 @@ class StreetNameDialog(owner: Frame, streetsSize: Int, buildingsSize: Int) :
     val mainNum = getSelectedNumber(mainRadioButtons, mainCustomSpinner)
     val secNum = getSelectedNumber(secondaryRadioButtons, secondaryCustomSpinner)
 
-    val isMainType = typeMainRadio.isSelected
-    val isLaneType = typeLaneRadio.isSelected
-    val isDeadEndType = typeDeadEndRadio.isSelected
-
-    // --- 1. Georgian ---
-    val kaMainStr = if (mainNum == 1) "1-ლი ქუჩა" else "მე-$mainNum ქუჩის"
-    val kaFull =
+    val type =
         when {
-          isMainType -> if (mainNum == 1) "1-ლი ქუჩა" else "მე-$mainNum ქუჩა"
-          isLaneType -> "$kaMainStr ${toRoman(secNum)} შესახვევი"
-          isDeadEndType -> "$kaMainStr ${toRoman(secNum)} ჩიხი"
-          else -> ""
+          typeMainRadio.isSelected -> GenType.MAIN
+          typeLaneRadio.isSelected -> GenType.LANE
+          typeDeadEndRadio.isSelected -> GenType.DEAD_END
+          else -> throw IllegalArgumentException()
         }
 
-    // --- 2. English ---
-    val enMainSuffix = getEnglishOrdinalSuffix(mainNum)
-    val enSecSuffix = getEnglishOrdinalSuffix(secNum)
-    val enFull =
-        when {
-          isMainType -> "$mainNum$enMainSuffix Street"
-          isLaneType -> "$mainNum$enMainSuffix Street's $secNum$enSecSuffix Lane"
-          isDeadEndType -> "$mainNum$enMainSuffix Street's $secNum$enSecSuffix Dead End"
-          else -> ""
-        }
-
-    // --- 3. Russian ---
-    val ruMainStr = "$mainNum-я улица"
-    val ruMainGenitive = "$mainNum-й улицы"
-    val ruFull =
-        when {
-          isMainType -> ruMainStr
-          isLaneType -> "$secNum-й переулок $ruMainGenitive"
-          isDeadEndType -> "$secNum-й тупик $ruMainGenitive"
-          else -> ""
-        }
+    val kaFull = geName(mainNum, secNum, type)
+    val enFull = enName(mainNum, secNum, type)
+    val ruFull = ruName(mainNum, secNum, type)
 
     // Сборка текста
     val tagsText =
@@ -311,44 +291,6 @@ class StreetNameDialog(owner: Frame, streetsSize: Int, buildingsSize: Int) :
 
     tagsTextArea.text = tagsText
     addrStreetTextArea.text = addrText
-  }
-
-  private fun getEnglishOrdinalSuffix(n: Int): String {
-    if (n % 100 in 11..13) return "th"
-    return when (n % 10) {
-      1 -> "st"
-      2 -> "nd"
-      3 -> "rd"
-      else -> "th"
-    }
-  }
-
-  private fun toRoman(number: Int): String {
-    val romanNumerals =
-        listOf(
-//            1000 to "M",
-//            900 to "CM",
-//            500 to "D",
-//            400 to "CD",
-//            100 to "C",
-//            90 to "XC",
-            50 to "L",
-            40 to "XL",
-            10 to "X",
-            9 to "IX",
-            5 to "V",
-            4 to "IV",
-            1 to "I",
-        )
-    var n = number
-    val result = StringBuilder()
-    for ((value, numeral) in romanNumerals) {
-      while (n >= value) {
-        result.append(numeral)
-        n -= value
-      }
-    }
-    return result.toString()
   }
 
   private fun copyToClipboard(text: String) {
