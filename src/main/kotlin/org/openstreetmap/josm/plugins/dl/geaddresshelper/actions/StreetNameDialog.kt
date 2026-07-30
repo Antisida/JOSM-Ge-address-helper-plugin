@@ -44,10 +44,10 @@ class StreetNameDialog(owner: Frame, streetsSize: Int, buildingsSize: Int) :
   private val secondaryRadioButtons = mutableMapOf<Int, JRadioButton>()
   private val secondaryCustomSpinner = JSpinner(SpinnerNumberModel(11, 11, 50, 1))
 
-  private val tagsTextArea = JTextArea(5, 30)
+  private val tagsTextArea = JTextArea(4, 30)
   val waysCheckbox = JCheckBox("Apply to selected ways", false)
 
-  private val addrStreetTextArea = JTextArea(2, 30)
+  private val addrStreetTextArea = JTextArea(1, 30)
   val buildingsCheckbox = JCheckBox("Apply to selected buildings", false)
 
   // Результат, который можно забрать после закрытия диалога по OK
@@ -59,12 +59,12 @@ class StreetNameDialog(owner: Frame, streetsSize: Int, buildingsSize: Int) :
 
   init {
     defaultCloseOperation = DISPOSE_ON_CLOSE
-    layout = BorderLayout(10, 10)
+    layout = BorderLayout(2, 2)
 
     val mainPanel =
         JPanel().apply {
           layout = BoxLayout(this, BoxLayout.Y_AXIS)
-          border = BorderFactory.createEmptyBorder(10, 10, 10, 10)
+          border = BorderFactory.createEmptyBorder(2, 2, 2, 2)
         }
 
     // --- 1. Main street selection ---
@@ -73,18 +73,19 @@ class StreetNameDialog(owner: Frame, streetsSize: Int, buildingsSize: Int) :
         createNumberSelectorPanel(mainStreetGroup, mainRadioButtons, mainCustomSpinner)
             .leftAligned()
     )
-    mainPanel.add(Box.createVerticalStrut(10))
+//    mainPanel.add(Box.createVerticalStrut(10))
 
     // --- 2. Type selection ---
-    mainPanel.add(JLabel("Type:").apply { font = font.deriveFont(Font.BOLD) }.leftAligned())
+//    mainPanel.add(JLabel("Type:").apply { font = font.deriveFont(Font.BOLD) }.leftAligned())
     val typePanel =
-        JPanel(FlowLayout(FlowLayout.LEFT, 0, 5))
+        JPanel(FlowLayout(FlowLayout.LEFT, 0, 0))
             .apply {
               typeGroup.add(typeMainRadio)
               typeGroup.add(typeLaneRadio)
               typeGroup.add(typeDeadEndRadio)
               typeMainRadio.isSelected = true
 
+              add(JLabel("Type:").apply { font = font.deriveFont(Font.BOLD) }.leftAligned())
               add(typeMainRadio)
               add(typeLaneRadio)
               add(typeDeadEndRadio)
@@ -92,7 +93,7 @@ class StreetNameDialog(owner: Frame, streetsSize: Int, buildingsSize: Int) :
             .leftAligned()
 
     mainPanel.add(typePanel)
-    mainPanel.add(Box.createVerticalStrut(10))
+//    mainPanel.add(Box.createVerticalStrut(10))
 
     mainCustomSpinner.isEnabled = true
 
@@ -104,11 +105,11 @@ class StreetNameDialog(owner: Frame, streetsSize: Int, buildingsSize: Int) :
         createNumberSelectorPanel(secondaryGroup, secondaryRadioButtons, secondaryCustomSpinner)
             .leftAligned()
     )
-    mainPanel.add(Box.createVerticalStrut(15))
+//    mainPanel.add(Box.createVerticalStrut(15))
     secondaryCustomSpinner.isEnabled = true
 
     // --- 4. Tags Section ---
-    mainPanel.add(JLabel("Tags").apply { font = font.deriveFont(Font.BOLD) }.leftAligned())
+//    mainPanel.add(JLabel("Tags").apply { font = font.deriveFont(Font.BOLD) }.leftAligned())
     tagsTextArea.isEditable = false
     mainPanel.add(JScrollPane(tagsTextArea).leftAligned())
 
@@ -129,10 +130,10 @@ class StreetNameDialog(owner: Frame, streetsSize: Int, buildingsSize: Int) :
 
     mainPanel.add(copyTagsRow)
 
-    mainPanel.add(Box.createVerticalStrut(10))
+//    mainPanel.add(Box.createVerticalStrut(10))
 
     // --- 5. addr:street Section ---
-    mainPanel.add(JLabel("addr:street").apply { font = font.deriveFont(Font.BOLD) }.leftAligned())
+//    mainPanel.add(JLabel("addr:street").apply { font = font.deriveFont(Font.BOLD) }.leftAligned())
     addrStreetTextArea.isEditable = false
     mainPanel.add(JScrollPane(addrStreetTextArea).leftAligned())
 
@@ -198,7 +199,7 @@ class StreetNameDialog(owner: Frame, streetsSize: Int, buildingsSize: Int) :
       radioMap: MutableMap<Int, JRadioButton>,
       spinner: JSpinner,
   ): JPanel {
-    val panel = JPanel(FlowLayout(FlowLayout.LEFT, 5, 2))
+    val panel = JPanel(FlowLayout(FlowLayout.LEFT, 0, 0))
 
     for (i in 1..10) {
       val rb = JRadioButton(i.toString())
@@ -218,7 +219,7 @@ class StreetNameDialog(owner: Frame, streetsSize: Int, buildingsSize: Int) :
     radioMap[0] = customRb // 0 как маркер для Custom
 
     spinner.isEnabled = false
-    panel.add(JLabel("Custom: >10"))
+//    panel.add(JLabel(" >7"))
     panel.add(spinner)
 
     return panel
