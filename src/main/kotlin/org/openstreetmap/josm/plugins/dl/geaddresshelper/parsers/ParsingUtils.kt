@@ -115,10 +115,10 @@ fun ParseContext.moveStatusToBack(vararg availableFlags: ParsingFlags): ParseCon
         //логика выполняется если содержится только один статус (исключаем 1 переулок 1 улицы)
         if (STATUSES_SET.count { s.contains(it) } > 1) return@modifyAndFlag s
 
-        Logging.info("4: $s")
+//        Logging.info("4: $s")
 
         val keywordsPattern = STATUSES_SET.joinToString("|") { Regex.escape(it) }
-        Logging.info("5: $keywordsPattern")
+//        Logging.info("5: $keywordsPattern")
         // Регулярное выражение ищет статус в начале строки
         val regex = """(?U)^($keywordsPattern)\b\s*(.*)""".toRegex(RegexOption.IGNORE_CASE)
 
@@ -126,8 +126,8 @@ fun ParseContext.moveStatusToBack(vararg availableFlags: ParsingFlags): ParseCon
             availableFlags.getOrNull(0)?.let { addedFlags.add(it) }
             val keyword = matchResult.groupValues[1]
             val restOfString = matchResult.groupValues[2]
-            Logging.info("6: $keyword")
-            Logging.info("7: $restOfString")
+//            Logging.info("6: $keyword")
+//            Logging.info("7: $restOfString")
 
             if (restOfString.isNotEmpty()) {
                 //к римским цифрам не добавляем "ს"

@@ -47,7 +47,7 @@ class EgrnSettingsReader {
          * Property for limiting selection size for mass request.
          * @since 0.8.5.7
          */
-        val REQUEST_LIMIT_PER_SELECTION = IntegerProperty("dl.geaddresshelper.ppk.requestselection.limit", 100)
+        val REQUEST_LIMIT_PER_SELECTION = IntegerProperty("dl.geaddresshelper.ppk.requestselection.limit", 500)
 
         val NSPD_GET_FEATURE_REQUEST_URL = StringProperty(
             "dl.geaddresshelper.nspd.getfeature.url",

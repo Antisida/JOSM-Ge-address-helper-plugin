@@ -367,6 +367,9 @@ msgstr "ЕГРН нечеткое совпадение места"
 msgid "EGRN fuzzy match"
 msgstr "ЕГРН нечеткое совпадение"
 
+msgid "NAPR fuzzy match"
+msgstr "NAPR нечеткое совпадение"
+
 msgid "EGRN test for parsed place name fuzzy or without initials match with OSM"
 msgstr "ЕГРН валидатор на совпадение имени места по нечеткому алгоритму или без инициалов"
 

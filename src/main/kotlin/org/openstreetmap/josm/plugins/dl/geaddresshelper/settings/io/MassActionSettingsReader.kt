@@ -16,6 +16,11 @@ class MassActionSettingsReader {
             mapOf("fixme" to listOf("*"), "building" to listOf("garage","shed","roof","shack"), "addr:housenumber" to listOf("*"))
          )
 
+        val FILTER_LIST_ADDR = MapStringListProperty(
+            "dl.geaddresshelper.mass.filtering_tag_map",
+            mapOf("fixme" to listOf("*"), "building" to listOf("garage","shed","roof","shack"))
+        )
+
         /**
          * Determine secondary building info (building type, start date and so on) and change it when doing mass request.
          * @since 0.9.4.8

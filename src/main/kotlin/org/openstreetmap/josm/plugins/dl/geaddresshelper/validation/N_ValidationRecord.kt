@@ -1,12 +1,12 @@
 package org.openstreetmap.josm.plugins.dl.geaddresshelper.validation
 
 import org.openstreetmap.josm.data.coor.EastNorth
-import org.openstreetmap.josm.plugins.dl.geaddresshelper.parsers.Address
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.parsers.ParseResult
 
 data class N_ValidationRecord(
 //    val data: NSPDResponse,
     val coordinate: EastNorth, //fixme to del???
-    val address: Address,
+    val parseResult: ParseResult,
 //    val flags: Set<ParsingFlags>,
     val ignored: MutableSet<EGRNTestCode> = mutableSetOf(), //для исключения элемента из валидации после нажатия ИГНОРИРОВАТЬ
     val processed: MutableSet<EGRNTestCode> = mutableSetOf() //не понятно для чего

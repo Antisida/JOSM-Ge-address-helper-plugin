@@ -19,7 +19,8 @@ enum class EGRNTestCode(val code: Int, val message: String) {
     EGRN_ADDRESS_NOT_INSIDE_PLACE_POLY(8516, "EGRN outside of place boundary"),
     EGRN_PLACE_BOUNDARY_INCOMPLETE(8517, "EGRN place boundary incomplete"),
     EGRN_CONFLICTED_DATA(8518, "EGRN conflicted data"),
-    EGRN_CONTAINS_STOP_WORD(8519, "EGRN address contains stop words");
+    EGRN_CONTAINS_STOP_WORD(8519, "EGRN address contains stop words"),
+    NAPR_STREET_FUZZY_MATCHING(8507, "NAPR fuzzy match");
 
     //распознанный адрес уже присутствует в ОСМ или в загруженных данных (по удаленности?)
 

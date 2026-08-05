@@ -16,7 +16,7 @@ import org.openstreetmap.josm.tools.I18n
 import org.openstreetmap.josm.tools.Logging
 
 /**
- * ЕГРН нечеткое совпадение. Плагин сопоставил адрес с улицей или местом по алгоритму нечеткого совпадения,
+ * NAPR нечеткое совпадение. Плагин сопоставил адрес с улицей по алгоритму нечеткого совпадения,
  * и теперь надо убедиться, что это не ложное срабатывание.
  */
 
@@ -42,17 +42,17 @@ class NaprFuzzyStreetMatchingTest : Test(
         if (!p.isUsable) return
         if (parsedStreetToPrimitiveMap.isNotEmpty()) return
         GeAddressHelperPlugin.cache.responses.forEach { entry ->
-            Logging.info("EGRNFuzzyStreetMatchingTest entry: $entry")
+//            Logging.info("EGRNFuzzyStreetMatchingTest entry: $entry")
             val primitive: OsmPrimitive = entry.key
-            val address: Address = entry.value.address
-            Logging.info("address: $address")
+            val address: Address = entry.value.parseResult.parsedAddressList[0]
+//            Logging.info("address: $address")
             if (address.getValidatedFlags().contains(ParsingFlags.STREET_NAME_FUZZY_MATCH)
 //                && !primitive.hasTag("addr:street")
-                && !entry.value.isIgnored(EGRNTestCode.EGRN_STREET_FUZZY_MATCHING)
+                && !entry.value.isIgnored(EGRNTestCode.NAPR_STREET_FUZZY_MATCHING)
             ) {
-                Logging.info("XXXXX: $entry")
+//                Logging.info("XXXXX: $entry")
                 val parsedStreetName = address.parsedStreet.extractedName
-                val mostRelevantOsmName = "address.parsedStreet.mostRelevantOsmName"
+                val mostRelevantOsmName = entry.value.parseResult.matchStreet ?: ""
 //                val mostRelevantOsmName = address.parsedStreet.mostRelevantOsmName
                 var affectedPrimitives =
                     parsedStreetToPrimitiveMap.getOrDefault(
@@ -79,7 +79,7 @@ class NaprFuzzyStreetMatchingTest : Test(
             errorPrimitives.forEach {
                 GeAddressHelperPlugin.cache.markProcessed(
                     it,
-                    EGRNTestCode.EGRN_STREET_FUZZY_MATCHING
+                    EGRNTestCode.NAPR_STREET_FUZZY_MATCHING
                 )
             }
             val highlightPrimitives: List<OsmPrimitive> = errorPrimitives.mapNotNull { p ->
@@ -88,9 +88,9 @@ class NaprFuzzyStreetMatchingTest : Test(
             errors.add(
                 TestError.builder(
                     this, Severity.ERROR,
-                    EGRNTestCode.EGRN_STREET_FUZZY_MATCHING.code
+                    EGRNTestCode.NAPR_STREET_FUZZY_MATCHING.code
                 )
-                    .message(I18n.tr(EGRNTestCode.EGRN_STREET_FUZZY_MATCHING.message) + ": ${entry.key} " + " -> " + entry.value.second)
+                    .message(I18n.tr(EGRNTestCode.NAPR_STREET_FUZZY_MATCHING.message) + ": ${entry.key} " + " -> ${entry.value.second}")
                     .primitives(errorPrimitives)
                     .highlight(highlightPrimitives)
                     .build()
