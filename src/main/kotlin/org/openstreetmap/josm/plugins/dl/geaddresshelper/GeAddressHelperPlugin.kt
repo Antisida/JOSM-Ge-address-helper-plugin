@@ -20,6 +20,7 @@ import org.openstreetmap.josm.plugins.dl.geaddresshelper.actions.DeleteTmpAction
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.actions.DictionaryAction
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.actions.NumberedStreetAction
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.actions.SelectAction
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.numberstreetgenerator.NumGeneratorToggleDialog
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.settings.io.CommonSettingsReader
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.settings.io.ValidationSettingsReader
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.GeometryHelper
@@ -302,6 +303,11 @@ class GeAddressHelperPlugin(info: PluginInformation) : Plugin(info) {
 
     UploadAction.registerUploadHook(cleanPluginCacheHook, true)
     UploadAction.registerUploadHook(egrnUploadTagFilterHook, true)
+
+    if (newFrame != null) {
+      val numGenerator = NumGeneratorToggleDialog()
+      newFrame.addToggleDialog(numGenerator)
+    }
   }
 
   private fun menuInit(menu: JMenu) {

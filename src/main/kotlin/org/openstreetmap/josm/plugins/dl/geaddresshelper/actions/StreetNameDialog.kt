@@ -1,7 +1,6 @@
 package org.openstreetmap.josm.plugins.dl.geaddresshelper.actions
 
 import java.awt.BorderLayout
-import java.awt.Component
 import java.awt.FlowLayout
 import java.awt.Font
 import java.awt.Frame
@@ -14,7 +13,6 @@ import javax.swing.BoxLayout
 import javax.swing.ButtonGroup
 import javax.swing.JButton
 import javax.swing.JCheckBox
-import javax.swing.JComponent
 import javax.swing.JDialog
 import javax.swing.JLabel
 import javax.swing.JPanel
@@ -23,6 +21,7 @@ import javax.swing.JScrollPane
 import javax.swing.JSpinner
 import javax.swing.JTextArea
 import javax.swing.SpinnerNumberModel
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.leftAligned
 
 class StreetNameDialog(owner: Frame, streetsSize: Int, buildingsSize: Int) :
     JDialog(owner, "Numbered street name generator", true) {
@@ -73,10 +72,8 @@ class StreetNameDialog(owner: Frame, streetsSize: Int, buildingsSize: Int) :
         createNumberSelectorPanel(mainStreetGroup, mainRadioButtons, mainCustomSpinner)
             .leftAligned()
     )
-//    mainPanel.add(Box.createVerticalStrut(10))
 
     // --- 2. Type selection ---
-//    mainPanel.add(JLabel("Type:").apply { font = font.deriveFont(Font.BOLD) }.leftAligned())
     val typePanel =
         JPanel(FlowLayout(FlowLayout.LEFT, 0, 0))
             .apply {
@@ -93,7 +90,6 @@ class StreetNameDialog(owner: Frame, streetsSize: Int, buildingsSize: Int) :
             .leftAligned()
 
     mainPanel.add(typePanel)
-//    mainPanel.add(Box.createVerticalStrut(10))
 
     mainCustomSpinner.isEnabled = true
 
@@ -105,11 +101,9 @@ class StreetNameDialog(owner: Frame, streetsSize: Int, buildingsSize: Int) :
         createNumberSelectorPanel(secondaryGroup, secondaryRadioButtons, secondaryCustomSpinner)
             .leftAligned()
     )
-//    mainPanel.add(Box.createVerticalStrut(15))
     secondaryCustomSpinner.isEnabled = true
 
     // --- 4. Tags Section ---
-//    mainPanel.add(JLabel("Tags").apply { font = font.deriveFont(Font.BOLD) }.leftAligned())
     tagsTextArea.isEditable = false
     mainPanel.add(JScrollPane(tagsTextArea).leftAligned())
 
@@ -130,10 +124,7 @@ class StreetNameDialog(owner: Frame, streetsSize: Int, buildingsSize: Int) :
 
     mainPanel.add(copyTagsRow)
 
-//    mainPanel.add(Box.createVerticalStrut(10))
-
     // --- 5. addr:street Section ---
-//    mainPanel.add(JLabel("addr:street").apply { font = font.deriveFont(Font.BOLD) }.leftAligned())
     addrStreetTextArea.isEditable = false
     mainPanel.add(JScrollPane(addrStreetTextArea).leftAligned())
 
@@ -219,7 +210,6 @@ class StreetNameDialog(owner: Frame, streetsSize: Int, buildingsSize: Int) :
     radioMap[0] = customRb // 0 как маркер для Custom
 
     spinner.isEnabled = false
-//    panel.add(JLabel(" >7"))
     panel.add(spinner)
 
     return panel
@@ -327,12 +317,12 @@ class StreetNameDialog(owner: Frame, streetsSize: Int, buildingsSize: Int) :
   private fun toRoman(number: Int): String {
     val romanNumerals =
         listOf(
-//            1000 to "M",
-//            900 to "CM",
-//            500 to "D",
-//            400 to "CD",
-//            100 to "C",
-//            90 to "XC",
+            //            1000 to "M",
+            //            900 to "CM",
+            //            500 to "D",
+            //            400 to "CD",
+            //            100 to "C",
+            //            90 to "XC",
             50 to "L",
             40 to "XL",
             10 to "X",
@@ -356,14 +346,4 @@ class StreetNameDialog(owner: Frame, streetsSize: Int, buildingsSize: Int) :
     val clipboard = Toolkit.getDefaultToolkit().systemClipboard
     clipboard.setContents(StringSelection(text), null)
   }
-}
-
-private fun <T : JComponent> T.leftAligned(): T {
-  this.alignmentX = Component.LEFT_ALIGNMENT
-  return this
-}
-
-private fun <T : JComponent> T.rightAligned(): T {
-  this.alignmentX = Component.RIGHT_ALIGNMENT
-  return this
 }
