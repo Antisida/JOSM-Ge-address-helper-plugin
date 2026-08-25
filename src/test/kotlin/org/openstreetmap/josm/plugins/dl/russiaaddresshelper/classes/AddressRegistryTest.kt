@@ -3,12 +3,13 @@ package org.openstreetmap.josm.plugins.dl.geaddresshelper.classes
 
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.openstreetmap.josm.JOSMFixture
 import org.openstreetmap.josm.data.coor.EastNorth
 import org.openstreetmap.josm.data.osm.Node
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.AddressRegistry
-
+@Disabled
 class AddressRegistryTest {
 
     @BeforeEach

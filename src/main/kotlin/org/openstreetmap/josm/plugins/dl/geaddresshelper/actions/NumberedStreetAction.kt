@@ -1,20 +1,21 @@
 package org.openstreetmap.josm.plugins.dl.geaddresshelper.actions
 
+import java.awt.event.ActionEvent
+import java.awt.event.KeyEvent
 import org.openstreetmap.josm.actions.JosmAction
 import org.openstreetmap.josm.command.Command
 import org.openstreetmap.josm.command.SequenceCommand
 import org.openstreetmap.josm.data.UndoRedoHandler
 import org.openstreetmap.josm.data.osm.DataSet
-import org.openstreetmap.josm.data.osm.Node
 import org.openstreetmap.josm.data.osm.OsmDataManager
 import org.openstreetmap.josm.data.osm.OsmPrimitive
-import org.openstreetmap.josm.data.osm.OsmPrimitiveType
 import org.openstreetmap.josm.gui.MainApplication
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.CommandHelper
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.dataset.getBuildings
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.dataset.getStreets
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.toTags
 import org.openstreetmap.josm.tools.I18n
 import org.openstreetmap.josm.tools.Shortcut
-import java.awt.event.ActionEvent
-import java.awt.event.KeyEvent
 
 class NumberedStreetAction :
     JosmAction(
@@ -45,20 +46,6 @@ class NumberedStreetAction :
     showAndApply(dataSet.selected)
   }
 
-  /** @return Список highway, у которых заполнен тег name */
-  fun MutableCollection<OsmPrimitive>.getStreets(): List<OsmPrimitive> {
-    return this.filter { p ->
-      p.hasKey("highway") && p.type == OsmPrimitiveType.WAY
-    }
-  }
-
-  /** @return Список highway, у которых заполнен тег name */
-  fun MutableCollection<OsmPrimitive>.getBuildings(): List<OsmPrimitive> {
-    return this.filter { p ->
-      p !is Node && p.hasKey("building")
-    }
-  }
-
   fun showDialog(streetsSize: Int, buildingsSize: Int): Pair<Int, Map<String, String>> {
     val streetNameDialog =
         StreetNameDialog(MainApplication.getMainFrame(), streetsSize, buildingsSize)
@@ -72,20 +59,6 @@ class NumberedStreetAction :
           return Pair(10, toTags(streetNameDialog.resultTags))
     }
     return Pair(0, mapOf())
-  }
-
-  // todo переписать логики, чтобы из диалога возвращалась сразу мапа
-  fun toTags(tagsText: String?): Map<String, String> {
-    if (tagsText == null) return mapOf()
-    return tagsText
-        .trimIndent()
-        .lineSequence() // Построчный разбор
-        .map { it.trim() }
-        .filter { it.isNotEmpty() && it.contains("=") }
-        .associate { line ->
-          val (key, value) = line.split("=", limit = 2)
-          key.trim() to value.trim()
-        }
   }
 
   fun showAndApply(primitives: MutableCollection<OsmPrimitive>) {
