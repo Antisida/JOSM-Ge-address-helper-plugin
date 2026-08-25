@@ -21,14 +21,14 @@ import javax.swing.JScrollPane
 import javax.swing.JSpinner
 import javax.swing.JTextArea
 import javax.swing.SpinnerNumberModel
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.numberstreetgenerator.GenType
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.numberstreetgenerator.enName
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.numberstreetgenerator.geName
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.numberstreetgenerator.ruName
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.leftAligned
-import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.numberedstreet.GenType
-import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.numberedstreet.enName
-import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.numberedstreet.geName
-import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.numberedstreet.ruName
 
 class StreetNameDialog(owner: Frame, streetsSize: Int, buildingsSize: Int) :
-    JDialog(owner, "Numbered street name generator", true) {
+  JDialog(owner, "Numbered street name generator", true) {
   // элементы управления
   var isApproved: Boolean = false
     private set
@@ -65,33 +65,32 @@ class StreetNameDialog(owner: Frame, streetsSize: Int, buildingsSize: Int) :
     layout = BorderLayout(2, 2)
 
     val mainPanel =
-        JPanel().apply {
-          layout = BoxLayout(this, BoxLayout.Y_AXIS)
-          border = BorderFactory.createEmptyBorder(2, 2, 2, 2)
-        }
+      JPanel().apply {
+        layout = BoxLayout(this, BoxLayout.Y_AXIS)
+        border = BorderFactory.createEmptyBorder(2, 2, 2, 2)
+      }
 
     // --- 1. Main street selection ---
     mainPanel.add(JLabel("Main street:").apply { font = font.deriveFont(Font.BOLD) }.leftAligned())
     mainPanel.add(
-        createNumberSelectorPanel(mainStreetGroup, mainRadioButtons, mainCustomSpinner)
-            .leftAligned()
+      createNumberSelectorPanel(mainStreetGroup, mainRadioButtons, mainCustomSpinner).leftAligned()
     )
 
     // --- 2. Type selection ---
     val typePanel =
-        JPanel(FlowLayout(FlowLayout.LEFT, 0, 0))
-            .apply {
-              typeGroup.add(typeMainRadio)
-              typeGroup.add(typeLaneRadio)
-              typeGroup.add(typeDeadEndRadio)
-              typeMainRadio.isSelected = true
+      JPanel(FlowLayout(FlowLayout.LEFT, 0, 0))
+        .apply {
+          typeGroup.add(typeMainRadio)
+          typeGroup.add(typeLaneRadio)
+          typeGroup.add(typeDeadEndRadio)
+          typeMainRadio.isSelected = true
 
-              add(JLabel("Type:").apply { font = font.deriveFont(Font.BOLD) }.leftAligned())
-              add(typeMainRadio)
-              add(typeLaneRadio)
-              add(typeDeadEndRadio)
-            }
-            .leftAligned()
+          add(JLabel("Type:").apply { font = font.deriveFont(Font.BOLD) }.leftAligned())
+          add(typeMainRadio)
+          add(typeLaneRadio)
+          add(typeDeadEndRadio)
+        }
+        .leftAligned()
 
     mainPanel.add(typePanel)
 
@@ -99,11 +98,11 @@ class StreetNameDialog(owner: Frame, streetsSize: Int, buildingsSize: Int) :
 
     // --- 3. Secondary number selection ---
     mainPanel.add(
-        JLabel("Secondary number:").apply { font = font.deriveFont(Font.BOLD) }.leftAligned()
+      JLabel("Secondary number:").apply { font = font.deriveFont(Font.BOLD) }.leftAligned()
     )
     mainPanel.add(
-        createNumberSelectorPanel(secondaryGroup, secondaryRadioButtons, secondaryCustomSpinner)
-            .leftAligned()
+      createNumberSelectorPanel(secondaryGroup, secondaryRadioButtons, secondaryCustomSpinner)
+        .leftAligned()
     )
     secondaryCustomSpinner.isEnabled = true
 
@@ -112,19 +111,19 @@ class StreetNameDialog(owner: Frame, streetsSize: Int, buildingsSize: Int) :
     mainPanel.add(JScrollPane(tagsTextArea).leftAligned())
 
     val copyTagsBtn =
-        JButton("Copy tags")
-            .apply { addActionListener { copyToClipboard(tagsTextArea.text) } }
-            .leftAligned()
+      JButton("Copy tags")
+        .apply { addActionListener { copyToClipboard(tagsTextArea.text) } }
+        .leftAligned()
 
     waysCheckbox.isEnabled = streetsSize > 0
     val copyTagsRow =
-        Box.createHorizontalBox()
-            .apply {
-              add(copyTagsBtn)
-              add(Box.createHorizontalGlue()) // Расталкивает влево и вправо
-              add(waysCheckbox)
-            }
-            .leftAligned()
+      Box.createHorizontalBox()
+        .apply {
+          add(copyTagsBtn)
+          add(Box.createHorizontalGlue()) // Расталкивает влево и вправо
+          add(waysCheckbox)
+        }
+        .leftAligned()
 
     mainPanel.add(copyTagsRow)
 
@@ -133,19 +132,19 @@ class StreetNameDialog(owner: Frame, streetsSize: Int, buildingsSize: Int) :
     mainPanel.add(JScrollPane(addrStreetTextArea).leftAligned())
 
     val copyAddrBtn =
-        JButton("Copy addr")
-            .apply { addActionListener { copyToClipboard(addrStreetTextArea.text) } }
-            .leftAligned()
+      JButton("Copy addr")
+        .apply { addActionListener { copyToClipboard(addrStreetTextArea.text) } }
+        .leftAligned()
 
     buildingsCheckbox.isEnabled = buildingsSize > 0
     val copyAddrRow =
-        Box.createHorizontalBox()
-            .apply {
-              add(copyAddrBtn)
-              add(Box.createHorizontalGlue()) // Расталкивает влево и вправо
-              add(buildingsCheckbox)
-            }
-            .leftAligned()
+      Box.createHorizontalBox()
+        .apply {
+          add(copyAddrBtn)
+          add(Box.createHorizontalGlue()) // Расталкивает влево и вправо
+          add(buildingsCheckbox)
+        }
+        .leftAligned()
 
     mainPanel.add(copyAddrRow)
 
@@ -153,28 +152,28 @@ class StreetNameDialog(owner: Frame, streetsSize: Int, buildingsSize: Int) :
 
     // --- Bottom OK / Cancel Panel ---
     val buttonPanel =
-        JPanel(FlowLayout(FlowLayout.RIGHT)).apply {
-          val okButton =
-              JButton("OK").apply {
-                addActionListener {
-                  isApproved = true
-                  resultTags = tagsTextArea.text
-                  resultAddrStreet = addrStreetTextArea.text
-                  dispose()
-                }
-              }
-          val cancelButton =
-              JButton("Cancel").apply {
-                addActionListener {
-                  isApproved = false
-                  resultTags = null
-                  resultAddrStreet = null
-                  dispose()
-                }
-              }
-          add(okButton)
-          add(cancelButton)
-        }
+      JPanel(FlowLayout(FlowLayout.RIGHT)).apply {
+        val okButton =
+          JButton("OK").apply {
+            addActionListener {
+              isApproved = true
+              resultTags = tagsTextArea.text
+              resultAddrStreet = addrStreetTextArea.text
+              dispose()
+            }
+          }
+        val cancelButton =
+          JButton("Cancel").apply {
+            addActionListener {
+              isApproved = false
+              resultTags = null
+              resultAddrStreet = null
+              dispose()
+            }
+          }
+        add(okButton)
+        add(cancelButton)
+      }
     add(buttonPanel, BorderLayout.SOUTH)
 
     // Подписываем слушатели событий
@@ -190,9 +189,9 @@ class StreetNameDialog(owner: Frame, streetsSize: Int, buildingsSize: Int) :
   }
 
   private fun createNumberSelectorPanel(
-      group: ButtonGroup,
-      radioMap: MutableMap<Int, JRadioButton>,
-      spinner: JSpinner,
+    group: ButtonGroup,
+    radioMap: MutableMap<Int, JRadioButton>,
+    spinner: JSpinner,
   ): JPanel {
     val panel = JPanel(FlowLayout(FlowLayout.LEFT, 0, 0))
 
@@ -204,12 +203,12 @@ class StreetNameDialog(owner: Frame, streetsSize: Int, buildingsSize: Int) :
     }
 
     val customRb =
-        JRadioButton()
-            .apply {
-              // Если выбран кастомный радио-баттон, активируем спиннер
-              addItemListener { e -> spinner.isEnabled = (e.stateChange == ItemEvent.SELECTED) }
-            }
-            .leftAligned()
+      JRadioButton()
+        .apply {
+          // Если выбран кастомный радио-баттон, активируем спиннер
+          addItemListener { e -> spinner.isEnabled = (e.stateChange == ItemEvent.SELECTED) }
+        }
+        .leftAligned()
     group.add(customRb)
     radioMap[0] = customRb // 0 как маркер для Custom
 
@@ -257,12 +256,12 @@ class StreetNameDialog(owner: Frame, streetsSize: Int, buildingsSize: Int) :
     val secNum = getSelectedNumber(secondaryRadioButtons, secondaryCustomSpinner)
 
     val type =
-        when {
-          typeMainRadio.isSelected -> GenType.MAIN
-          typeLaneRadio.isSelected -> GenType.LANE
-          typeDeadEndRadio.isSelected -> GenType.DEAD_END
-          else -> throw IllegalArgumentException()
-        }
+      when {
+        typeMainRadio.isSelected -> GenType.MAIN
+        typeLaneRadio.isSelected -> GenType.LANE
+        typeDeadEndRadio.isSelected -> GenType.DEAD_END
+        else -> throw IllegalArgumentException()
+      }
 
     val kaFull = geName(mainNum, secNum, type)
     val enFull = enName(mainNum, secNum, type)
@@ -270,56 +269,18 @@ class StreetNameDialog(owner: Frame, streetsSize: Int, buildingsSize: Int) :
 
     // Сборка текста
     val tagsText =
-        """
+      """
             name=$kaFull
             name:ka=$kaFull
             name:en=$enFull
             name:ru=$ruFull
         """
-            .trimIndent()
+        .trimIndent()
 
     val addrText = "addr:street=$kaFull"
 
     tagsTextArea.text = tagsText
     addrStreetTextArea.text = addrText
-  }
-
-  private fun getEnglishOrdinalSuffix(n: Int): String {
-    if (n % 100 in 11..13) return "th"
-    return when (n % 10) {
-      1 -> "st"
-      2 -> "nd"
-      3 -> "rd"
-      else -> "th"
-    }
-  }
-
-  private fun toRoman(number: Int): String {
-    val romanNumerals =
-        listOf(
-            //            1000 to "M",
-            //            900 to "CM",
-            //            500 to "D",
-            //            400 to "CD",
-            //            100 to "C",
-            //            90 to "XC",
-            50 to "L",
-            40 to "XL",
-            10 to "X",
-            9 to "IX",
-            5 to "V",
-            4 to "IV",
-            1 to "I",
-        )
-    var n = number
-    val result = StringBuilder()
-    for ((value, numeral) in romanNumerals) {
-      while (n >= value) {
-        result.append(numeral)
-        n -= value
-      }
-    }
-    return result.toString()
   }
 
   private fun copyToClipboard(text: String) {

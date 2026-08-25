@@ -1,4 +1,4 @@
-package org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.numberedstreet
+package org.openstreetmap.josm.plugins.dl.geaddresshelper.numberstreetgenerator
 
 enum class GenType {MAIN, LANE, DEAD_END}
 
