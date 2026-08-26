@@ -1,4 +1,5 @@
 package org.openstreetmap.josm.plugins.dl.geaddresshelper.tools
+
 // todo переписать логики, чтобы из диалога возвращалась сразу мапа
 fun toTags(tagsText: String?): Map<String, String> {
   if (tagsText == null) return mapOf()
