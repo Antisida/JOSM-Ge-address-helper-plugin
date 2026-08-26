@@ -1,5 +1,31 @@
 package org.openstreetmap.josm.plugins.dl.geaddresshelper.numberstreetgenerator
 
+import org.openstreetmap.josm.actions.JosmAction
+import org.openstreetmap.josm.command.Command
+import org.openstreetmap.josm.command.SequenceCommand
+import org.openstreetmap.josm.data.UndoRedoHandler
+import org.openstreetmap.josm.data.osm.DataSelectionListener
+import org.openstreetmap.josm.data.osm.DataSet
+import org.openstreetmap.josm.data.osm.OsmDataManager
+import org.openstreetmap.josm.data.osm.OsmPrimitive
+import org.openstreetmap.josm.data.osm.OsmPrimitiveType
+import org.openstreetmap.josm.data.osm.Way
+import org.openstreetmap.josm.data.osm.event.AbstractDatasetChangedEvent
+import org.openstreetmap.josm.data.osm.event.DataChangedEvent
+import org.openstreetmap.josm.data.osm.event.DataSetListenerAdapter
+import org.openstreetmap.josm.data.osm.event.DatasetEventManager
+import org.openstreetmap.josm.data.osm.event.SelectionEventManager
+import org.openstreetmap.josm.data.osm.event.TagsChangedEvent
+import org.openstreetmap.josm.gui.MainApplication
+import org.openstreetmap.josm.gui.SideButton
+import org.openstreetmap.josm.gui.dialogs.ToggleDialog
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.CommandHelper
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.dataset.getBuildings
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.dataset.getStreets
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.leftAligned
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.toTags
+import org.openstreetmap.josm.tools.I18n
+import org.openstreetmap.josm.tools.Shortcut
 import java.awt.BorderLayout
 import java.awt.Dimension
 import java.awt.FlowLayout
@@ -16,38 +42,23 @@ import javax.swing.JPanel
 import javax.swing.JRadioButton
 import javax.swing.JScrollPane
 import javax.swing.JTextArea
-import org.openstreetmap.josm.actions.JosmAction
-import org.openstreetmap.josm.command.Command
-import org.openstreetmap.josm.command.SequenceCommand
-import org.openstreetmap.josm.data.UndoRedoHandler
-import org.openstreetmap.josm.data.osm.DataSelectionListener
-import org.openstreetmap.josm.data.osm.DataSet
-import org.openstreetmap.josm.data.osm.OsmDataManager
-import org.openstreetmap.josm.data.osm.OsmPrimitive
-import org.openstreetmap.josm.data.osm.event.SelectionEventManager
-import org.openstreetmap.josm.gui.SideButton
-import org.openstreetmap.josm.gui.dialogs.ToggleDialog
-import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.CommandHelper
-import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.dataset.getBuildings
-import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.dataset.getStreets
-import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.leftAligned
-import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.toTags
-import org.openstreetmap.josm.tools.I18n
-import org.openstreetmap.josm.tools.Shortcut
 
 class NumGeneratorToggleDialog : ToggleDialog(
     "Numbered street generator", "123.svg", "Numbered street generator!", null, 150,
-), DataSelectionListener {
+), DataSelectionListener, DataSetListenerAdapter.Listener {
+
+    //для активации кнопок при добавлении тега highway
+    private val dataChangedAdapter = DataSetListenerAdapter(this)
 
     private val typeGroup = ButtonGroup()
     private val typeMainRadio = JRadioButton("Main")
     private val typeLaneRadio = JRadioButton("Lane")
     private val typeDeadEndRadio = JRadioButton("Dead End")
 
-    /** Для веев */
+    /** Для улиц, заполняется теги name, name:ka, name:en, name:ru*/
     private val namesTextArea = JTextArea(4, 30)
 
-    /** Для зданий */
+    /** Для зданий, заполняется тегом addr:street */
     private val addrStreetTextArea = JTextArea(1, 30)
 
     private val applyStreetTagsAction = ApplyStreetTagsAction()
@@ -169,14 +180,12 @@ class NumGeneratorToggleDialog : ToggleDialog(
         false
     ) {
         override fun actionPerformed(e: ActionEvent?) {
-            val dataSet: DataSet = OsmDataManager.getInstance().editDataSet ?: return
-            val streets = dataSet.selected.getStreets()
-            if (streets.isNotEmpty()) {
-                val commands: MutableList<Command> = mutableListOf()
-                commands.addAll(CommandHelper.toChangeCommandsSimple(toTags(namesTextArea.text), streets))
-                val res: Command = SequenceCommand(I18n.tr("Added node from GeorgiaAddressHelper"), commands)
-                UndoRedoHandler.getInstance().add(res)
-            }
+            val streets = OsmDataManager.getInstance().editDataSet?.selected?.getStreets() ?: return
+            if (streets.isEmpty()) return
+
+            val commands = CommandHelper.toChangeCommandsSimple(toTags(namesTextArea.text), streets)
+            val sequenceCommand = SequenceCommand(I18n.tr("Added node from GeorgiaAddressHelper"), commands)
+            UndoRedoHandler.getInstance().add(sequenceCommand)
         }
     }
 
@@ -191,14 +200,12 @@ class NumGeneratorToggleDialog : ToggleDialog(
         false
     ) {
         override fun actionPerformed(e: ActionEvent?) {
-            val dataSet: DataSet = OsmDataManager.getInstance().editDataSet ?: return
-            val buildings = dataSet.selected.getBuildings()
-            if (buildings.isNotEmpty()) {
-                val commands: MutableList<Command> = mutableListOf()
-                commands.addAll(CommandHelper.toChangeCommandsSimple(toTags(addrStreetTextArea.text), buildings))
-                val res: Command = SequenceCommand(I18n.tr("Added node from GeorgiaAddressHelper"), commands)
-                UndoRedoHandler.getInstance().add(res)
-            }
+            val buildings = OsmDataManager.getInstance().editDataSet?.selected?.getBuildings() ?: return
+            if (buildings.isEmpty()) return
+
+            val commands = CommandHelper.toChangeCommandsSimple(toTags(addrStreetTextArea.text), buildings)
+            val sequenceCommand = SequenceCommand(I18n.tr("Added node from GeorgiaAddressHelper"), commands)
+            UndoRedoHandler.getInstance().add(sequenceCommand)
         }
     }
 
@@ -241,6 +248,7 @@ class NumGeneratorToggleDialog : ToggleDialog(
     override fun showNotify() {
         super.showNotify()
         SelectionEventManager.getInstance().addSelectionListener(this)
+        DatasetEventManager.getInstance().addDatasetListener(dataChangedAdapter, DatasetEventManager.FireMode.IMMEDIATELY)
     }
 
     @Override
@@ -264,4 +272,16 @@ class NumGeneratorToggleDialog : ToggleDialog(
         if (selection.getBuildings().isNotEmpty()) applyBuildingTagsAction.setEnabled(true)
         else applyBuildingTagsAction.setEnabled(false)
     }
+
+    /**  Нужен для активации кнопок при добавлении тега highway */
+    override fun processDatasetEvent(event: AbstractDatasetChangedEvent?) {
+        if (event !is TagsChangedEvent) return
+        val primitive = event.primitive ?: return
+        if (primitive.type != OsmPrimitiveType.WAY) return
+
+        if (event.primitive.hasKey("highway")) applyStreetTagsAction.setEnabled(true)
+        // здания добавляются чаще всего с помощью режима B, который не выделяет здания после добавления
+//        if (event.primitive.hasKey("building")) applyBuildingTagsAction.setEnabled(true)
+    }
+
 }
