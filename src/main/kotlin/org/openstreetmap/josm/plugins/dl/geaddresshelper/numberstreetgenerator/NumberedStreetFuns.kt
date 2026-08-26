@@ -1,21 +1,18 @@
 package org.openstreetmap.josm.plugins.dl.geaddresshelper.numberstreetgenerator
 
-enum class GenType {MAIN, LANE, DEAD_END}
+enum class GenType { MAIN, LANE, DEAD_END }
 
 fun geName(mainNum: Int, secNum: Int, type: GenType): String {
     val kaFull =
         when (type) {
-            GenType.MAIN -> {
-                if (mainNum == 1) "1-ლი ქუჩა" else if (mainNum < 21)"მე-$mainNum ქუჩა" else "$mainNum-ე ქუჩა"
-            }
+            GenType.MAIN -> if (mainNum == 1) "1-ლი ქუჩა" else if (mainNum < 21) "მე-$mainNum ქუჩა" else "$mainNum-ე ქუჩა"
             GenType.LANE -> {
-                val kaMainStr =
-                    if (mainNum == 1) "1-ლი ქუჩის" else if (mainNum < 21) "მე-$mainNum ქუჩის" else "$mainNum-ე ქუჩის"
+                val kaMainStr = if (mainNum == 1) "1-ლი ქუჩის" else if (mainNum < 21) "მე-$mainNum ქუჩის" else "$mainNum-ე ქუჩის"
                 "$kaMainStr ${toRoman(secNum)} შესახვევი"
             }
+
             GenType.DEAD_END -> {
-                val kaMainStr =
-                    if (mainNum == 1) "1-ლი ქუჩის" else if (mainNum < 21) "მე-$mainNum ქუჩის" else "$mainNum-ე ქუჩის"
+                val kaMainStr = if (mainNum == 1) "1-ლი ქუჩის" else if (mainNum < 21) "მე-$mainNum ქუჩის" else "$mainNum-ე ქუჩის"
                 "$kaMainStr ${toRoman(secNum)} ჩიხი"
             }
         }
