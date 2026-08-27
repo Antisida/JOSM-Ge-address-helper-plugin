@@ -1,12 +1,21 @@
+import proguard.gradle.ProGuardTask
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.guardsquare:proguard-gradle:7.6.0'
+    }
+}
 
 plugins {
     id 'java'
     id 'idea'
     id 'org.jetbrains.kotlin.jvm' version '2.2.21'
     id 'org.jetbrains.kotlinx.kover' version '0.9.9'
-//    id 'org.jetbrains.kotlin.plugin.serialization' version '2.2.21'
+    id 'org.jetbrains.kotlin.plugin.serialization' version '2.2.21'
     id 'org.openstreetmap.josm' version '0.8.2'
-    id 'com.google.devtools.ksp' version '2.3.10'
 }
 
 group 'org.openstreetmap.josm.plugins.dl.geaddresshelper'
@@ -25,17 +34,11 @@ java {
 dependencies {
     implementation 'org.jetbrains.kotlin:kotlin-stdlib:2.2.21'
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0'
-//    implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0'
-//    implementation "com.charleskorn.kaml:kaml:0.104.0"
+    implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0'
 
-    implementation("com.squareup.moshi:moshi:1.15.2")
-    ksp ("com.squareup.moshi:moshi-kotlin-codegen:1.15.2")
-
-    packIntoJar 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0'
-//    packIntoJar 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0'
     packIntoJar 'org.jetbrains.kotlin:kotlin-stdlib:2.2.21'
-//    packIntoJar 'com.charleskorn.kaml:kaml:0.104.0'
-    packIntoJar 'com.squareup.moshi:moshi:1.15.2' //может отключить
+    packIntoJar 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0'
+    packIntoJar 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0'
 
     testImplementation 'junit:junit:4.13.1'
     testImplementation 'org.junit.vintage:junit-vintage-engine:5.8.2'
@@ -76,7 +79,6 @@ josm {
         canLoadAtRuntime = true
         iconPath = "images/flag_georgia.svg"
     }
-
 }
 
 tasks.named('runJosm') {
@@ -84,4 +86,45 @@ tasks.named('runJosm') {
             "--add-opens=java.prefs/java.util.prefs=ALL-UNNAMED",
             "-Dfile.encoding=UTF-8"
     ]
+}
+
+//gradle clean shrinkPluginJar
+tasks.register('shrinkPluginJar', ProGuardTask) {
+    dependsOn tasks.named('jar')
+
+    injars tasks.named('jar').flatMap { it.archiveFile }
+    outjars layout.buildDirectory.file("dist/shrink/georgian-address-helper.jar")
+
+    // Загрузка JMODs JDK 17
+    File jmodsDir = new File(System.getProperty('java.home'), 'jmods')
+    if (jmodsDir.exists()) {
+        jmodsDir.listFiles().findAll { it.name.endsWith('.jmod') }.each { jmodFile ->
+            libraryjars(jmodFile, filter: '!module-info.class')
+        }
+    } else {
+        libraryjars "${System.getProperty('java.home')}/lib/modules(!module-info.class)"
+    }
+
+    libraryjars configurations.compileClasspath
+
+    dontobfuscate() // Отключаем обфускацию
+    dontoptimize()  // Отключает оптимизацию байт-кода
+    dontwarn()
+    dontnote()
+
+    keepdirectories()
+
+    keepattributes '*Annotation*,Signature,InnerClasses,EnclosingMethod,File*,RuntimeVisibleAnnotations,RuntimeVisibleParameterAnnotations'
+
+    // Защита внутренней механики Kotlin Coroutines и лямбд
+    keep 'class kotlinx.coroutines.** { *; }'
+    keep 'class kotlin.jvm.functions.** { *; }'
+    keep 'class kotlin.coroutines.** { *; }'
+
+    // Главная точка входа плагина JOSM
+    keep 'public class * extends org.openstreetmap.josm.plugins.Plugin { public <init>(...); }'
+
+    // Сохранение DTO kotlinx.serialization
+    keepclassmembers 'class * { @kotlinx.serialization.Serializable <fields>; }'
+    keep 'class * implements kotlinx.serialization.KSerializer'
 }
