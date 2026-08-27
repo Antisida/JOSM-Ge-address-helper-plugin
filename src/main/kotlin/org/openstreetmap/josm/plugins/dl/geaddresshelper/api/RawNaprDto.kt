@@ -1,10 +1,10 @@
 package org.openstreetmap.josm.plugins.dl.geaddresshelper.api
 
 import com.squareup.moshi.JsonClass
-import kotlinx.serialization.Serializable
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.TagCreator.STATUSES_AND_ABBR_SET
 
 @JsonClass(generateAdapter = true)
+//@kotlinx.serialization.Serializable
 data class RawNaprDto(
     // todo rename
     val status: Boolean?,
@@ -33,6 +33,7 @@ data class RawNaprDto(
 
 @SuppressWarnings("kotlin:S117")
 @JsonClass(generateAdapter = true)
+//@kotlinx.serialization.Serializable
 data class NaprResult(
     val id: Int?, //  10616182
     val name: String?, //  "20.42.09.560"
@@ -52,6 +53,7 @@ data class NaprResult(
 
 @SuppressWarnings("kotlin:S117")
 @JsonClass(generateAdapter = true)
+//@kotlinx.serialization.Serializable
 data class NaprDetails(
     val type: String?, //  "address"
     val mode: String?, //  "absolute"

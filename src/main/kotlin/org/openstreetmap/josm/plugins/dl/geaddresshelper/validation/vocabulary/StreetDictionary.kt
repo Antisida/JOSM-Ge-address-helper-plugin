@@ -1,10 +1,7 @@
 package org.openstreetmap.josm.plugins.dl.geaddresshelper.validation.vocabulary
 
-import org.openstreetmap.josm.plugins.dl.geaddresshelper.validation.vocabulary.StreetDictionary.streets
 import java.io.BufferedReader
 import java.io.InputStreamReader
-import kotlin.math.abs
-import kotlin.math.min
 
 object StreetDictionary {
     private const val FILE_NAME = "street-list/georgian_streets.csv"
