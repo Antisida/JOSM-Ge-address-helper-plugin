@@ -1,10 +1,6 @@
 package org.openstreetmap.josm.plugins.dl.geaddresshelper.api
 
-import com.github.kittinunf.fuel.core.FuelManager
-import com.github.kittinunf.fuel.core.Headers
-import com.github.kittinunf.fuel.core.Method
-import com.github.kittinunf.fuel.core.Request
-import com.github.kittinunf.fuel.moshi.moshiDeserializerOf
+import com.squareup.moshi.Moshi
 import org.openstreetmap.josm.data.Version
 import org.openstreetmap.josm.data.coor.EastNorth
 import org.openstreetmap.josm.data.coor.conversion.DecimalDegreesCoordinateFormat
@@ -12,43 +8,46 @@ import org.openstreetmap.josm.data.projection.Projections
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.GeAddressHelperPlugin.Companion.versionInfo
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.settings.io.EgrnSettingsReader
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.settings.io.NaprSettingsReader
-import org.openstreetmap.josm.tools.Logging
+import java.net.URI
+import java.net.http.HttpClient
+import java.net.http.HttpRequest
+import java.net.http.HttpResponse
+import java.time.Duration
+
 
 object NaprClient {
-    //инициация клиента
-    private val fuelClient = FuelManager().apply {
-        basePath = NaprSettingsReader.NAPR_URL_REQUEST.get()
-        timeoutReadInMillisecond = EgrnSettingsReader.REQUEST_TIMEOUT.get()
-        timeoutInMillisecond = EgrnSettingsReader.REQUEST_TIMEOUT.get()
+
+    private val moshi: Moshi by lazy { Moshi.Builder().build() }
+
+    private val httpClient: HttpClient by lazy {
+        HttpClient.newBuilder()
+            .connectTimeout(Duration.ofMillis(EgrnSettingsReader.REQUEST_TIMEOUT.get()?.toLong() ?: 3000)).build()
+    }
+
+    fun executeRequest(coordinate: EastNorth): RawNaprDto? = request(coordinate)
+
+    private fun request(coordinate: EastNorth): RawNaprDto? {
+        val (lonStr, latStr) = toLonLatString(coordinate)
         val userAgent = String.format(
             NaprSettingsReader.NAPR_REQUEST_USER_AGENT.get(),
             Version.getInstance().versionString,
             versionInfo
         )
-        baseHeaders = mapOf(
-            Headers.ACCEPT to "application/json; charset=UTF-8",
-            Headers.CONTENT_TYPE to "application/x-www-form-urlencoded; charset=UTF-8",
-            Headers.USER_AGENT to userAgent
-        )
-    }
-
-    fun executeRequest(coordinate: EastNorth): RawNaprDto? =
-        request(coordinate)
-            .responseObject(moshiDeserializerOf(RawNaprDto::class.java))
-            .third //Result
-            .fold(
-                success = { data -> data },
-                failure = { error ->
-                    Logging.error("Ошибка для координаты $coordinate: ${error.message}")
-                    null
-                }
-            )
-
-    private fun request(coordinate: EastNorth): Request {
-        val (lonStr, latStr) = toLonLatString(coordinate)
-        val formData = listOf("keyword" to "$lonStr,$latStr")
-        Logging.info("keyword: $lonStr,$latStr")
-        return fuelClient.request(Method.POST, "/map/portal/search", formData)
+        val request = HttpRequest.newBuilder()
+            .uri(URI.create(NaprSettingsReader.NAPR_URL_REQUEST.get() + "/map/portal/search"))
+            .header("Accept", "application/json; charset=UTF-8")
+            .header("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8")
+            .header("User-Agent", userAgent)
+            .timeout(Duration.ofMillis(EgrnSettingsReader.REQUEST_TIMEOUT.get()?.toLong() ?: 3000))
+            .POST(HttpRequest.BodyPublishers.ofString("keyword=$lonStr,$latStr"))
+            .build()
+        val response = httpClient.send(request, HttpResponse.BodyHandlers.ofString())
+        if (response.statusCode() != 200) {
+            return null
+        } else {
+//            Logging.info("response.body(): " + response.body().toString())
+            return moshi.adapter(RawNaprDto::class.java).fromJson(response.body().toString())
+        }
     }
 
     private fun toLonLatString(coordinate: EastNorth): Pair<String, String> {
