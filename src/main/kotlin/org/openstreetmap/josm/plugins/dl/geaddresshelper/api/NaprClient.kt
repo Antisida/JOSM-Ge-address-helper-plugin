@@ -4,7 +4,7 @@ import com.github.kittinunf.fuel.core.FuelManager
 import com.github.kittinunf.fuel.core.Headers
 import com.github.kittinunf.fuel.core.Method
 import com.github.kittinunf.fuel.core.Request
-import com.github.kittinunf.fuel.jackson.jacksonDeserializerOf
+import com.github.kittinunf.fuel.moshi.moshiDeserializerOf
 import org.openstreetmap.josm.data.Version
 import org.openstreetmap.josm.data.coor.EastNorth
 import org.openstreetmap.josm.data.coor.conversion.DecimalDegreesCoordinateFormat
@@ -34,7 +34,7 @@ object NaprClient {
 
     fun executeRequest(coordinate: EastNorth): RawNaprDto? =
         request(coordinate)
-            .responseObject<RawNaprDto>(jacksonDeserializerOf())
+            .responseObject(moshiDeserializerOf(RawNaprDto::class.java))
             .third //Result
             .fold(
                 success = { data -> data },
@@ -44,7 +44,6 @@ object NaprClient {
                 }
             )
 
-    //todo сделать приватным после рефакторинга клика
     private fun request(coordinate: EastNorth): Request {
         val (lonStr, latStr) = toLonLatString(coordinate)
         val formData = listOf("keyword" to "$lonStr,$latStr")
