@@ -12,7 +12,11 @@ import org.openstreetmap.josm.data.osm.OsmPrimitive
 import org.openstreetmap.josm.data.osm.OsmPrimitiveType
 import org.openstreetmap.josm.gui.MainApplication
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.CommandHelper
-import org.openstreetmap.josm.plugins.dl.geaddresshelper.validation.vocabulary.StreetDictionary
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.NAME_EN_TAG
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.NAME_KA_TAG
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.NAME_RU_TAG
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.NAME_TAG
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.vocabulary.StreetDictionary
 import org.openstreetmap.josm.tools.I18n
 import org.openstreetmap.josm.tools.Shortcut
 
@@ -29,51 +33,50 @@ class DictionaryAction :
         ),
         false,
     ) {
-  companion object {
-    val ACTION_NAME = I18n.tr("From dictionary")
-    val ICON_NAME = "g_dict.svg"
-  }
-
-  override fun updateEnabledState() {
-    isEnabled =
-        MainApplication.isDisplayingMapView() &&
-            MainApplication.getMap().mapView.isActiveLayerDrawable
-  }
-
-  override fun actionPerformed(e: ActionEvent?) {
-    val dataSet: DataSet = OsmDataManager.getInstance().editDataSet ?: return
-    val selectedStreets =
-        dataSet.selected.filter { p ->
-          p.hasKey("highway") && p.hasKey("name") && p.type == OsmPrimitiveType.WAY
-        }
-    val commands: MutableList<Command> = mutableListOf()
-    val changed: MutableList<OsmPrimitive> = mutableListOf()
-    for (street in selectedStreets) {
-      val name: String? = street.get("name")
-      val nameKa: String? = street.get("name:ka")
-      val nameEn: String? = street.get("name:en")
-      val nameRu: String? = street.get("name:ru")
-      if (nameKa == null || nameEn == null || nameRu == null) {
-        val tags = mutableMapOf<String, String>()
-        val found = StreetDictionary.streets[name]
-        if (found != null) {
-          if (nameKa == null) tags.put("name:ka", found.nameKa)
-          if (nameEn == null) tags.put("name:en", found.nameEn)
-          if (nameRu == null) tags.put("name:ru", found.nameRu)
-          changed.add(street)
-        }
-        val changeBuildingCommands = CommandHelper.toChangeCommands(tags, street)
-        commands.addAll(changeBuildingCommands)
-      }
+    companion object {
+        val ACTION_NAME = I18n.tr("From dictionary")
+        const val ICON_NAME = "g_dict.svg"
     }
-    if (commands.isNotEmpty()) {
-      val command: Command =
-          SequenceCommand(
-              I18n.tr("Added from GeorgiaAddressHelper"),
-              commands,
-          )
-      UndoRedoHandler.getInstance().add(command)
-      dataSet.setSelected(changed)
+
+    override fun updateEnabledState() {
+        isEnabled =
+            MainApplication.isDisplayingMapView() &&
+                    MainApplication.getMap().mapView.isActiveLayerDrawable
     }
-  }
+
+    override fun actionPerformed(e: ActionEvent?) {
+        val dataSet: DataSet = OsmDataManager.getInstance().editDataSet ?: return
+        val selectedStreets =
+            dataSet.selected.filter { p ->
+                p.type == OsmPrimitiveType.WAY
+                        && p.hasKey("highway")
+                        && (p.hasKey(NAME_TAG) || p.hasKey(NAME_KA_TAG) || p.hasKey(NAME_RU_TAG) || p.hasKey(NAME_EN_TAG))
+            }
+        val commands: MutableList<Command> = mutableListOf()
+        val changed: MutableList<OsmPrimitive> = mutableListOf()
+        for (street in selectedStreets) {
+            val name: String? = street.get(NAME_TAG)
+            val nameKa: String? = street.get(NAME_KA_TAG)
+            val nameEn: String? = street.get(NAME_EN_TAG)
+            val nameRu: String? = street.get(NAME_RU_TAG)
+            if (name == null || nameKa == null || nameEn == null || nameRu == null) {
+                val tags = mutableMapOf<String, String>()
+                val found = StreetDictionary.getFirstNotNullOrNull(name, nameKa, nameRu, nameEn)
+                if (found != null) {
+                    if (name == null) tags.put(NAME_TAG, found.name)
+                    if (nameKa == null) tags.put(NAME_KA_TAG, found.nameKa)
+                    if (nameEn == null) tags.put(NAME_EN_TAG, found.nameEn)
+                    if (nameRu == null) tags.put(NAME_RU_TAG, found.nameRu)
+                    changed.add(street)
+                }
+                val changeBuildingCommands = CommandHelper.toChangeCommands(tags, street)
+                commands.addAll(changeBuildingCommands)
+            }
+        }
+        if (commands.isNotEmpty()) {
+            val command: Command = SequenceCommand(I18n.tr("Added by GeorgiaAddressHelper"), commands)
+            UndoRedoHandler.getInstance().add(command)
+            dataSet.setSelected(changed)
+        }
+    }
 }
