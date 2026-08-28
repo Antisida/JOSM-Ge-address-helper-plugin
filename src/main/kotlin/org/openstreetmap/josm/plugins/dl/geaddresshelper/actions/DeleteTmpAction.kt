@@ -1,7 +1,5 @@
 package org.openstreetmap.josm.plugins.dl.geaddresshelper.actions
 
-import java.awt.event.ActionEvent
-import java.awt.event.KeyEvent
 import org.openstreetmap.josm.actions.JosmAction
 import org.openstreetmap.josm.command.ChangePropertyCommand
 import org.openstreetmap.josm.command.Command
@@ -9,15 +7,17 @@ import org.openstreetmap.josm.command.SequenceCommand
 import org.openstreetmap.josm.data.UndoRedoHandler
 import org.openstreetmap.josm.data.osm.DataSet
 import org.openstreetmap.josm.data.osm.OsmDataManager
+import org.openstreetmap.josm.data.osm.OsmPrimitive
 import org.openstreetmap.josm.gui.MainApplication
-import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.TEMP_TAGS
-import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.TagCreator.FIXME_TAG
-import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.TagCreator.REMOVE_ME
-import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.TempRemover
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.TempRemoverHelper
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.TempRemoverHelper.TEMP_TAGS
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.TempRemoverHelper.setToNull
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.dataset.containsTmpTags
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.dataset.getForDelete
 import org.openstreetmap.josm.tools.I18n
-import org.openstreetmap.josm.tools.Logging
 import org.openstreetmap.josm.tools.Shortcut
+import java.awt.event.ActionEvent
+import java.awt.event.KeyEvent
 
 class DeleteTmpAction :
     JosmAction(
@@ -32,54 +32,40 @@ class DeleteTmpAction :
         ),
         false,
     ) {
-  companion object {
-    val ACTION_NAME = I18n.tr("Delete temp")
-    const val ICON_NAME = "g_delete.svg"
-  }
-
-  override fun updateEnabledState() {
-    isEnabled =
-        MainApplication.isDisplayingMapView() &&
-            MainApplication.getMap().mapView.isActiveLayerDrawable
-  }
-
-  override fun actionPerformed(e: ActionEvent?) {
-    val dataSet: DataSet = OsmDataManager.getInstance().editDataSet ?: return
-    val commands: MutableList<Command> = mutableListOf()
-    val allPrimitives = dataSet.allNonDeletedCompletePrimitives().toList()
-    val forRemove = allPrimitives.filter { it.hasTag(FIXME_TAG, REMOVE_ME) }
-    val forDeleteDto = TempRemover.getForDelete(forRemove)
-    if (forDeleteDto != null) {
-      val delCommands = TempRemover.toDeleteCommands(forDeleteDto)
-      commands.addAll(delCommands)
+    companion object {
+        val ACTION_NAME = I18n.tr("Delete temp")
+        const val ICON_NAME = "g_delete.svg"
     }
-    if (commands.isNotEmpty()) {
-      val command: Command =
-          SequenceCommand(
-              I18n.tr("Deleted node from GeorgiaAddressHelper"),
-              commands,
-          )
-      UndoRedoHandler.getInstance().add(command)
-    }
-    if (dataSet.containsTmpTags()) {
-      val removeKeys =
-          SequenceCommand(
-              I18n.tr("Removed NAPR obsolete tags"),
-              ChangePropertyCommand(
-                  dataSet.allNonDeletedCompletePrimitives(),
-                  nullValueMap(),
-              ),
-          )
-      UndoRedoHandler.getInstance().add(removeKeys)
-      Logging.info("EGRN-PLUGIN Upload filter removed some unneeded tags")
-    }
-  }
 
-    private fun nullValueMap () : MutableMap<String, String?> {
-        val map: MutableMap<String, String?> = HashMap()
-        for (key in TEMP_TAGS) {
-            map[key] = null
+    override fun updateEnabledState() {
+        isEnabled =
+            MainApplication.isDisplayingMapView() &&
+                    MainApplication.getMap().mapView.isActiveLayerDrawable
+    }
+
+    override fun actionPerformed(e: ActionEvent?) {
+        val dataSet: DataSet = OsmDataManager.getInstance().editDataSet ?: return
+        val forDelete: List<OsmPrimitive> = dataSet.allNonDeletedCompletePrimitives().getForDelete()
+        if (forDelete.isNotEmpty()) {
+            // удаляем данные помеченные к удалению, вместе со связанными, из датасета
+            val (nodesToDelete, waysToDelete, relationsToDelete, nodesToNotUpload) = TempRemoverHelper.prepareData(forDelete)
+//            if (forDeleteDto != null) {
+            val delCommands: List<Command> =
+                TempRemoverHelper.toDeleteCommands(nodesToDelete, waysToDelete, relationsToDelete, nodesToNotUpload)
+            val command: Command = SequenceCommand(I18n.tr("Node deleted"), delCommands)
+            UndoRedoHandler.getInstance().add(command)
         }
-        return map
+
+        if (dataSet.containsTmpTags()) {
+            val removeTagsCommand =
+                SequenceCommand(
+                    I18n.tr("Temp tags removed"),
+                    ChangePropertyCommand(dataSet.allNonDeletedCompletePrimitives(), setToNull(TEMP_TAGS))
+                )
+            UndoRedoHandler.getInstance().add(removeTagsCommand)
+//            Logging.info("EGRN-PLUGIN Upload filter removed some unneeded tags")
+        }
     }
+
+
 }

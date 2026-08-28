@@ -24,8 +24,8 @@ import org.openstreetmap.josm.plugins.dl.geaddresshelper.numberstreetgenerator.N
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.settings.io.CommonSettingsReader
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.settings.io.ValidationSettingsReader
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.GeometryHelper
-import org.openstreetmap.josm.plugins.dl.geaddresshelper.uploadhooks.EGRNCleanPluginCache
-import org.openstreetmap.josm.plugins.dl.geaddresshelper.uploadhooks.EGRNUploadTagFilter
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.uploadhooks.PluginCacheCleaner
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.uploadhooks.UploadFilter
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.validation.N_ValidationCache
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.validation.NaprFuzzyStreetMatchingTest
 import org.openstreetmap.josm.tools.Geometry
@@ -47,8 +47,8 @@ class GeAddressHelperPlugin(info: PluginInformation) : Plugin(info) {
 
     val cache: N_ValidationCache = N_ValidationCache()
 
-    val egrnUploadTagFilterHook: EGRNUploadTagFilter = EGRNUploadTagFilter()
-    val cleanPluginCacheHook: EGRNCleanPluginCache = EGRNCleanPluginCache()
+    val uploadFilter: UploadFilter = UploadFilter()
+    val pluginCacheCleaner: PluginCacheCleaner = PluginCacheCleaner()
 
     var totalRequestsPerSession = 0L
     var totalSuccessRequestsPerSession = 0L
@@ -153,8 +153,8 @@ class GeAddressHelperPlugin(info: PluginInformation) : Plugin(info) {
     //        OsmValidator.addTest(EGRNStreetOrPlaceTooFarTest::class.java)
     //        OsmValidator.addTest(EGRNConflictedDataTest::class.java)
 
-    UploadAction.registerUploadHook(cleanPluginCacheHook, true)
-    UploadAction.registerUploadHook(egrnUploadTagFilterHook, true)
+    UploadAction.registerUploadHook(pluginCacheCleaner, true)
+    UploadAction.registerUploadHook(uploadFilter, true)
 
     if (newFrame != null) {
       val numGenerator = NumGeneratorToggleDialog()

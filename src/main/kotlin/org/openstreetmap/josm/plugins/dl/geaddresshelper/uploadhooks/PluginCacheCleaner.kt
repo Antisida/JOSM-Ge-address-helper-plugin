@@ -7,7 +7,7 @@ import org.openstreetmap.josm.plugins.dl.geaddresshelper.GeAddressHelperPlugin
 import org.openstreetmap.josm.tools.Logging
 
 
-class EGRNCleanPluginCache : UploadHook {
+class PluginCacheCleaner : UploadHook {
     override fun checkUpload(apiDataSet: APIDataSet): Boolean {
         val removedCount = GeAddressHelperPlugin.cache.size()
 //        if (CommonSettingsReader.EXPORT_PARSED_DATA_TO_CSV.get()) {

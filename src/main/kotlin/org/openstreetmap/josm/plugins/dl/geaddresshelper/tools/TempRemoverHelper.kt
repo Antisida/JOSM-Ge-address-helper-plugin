@@ -7,16 +7,33 @@ import org.openstreetmap.josm.data.osm.OsmPrimitive
 import org.openstreetmap.josm.data.osm.Relation
 import org.openstreetmap.josm.data.osm.Way
 
-object TempRemover {
+object TempRemoverHelper {
 
     data class ForDeleteDto(
         val nodesToDelete: MutableList<Node>,
         val waysToDelete: MutableList<Way>,
         val relationsToDelete: MutableList<Relation>,
-        val nodesToNotUpload: MutableList<Node>,
+        val nodesToNotUpload: MutableList<Node>
+    ) {
+        companion object {
+            fun empty(): ForDeleteDto {
+                return ForDeleteDto(mutableListOf(), mutableListOf(), mutableListOf(), mutableListOf())
+            }
+        }
+    }
+
+    val TEMP_TAGS: Collection<String> = setOf(
+        "warn:1",
+        "napr:addr:raw:1",
+        "napr:addr:raw:2",
+        "napr:addr:raw:3",
+        "napr:addr:raw:4",
+        "addr:GE:napr",
+        "napr:addr"
     )
 
-    fun getForDelete(toRemove: List<OsmPrimitive>): ForDeleteDto? {
+
+    fun prepareData(toRemove: List<OsmPrimitive>): ForDeleteDto {
         if (toRemove.isNotEmpty()) {
             // удаляем данные помеченные к удалению, вместе со связанными, из датасета
             val nodesToDelete = toRemove.filterIsInstance<Node>().toMutableList()
@@ -33,24 +50,22 @@ object TempRemover {
             waysToDelete.forEach { way -> allNodesToNotUpload.addAll(way.nodes.distinct()) }
             return ForDeleteDto(nodesToDelete, waysToDelete, relationsToDelete, allNodesToNotUpload)
         }
-        return null
+        return ForDeleteDto.empty()
     }
 
-    fun toDeleteCommands(forDelete: ForDeleteDto): List<Command> {
-        val commands = mutableListOf<Command>()
-        if (forDelete.relationsToDelete.isNotEmpty()) {
-            val removeRelationsCommand = DeleteCommand.delete(forDelete.relationsToDelete)
-            commands.add(removeRelationsCommand)
+    fun toDeleteCommands(vararg primitives: MutableList<out OsmPrimitive>): List<Command> {
+        val forDel = sequenceOf(*primitives)
+            .flatten()
+            .toList()
+        return listOf(DeleteCommand.delete(forDel, true, false))
+    }
+
+    fun setToNull(tagKeys: Collection<String>): MutableMap<String, String?> {
+        val map: MutableMap<String, String?> = HashMap()
+        for (key in tagKeys) {
+            map[key] = null
         }
-        if (forDelete.waysToDelete.isNotEmpty()) {
-            val removeWaysCommand = DeleteCommand.delete(forDelete.waysToDelete, true, false)
-            commands.add(removeWaysCommand)
-        }
-        if (forDelete.nodesToDelete.isNotEmpty()) {
-            val removeNodesCommand = DeleteCommand.delete(forDelete.nodesToDelete)
-            commands.add(removeNodesCommand)
-        }
-        return commands
+        return map
     }
 
 }
