@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
-import org.openstreetmap.josm.plugins.dl.geaddresshelper.numberstreetgenerator.GenType
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.numberstreetgenerator.StreetType
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.numberstreetgenerator.geName
 
 class NumberedStreetFunsTest {
@@ -21,7 +21,7 @@ class NumberedStreetFunsTest {
       "2, 2, DEAD_END, მე-2 ქუჩის II ჩიხი",
   )
   fun testGeName(first: Int, second: Int, typeName: String, expected: String) {
-    val actual = geName(first, second, GenType.valueOf(typeName))
+    val actual = geName(first, second, StreetType.valueOf(typeName))
     assertEquals(expected, actual)
   }
 

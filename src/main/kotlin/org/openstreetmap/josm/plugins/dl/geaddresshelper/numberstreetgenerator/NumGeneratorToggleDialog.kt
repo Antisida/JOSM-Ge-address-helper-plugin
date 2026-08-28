@@ -1,29 +1,22 @@
 package org.openstreetmap.josm.plugins.dl.geaddresshelper.numberstreetgenerator
 
 import org.openstreetmap.josm.actions.JosmAction
-import org.openstreetmap.josm.command.Command
 import org.openstreetmap.josm.command.SequenceCommand
 import org.openstreetmap.josm.data.UndoRedoHandler
 import org.openstreetmap.josm.data.osm.DataSelectionListener
-import org.openstreetmap.josm.data.osm.DataSet
 import org.openstreetmap.josm.data.osm.OsmDataManager
 import org.openstreetmap.josm.data.osm.OsmPrimitive
 import org.openstreetmap.josm.data.osm.OsmPrimitiveType
-import org.openstreetmap.josm.data.osm.Way
 import org.openstreetmap.josm.data.osm.event.AbstractDatasetChangedEvent
-import org.openstreetmap.josm.data.osm.event.DataChangedEvent
 import org.openstreetmap.josm.data.osm.event.DataSetListenerAdapter
 import org.openstreetmap.josm.data.osm.event.DatasetEventManager
 import org.openstreetmap.josm.data.osm.event.SelectionEventManager
 import org.openstreetmap.josm.data.osm.event.TagsChangedEvent
-import org.openstreetmap.josm.gui.MainApplication
 import org.openstreetmap.josm.gui.SideButton
 import org.openstreetmap.josm.gui.dialogs.ToggleDialog
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.CommandHelper
-import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.dataset.getBuildings
-import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.dataset.getStreets
-import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.leftAligned
-import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.toTags
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.funs.getBuildings
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.funs.getStreets
 import org.openstreetmap.josm.tools.I18n
 import org.openstreetmap.josm.tools.Shortcut
 import java.awt.BorderLayout
@@ -44,7 +37,7 @@ import javax.swing.JScrollPane
 import javax.swing.JTextArea
 
 class NumGeneratorToggleDialog : ToggleDialog(
-    "Numbered street generator", "123.svg", "Numbered street generator!", null, 150,
+    "Numbered street generator", "123.svg", "Numbered street generator!", null, 150
 ), DataSelectionListener, DataSetListenerAdapter.Listener {
 
     //для активации кнопок при добавлении тега highway
@@ -75,8 +68,7 @@ class NumGeneratorToggleDialog : ToggleDialog(
     private val secondaryNumberSelectorPanel = ResizedNumberSelectorPanel()
 
     init {
-        val mainPanel = JPanel()
-            .apply {
+        val mainPanel = JPanel().apply {
                 layout = BoxLayout(this, BoxLayout.Y_AXIS)
                 border = BorderFactory.createEmptyBorder(2, 2, 2, 2)
             }
@@ -85,8 +77,7 @@ class NumGeneratorToggleDialog : ToggleDialog(
         mainPanel.add(mainNumberSelectorPanel.leftAligned())
 
         // Type selection
-        val typePanel = JPanel(FlowLayout(FlowLayout.LEFT, 0, 0))
-            .apply {
+        val typePanel = JPanel(FlowLayout(FlowLayout.LEFT, 0, 0)).apply {
                 typeGroup.add(typeMainRadio)
                 typeGroup.add(typeLaneRadio)
                 typeGroup.add(typeDeadEndRadio)
@@ -97,8 +88,7 @@ class NumGeneratorToggleDialog : ToggleDialog(
                 add(typeLaneRadio)
                 add(typeDeadEndRadio)
                 maximumSize = Dimension(Int.MAX_VALUE, preferredSize.height)
-            }
-            .leftAligned()
+            }.leftAligned()
         mainPanel.add(typePanel)
 
         // --- 3. Secondary number selection ---
@@ -106,15 +96,15 @@ class NumGeneratorToggleDialog : ToggleDialog(
 
         // --- 4. Tags Section ---
         namesTextArea.isEditable = false
-        val namesScrollPane = JScrollPane(namesTextArea)
-            .apply { maximumSize = Dimension(Int.MAX_VALUE, preferredSize.height) } // запрет изменять высоту
-            .leftAligned()
+        val namesScrollPane =
+            JScrollPane(namesTextArea).apply { maximumSize = Dimension(Int.MAX_VALUE, preferredSize.height) } // запрет изменять высоту
+                .leftAligned()
         mainPanel.add(namesScrollPane)
 
         addrStreetTextArea.isEditable = false
-        val addrStreetScrollPane = JScrollPane(addrStreetTextArea)
-            .apply { maximumSize = Dimension(Int.MAX_VALUE, preferredSize.height) }  // запрет изменять высоту
-            .leftAligned()
+        val addrStreetScrollPane =
+            JScrollPane(addrStreetTextArea).apply { maximumSize = Dimension(Int.MAX_VALUE, preferredSize.height) }  // запрет изменять высоту
+                .leftAligned()
         mainPanel.add(addrStreetScrollPane)
 
         add(mainPanel, BorderLayout.CENTER)
@@ -145,9 +135,9 @@ class NumGeneratorToggleDialog : ToggleDialog(
         val secNum = secondaryNumberSelectorPanel.getSelectedNumber()
 
         val type = when {
-            typeMainRadio.isSelected -> GenType.MAIN
-            typeLaneRadio.isSelected -> GenType.LANE
-            typeDeadEndRadio.isSelected -> GenType.DEAD_END
+            typeMainRadio.isSelected -> StreetType.MAIN
+            typeLaneRadio.isSelected -> StreetType.LANE
+            typeDeadEndRadio.isSelected -> StreetType.DEAD_END
             else -> throw IllegalArgumentException()
         }
 
@@ -155,8 +145,7 @@ class NumGeneratorToggleDialog : ToggleDialog(
         val enFull = enName(mainNum, secNum, type)
         val ruFull = ruName(mainNum, secNum, type)
 
-        val tagsText =
-            """
+        val tagsText = """
             name=$kaFull
             name:ka=$kaFull
             name:en=$enFull
@@ -170,14 +159,9 @@ class NumGeneratorToggleDialog : ToggleDialog(
     }
 
     inner class ApplyStreetTagsAction : JosmAction(
-        "Apply name", "street_blue.svg", "Apply name to selected ways",
-        Shortcut.registerShortcut(
-            "data:napr_apply_addr_street",
-            "Apply name to selected ways",
-            KeyEvent.KEY_LOCATION_UNKNOWN,
-            Shortcut.NONE
-        ),
-        false
+        "Apply name", "street_blue.svg", "Apply name to selected ways", Shortcut.registerShortcut(
+            "data:napr_apply_addr_street", "Apply name to selected ways", KeyEvent.KEY_LOCATION_UNKNOWN, Shortcut.NONE
+        ), false
     ) {
         override fun actionPerformed(e: ActionEvent?) {
             val streets = OsmDataManager.getInstance().editDataSet?.selected?.getStreets() ?: return
@@ -190,14 +174,12 @@ class NumGeneratorToggleDialog : ToggleDialog(
     }
 
     inner class ApplyBuildingTagsAction : JosmAction(
-        "Apply addr:street", "building_blue.svg", "Apply addr:street to selected buildings",
-        Shortcut.registerShortcut(
+        "Apply addr:street", "building_blue.svg", "Apply addr:street to selected buildings", Shortcut.registerShortcut(
             "data:napr_apply_addr_street",
             "Apply addr:street to selected buildings",
             KeyEvent.KEY_LOCATION_UNKNOWN,
             Shortcut.NONE,
-        ),
-        false
+        ), false
     ) {
         override fun actionPerformed(e: ActionEvent?) {
             val buildings = OsmDataManager.getInstance().editDataSet?.selected?.getBuildings() ?: return
@@ -225,14 +207,12 @@ class NumGeneratorToggleDialog : ToggleDialog(
     }
 
     inner class CopyStreetTagsAction : JosmAction(
-        "Copy name", "street_grey.svg", "Copy street name",
-        Shortcut.registerShortcut(
+        "Copy name", "street_grey.svg", "Copy street name", Shortcut.registerShortcut(
             "data:napr_copy_name",
             "Copy name",
             KeyEvent.KEY_LOCATION_UNKNOWN,
             Shortcut.NONE,
-        ),
-        false
+        ), false
     ) {
         override fun actionPerformed(e: ActionEvent?) {
             copyToClipboard(namesTextArea.text)

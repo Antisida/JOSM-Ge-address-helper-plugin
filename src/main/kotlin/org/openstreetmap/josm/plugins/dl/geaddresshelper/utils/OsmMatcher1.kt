@@ -1,6 +1,6 @@
 package org.openstreetmap.josm.plugins.dl.geaddresshelper.utils
 import org.openstreetmap.josm.data.osm.DataSet
-import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.dataset.getAllStreetNames
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.funs.getAllStreetNames
 import kotlin.math.abs
 
 class OsmMatcher1 {

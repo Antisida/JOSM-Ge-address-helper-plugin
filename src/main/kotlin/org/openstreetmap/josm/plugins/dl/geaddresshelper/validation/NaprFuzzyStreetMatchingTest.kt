@@ -9,8 +9,8 @@ import org.openstreetmap.josm.data.validation.Test
 import org.openstreetmap.josm.data.validation.TestError
 import org.openstreetmap.josm.gui.widgets.JosmTextField
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.GeAddressHelperPlugin
-import org.openstreetmap.josm.plugins.dl.geaddresshelper.parsers.Address
-import org.openstreetmap.josm.plugins.dl.geaddresshelper.parsers.ParsingFlags
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.parsers.dto.Address
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.parsers.ParsingFlags
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.GeometryHelper
 import org.openstreetmap.josm.tools.I18n
 import org.openstreetmap.josm.tools.Logging

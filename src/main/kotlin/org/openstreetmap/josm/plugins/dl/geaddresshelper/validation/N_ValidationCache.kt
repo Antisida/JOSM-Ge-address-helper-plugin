@@ -14,7 +14,7 @@ import org.openstreetmap.josm.gui.layer.LayerManager
 import org.openstreetmap.josm.gui.layer.LayerManager.LayerChangeListener
 import org.openstreetmap.josm.gui.layer.LayerManager.LayerRemoveEvent
 import org.openstreetmap.josm.gui.layer.OsmDataLayer
-import org.openstreetmap.josm.plugins.dl.geaddresshelper.parsers.ParsingFlags
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.parsers.ParsingFlags
 
 
 class N_ValidationCache : DataSetListenerAdapter.Listener, LayerChangeListener {

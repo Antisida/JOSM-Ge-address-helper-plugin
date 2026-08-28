@@ -1,3 +1,4 @@
+/*
 package org.openstreetmap.josm.plugins.dl.geaddresshelper.tools
 
 import org.openstreetmap.josm.data.osm.event.*
@@ -85,4 +86,4 @@ class AddressRegistryCache : AddressRegistry(), DataSetListenerAdapter.Listener,
         return "${tags["addr:street"] ?: tags["addr:place"] ?: "NO_STREET_OR_PLACE"}, ${tags["addr:housenumber"]}"
     }
 
-}
+}*/

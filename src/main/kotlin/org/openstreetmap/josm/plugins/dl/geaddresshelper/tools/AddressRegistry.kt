@@ -1,3 +1,4 @@
+/*
 package org.openstreetmap.josm.plugins.dl.geaddresshelper.tools
 
 import org.openstreetmap.josm.data.osm.OsmPrimitive
@@ -144,4 +145,4 @@ open class AddressRegistry {
     protected fun addressChanged(oldKeys: Map<String, String>, newKeys: TagMap): Boolean {
         return oldKeys[HOUSE_KEY] !=newKeys[HOUSE_KEY] || oldKeys[STREET_KEY] != newKeys[STREET_KEY] || oldKeys[PLACE_KEY] != newKeys[PLACE_KEY]
     }
-}
+}*/

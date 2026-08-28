@@ -1,7 +1,7 @@
 package org.openstreetmap.josm.plugins.dl.geaddresshelper.validation
 
 import org.openstreetmap.josm.data.coor.EastNorth
-import org.openstreetmap.josm.plugins.dl.geaddresshelper.parsers.ParseResult
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.parsers.dto.ParseResult
 
 data class N_ValidationRecord(
 //    val data: NSPDResponse,
