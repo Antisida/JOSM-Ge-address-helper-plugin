@@ -131,14 +131,9 @@ private fun getSecondaryNum(text: String): Int? {
     // Ищем римское число перед ключевым словом типа (შესახვევი / ჩიხი)
     val romanRegex = """(?U)([IVXL]+)\s*(?:შესახვევი|ჩიხი)""".toRegex()
     val match = romanRegex.find(text)
-    if (match != null) {
-        val num = romanToInt(match.groupValues[1])
-        if (num > 0) return num
-        return null
-    } else {
-        // Если римской цифры нет, но тип не MAIN
-        return null
-    }
+    return match?.groupValues?.get(1)
+        ?.let(::romanToInt)
+        ?.takeIf { it > 0 }
 }
 
 private fun romanToInt(roman: String): Int {
