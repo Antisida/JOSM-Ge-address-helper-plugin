@@ -8,12 +8,12 @@ import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.TagCreator.REMOVE_
 import kotlin.collections.filter
 
 /** @return Список highway, у которых заполнен тег name */
-fun MutableCollection<OsmPrimitive>.getStreets(): List<OsmPrimitive> {
+fun Collection<OsmPrimitive>.getStreets(): List<OsmPrimitive> {
     return this.filter { p -> p.hasKey("highway") && p.type == OsmPrimitiveType.WAY }
 }
 
 /** @return Список highway, у которых заполнен тег name */
-fun MutableCollection<OsmPrimitive>.getBuildings(): List<OsmPrimitive> {
+fun Collection<OsmPrimitive>.getBuildings(): List<OsmPrimitive> {
     return this.filter { p -> p !is Node && p.hasKey("building") }
 }
 

@@ -84,3 +84,83 @@ private fun toRoman(number: Int): String {
     }
     return result.toString()
 }
+
+data class NumData(
+    val type: StreetType,
+    val mainNum: Int,
+    val secNum: Int? // null для MAIN типа
+)
+
+fun parseData(address: String): NumData? {
+    val text = address.trim()
+
+    // Определяем тип улицы по концу строки
+    val type = when {
+        text.endsWith("შესახვევი") -> StreetType.LANE
+        text.endsWith("ჩიხი") -> StreetType.DEAD_END
+        text.endsWith("ქუჩა") -> StreetType.MAIN
+        else -> return null // Неизвестный формат
+    }
+
+    // Извлекаем римскую цифру (для LANE и DEAD_END)
+    var secNum: Int? = null
+    if (type != StreetType.MAIN) {
+        secNum = getSecondaryNum(text) ?: return null
+    }
+
+    // Извлекаем основной номер (mainNum)
+    var mainNum: Int
+    if (type == StreetType.MAIN) {
+        // Паттерн для MAIN: ищем число и "-ლი", "-ე" или "მე-"
+        val mainRegex = """(?U)(?:მე-(\d+)|(\d+)(?:-ლი|-ე))""".toRegex()
+        val match = mainRegex.find(text)
+        if (match == null) return null
+        mainNum = match.groupValues[1].ifEmpty { match.groupValues[2] }.toInt()
+    } else {
+        // Для LANE и DEAD основной номер стоит перед "ქუჩის"
+        val laneRegex = """(?U)(?:მე-(\d+)|(\d+)(?:-ლი|-ე))\s*ქუჩის""".toRegex()
+        val match = laneRegex.find(text)
+        if (match == null) return null
+        mainNum = match.groupValues[1].ifEmpty { match.groupValues[2] }.toInt()
+    }
+
+    return NumData(type, mainNum, secNum)
+}
+
+private fun getSecondaryNum(text: String): Int? {
+    // Ищем римское число перед ключевым словом типа (შესახვევი / ჩიხი)
+    val romanRegex = """(?U)([IVXL]+)\s*(?:შესახვევი|ჩიხი)""".toRegex()
+    val match = romanRegex.find(text)
+    if (match != null) {
+        val num = romanToInt(match.groupValues[1])
+        if (num > 0) return num
+        return null
+    } else {
+        // Если римской цифры нет, но тип не MAIN
+        return null
+    }
+}
+
+private fun romanToInt(roman: String): Int {
+    val values = mapOf(
+        'I' to 1, 'V' to 5, 'X' to 10, 'L' to 50
+//        ,'C' to 100, 'D' to 500, 'M' to 1000
+    )
+
+    var result = 0
+    var prevValue = 0
+
+    // Проходим справа налево для корректной обработки вычитания (IV, IX)
+    for (i in roman.length - 1 downTo 0) {
+        val char = roman[i]
+        val value = values[char] ?: return -1 // Ошибка формата
+
+        if (value < prevValue) {
+            result -= value
+        } else {
+            result += value
+        }
+        prevValue = value
+    }
+    return result
+}

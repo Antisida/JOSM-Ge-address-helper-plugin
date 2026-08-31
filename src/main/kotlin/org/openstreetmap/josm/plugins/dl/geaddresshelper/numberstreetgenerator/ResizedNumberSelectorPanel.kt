@@ -43,13 +43,17 @@ class ResizedNumberSelectorPanel() : JPanel(FlowLayout(FlowLayout.LEFT, 0, 0)) {
             })
     }
 
-    fun getSelectedNumber(): Int {
+    fun getValue(): Int {
         for ((num, rb) in radioButtons) {
             if (rb.isSelected) {
                 return num
             }
         }
         return spinner.value as Int
+    }
+
+    fun setValue(value : Int) {
+        radioButtons[value]?.setSelected(true)
     }
 
     fun setupRadioButtonsListeners(updateAction: () -> Unit) {
@@ -68,7 +72,7 @@ class ResizedNumberSelectorPanel() : JPanel(FlowLayout(FlowLayout.LEFT, 0, 0)) {
     private fun updateCheckboxCount() {
         isProgrammaticChange = true
 
-        val selectedNumber = getSelectedNumber()
+        val selectedNumber = getValue()
 
         val w = this.width
         if (w <= 0) return

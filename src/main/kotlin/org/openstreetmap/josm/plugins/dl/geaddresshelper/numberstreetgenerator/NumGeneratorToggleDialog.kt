@@ -69,26 +69,26 @@ class NumGeneratorToggleDialog : ToggleDialog(
 
     init {
         val mainPanel = JPanel().apply {
-                layout = BoxLayout(this, BoxLayout.Y_AXIS)
-                border = BorderFactory.createEmptyBorder(2, 2, 2, 2)
-            }
+            layout = BoxLayout(this, BoxLayout.Y_AXIS)
+            border = BorderFactory.createEmptyBorder(2, 2, 2, 2)
+        }
 
         mainPanel.add(JLabel("Main street:").apply { font = font.deriveFont(Font.BOLD) }.leftAligned())
         mainPanel.add(mainNumberSelectorPanel.leftAligned())
 
         // Type selection
         val typePanel = JPanel(FlowLayout(FlowLayout.LEFT, 0, 0)).apply {
-                typeGroup.add(typeMainRadio)
-                typeGroup.add(typeLaneRadio)
-                typeGroup.add(typeDeadEndRadio)
-                typeMainRadio.isSelected = true
+            typeGroup.add(typeMainRadio)
+            typeGroup.add(typeLaneRadio)
+            typeGroup.add(typeDeadEndRadio)
+            typeMainRadio.isSelected = true
 
-                add(JLabel("Type:").apply { font = font.deriveFont(Font.BOLD) }.leftAligned())
-                add(typeMainRadio)
-                add(typeLaneRadio)
-                add(typeDeadEndRadio)
-                maximumSize = Dimension(Int.MAX_VALUE, preferredSize.height)
-            }.leftAligned()
+            add(JLabel("Type:").apply { font = font.deriveFont(Font.BOLD) }.leftAligned())
+            add(typeMainRadio)
+            add(typeLaneRadio)
+            add(typeDeadEndRadio)
+            maximumSize = Dimension(Int.MAX_VALUE, preferredSize.height)
+        }.leftAligned()
         mainPanel.add(typePanel)
 
         // --- 3. Secondary number selection ---
@@ -131,8 +131,8 @@ class NumGeneratorToggleDialog : ToggleDialog(
     }
 
     private fun updateGeneratedText() {
-        val mainNum = mainNumberSelectorPanel.getSelectedNumber()
-        val secNum = secondaryNumberSelectorPanel.getSelectedNumber()
+        val mainNum = mainNumberSelectorPanel.getValue()
+        val secNum = secondaryNumberSelectorPanel.getValue()
 
         val type = when {
             typeMainRadio.isSelected -> StreetType.MAIN
@@ -243,10 +243,39 @@ class NumGeneratorToggleDialog : ToggleDialog(
     }
 
     override fun selectionChanged(event: DataSelectionListener.SelectionChangeEvent) {
-        updateButtonState(event.selection)
+        val selection: Set<OsmPrimitive> = event.selection
+        updateButtonState(selection)
+        updateCheckboxState(selection)
     }
 
-    private fun updateButtonState(selection: MutableSet<OsmPrimitive>) {
+    private fun updateCheckboxState(selection: Set<OsmPrimitive>) {
+        val streetNames = selection.mapNotNull {
+            when {
+                it.hasKey("highway") -> it["name"]
+                it.hasKey("building") -> it["addr:street"]
+                else -> null
+            }
+        }.distinct()
+
+        if (streetNames.size == 1) {
+            val parseData = parseData(streetNames[0])
+            if (parseData != null) {
+                mainNumberSelectorPanel.setValue(parseData.mainNum)
+                if (parseData.secNum != null) {
+                    secondaryNumberSelectorPanel.setValue(parseData.secNum)
+                } else {
+                    secondaryNumberSelectorPanel.setValue(1)
+                }
+                when (parseData.type) {
+                    StreetType.MAIN -> typeMainRadio.isSelected = true
+                    StreetType.LANE -> typeLaneRadio.isSelected = true
+                    StreetType.DEAD_END -> typeDeadEndRadio.isSelected = true
+                }
+            }
+        }
+    }
+
+    private fun updateButtonState(selection: Set<OsmPrimitive>) {
         if (selection.getStreets().isNotEmpty()) applyStreetTagsAction.setEnabled(true)
         else applyStreetTagsAction.setEnabled(false)
         if (selection.getBuildings().isNotEmpty()) applyBuildingTagsAction.setEnabled(true)
