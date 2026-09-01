@@ -1,32 +1,36 @@
 package org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.parsers
 
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.TagCreator.PLACE_SET
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.parsers.dto.Address
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.parsers.dto.HouseNumber
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.parsers.dto.Street
-import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.TagCreator.STATUSES_AND_ABBR_SET
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.TagCreator.STREET_STATUS_AND_ABBR_SET
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.parsers.dto.Place
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.parsers.dto.SplitDto
+import org.openstreetmap.josm.tools.Logging
 
 object AddressParser {
 
-    fun parse(sourceFullString: String): Address {
-        val split = splitAddress(
-            sourceFullString
+    fun parse(sourceString: String): Address {
+        val (placeString, streetString, houseNumberString) = splitAddressNew(
+            sourceString
                 .removeParenthesesContent()
                 .insertMissingComma()
-                .removeCommasBetweenStatuses(STATUSES_AND_ABBR_SET.toList())
+                .removeCommasBetweenStatuses(STREET_STATUS_AND_ABBR_SET.toList())
         )
-        if (split.size == 2) {
-            val parsedStreet: Street = StreetParser.parse(split[0])
-            val parsedNumber: HouseNumber = HouseNumberParser.parse(split[1])
 
-            return Address(
-                sourceFullString,
-                parsedStreet,
-                parsedNumber,
-                mutableListOf(),
-                parsedStreet.isSuccess && parsedNumber.isSuccess
-            )
-        }
-        return Address(sourceFullString)
+        val place: Place = PlaceParser.parse(placeString) ?: Place("", "", mutableListOf(), false)
+        val street: Street = StreetParser.parse(streetString) ?: Street("", "", mutableListOf(), false)
+        val houseNumber: HouseNumber = HouseNumberParser.parse(houseNumberString) ?: HouseNumber("", "", listOf(), false)
+        Logging.info("sourceString $sourceString, street = ${street.extractedName}, hn = ${houseNumber.extractedNumber}")
+        return Address(
+            sourceString,
+            place,
+            street,
+            houseNumber,
+            mutableListOf(),
+            street.isSuccess && houseNumber.isSuccess
+        )
     }
 
     /**
@@ -52,7 +56,7 @@ object AddressParser {
 
         // Экранируем спецсимволы и собираем регулярное выражение для поиска слов
         val escapedWords = statuses.map { Regex.escape(it) }.joinToString("|")
-        val wordRegex = "(?U)\\b(?:$escapedWords)\\b".toRegex()
+        val wordRegex = """(?U)\b(?:$escapedWords)\b""".toRegex()
 
         // Находим все совпадения слов из списка в нашей строке
         val matches = wordRegex.findAll(this).toList()
@@ -73,17 +77,15 @@ object AddressParser {
             }
             result.append(char)
         }
-
         return result.toString()
     }
 
-    private fun splitAddress(preparedStr: String): List<String> {
-        return preparedStr
-            .split(",")
-            //тут отсекаются все, что не входит в статусы, например, участок
-            .filter { line -> "N" in line || STATUSES_AND_ABBR_SET.any { status -> status in line } } //todo не отсекаются ли номера без N? Есть ли такие?
-            .takeLast(2)
-            .map { it.trim() }
+    private fun splitAddressNew(string: String): SplitDto {
+        val list: List<String> = string.split(",")
+        val place: String? = list.filter { line -> PLACE_SET.any { status -> status in line } }.takeIf { it.size == 1 }?.get(0)
+        val street: String? = list.filter { line -> STREET_STATUS_AND_ABBR_SET.any { status -> status in line } }.takeIf { it.size == 1 }?.get(0)
+        val houseNumber: String? = list.filter { line -> "N" in line }.takeIf { it.isNotEmpty() }?.lastOrNull()
+        return SplitDto(place, street, houseNumber)
     }
 
 }

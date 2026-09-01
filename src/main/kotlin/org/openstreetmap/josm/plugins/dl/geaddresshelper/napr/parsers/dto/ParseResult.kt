@@ -14,13 +14,11 @@ data class ParseResult(
     var resultAction: ActionType? = null,
 ) {
 
-  fun getTags(): TagMap {
-    require(parsedAddressList.size == 1) { "Not applicable" }
-    return TagMap(
-        "addr:housenumber",
-        parsedAddressList.first().parsedHouseNumber.extractedNumber,
-        "addr:street",
-        matchStreet,
-    )
-  }
+    fun getTags(): TagMap {
+        require(parsedAddressList.size == 1) { "Not applicable" }
+        return TagMap(
+            "addr:housenumber", parsedAddressList.first().houseNumber.extractedNumber,
+            "addr:street", matchStreet,
+        )
+    }
 }

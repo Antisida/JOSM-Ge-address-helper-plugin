@@ -1,7 +1,7 @@
 package org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.api
 
 import kotlinx.serialization.Serializable
-import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.TagCreator.STATUSES_AND_ABBR_SET
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.TagCreator.STREET_STATUS_AND_ABBR_SET
 
 @Serializable
 data class RawNaprDto(
@@ -21,7 +21,7 @@ data class RawNaprDto(
                 ?.flatMap { listOfNotNull(it.descript, it.resulttext, it.name) }
                 ?.filter { it.isNotEmpty() }
                 ?.filter { line -> "N" in line } // todo не теряем ли мы номера без N
-                ?.filter { line -> STATUSES_AND_ABBR_SET.any { status -> status in line } }
+                ?.filter { line -> STREET_STATUS_AND_ABBR_SET.any { status -> status in line } }
             //    ?.filter { line -> !line.contains("ნაკვეთი") } //todo участок удалять при сплите
                 ?: emptyList()
         return allAddrStrings
@@ -30,6 +30,7 @@ data class RawNaprDto(
     fun getDataString(): List<String> {
         val allAddrStrings =
             result?.flatMap { listOfNotNull(it.descript, it.resulttext, it.name) }
+                ?.filter { line -> line.any { it.isLetter() } } //удаляем строки типа "22.28.05.054"
                 ?: emptyList()
         return allAddrStrings
     }

@@ -23,13 +23,19 @@ object TempRemoverHelper {
     }
 
     val TEMP_TAGS: Collection<String> = setOf(
-        "warn:1",
-        "napr:addr:raw:1",
-        "napr:addr:raw:2",
-        "napr:addr:raw:3",
-        "napr:addr:raw:4",
-        "addr:GE:napr",
-        "napr:addr"
+        "napr:warn",
+        "napr:place",
+        "napr:addr", //строка удачного парсинга
+        //сырые данные
+        "napr:raw:1",
+        "napr:raw:2",
+        "napr:raw:3",
+        "napr:raw:4",
+        "napr:raw:5",
+        "napr:raw:6",
+        "napr:raw:7",
+        "napr:raw:8",
+        "napr:raw:9",
     )
 
 
