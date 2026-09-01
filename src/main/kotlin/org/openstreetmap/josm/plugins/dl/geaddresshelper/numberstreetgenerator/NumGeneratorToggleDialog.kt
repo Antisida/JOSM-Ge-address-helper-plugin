@@ -254,7 +254,7 @@ class NumGeneratorToggleDialog : ToggleDialog(
         updateCheckboxValues(selection)
     }
 
-    /** Изменения значений в панели если выделенный объект содержит нумерованную улицу в своих тегах */
+    /** Изменения значений в панели, если выделенный объект содержит нумерованную улицу в своих тегах */
     private fun updateCheckboxValues(selection: Set<OsmPrimitive>) {
         val streetNames = selection.mapNotNull {
             when {
