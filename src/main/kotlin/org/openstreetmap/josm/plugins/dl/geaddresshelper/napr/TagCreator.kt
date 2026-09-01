@@ -69,7 +69,7 @@ object TagCreator {
 
         if (address != null) {
             // 2. Добавляем фиксированные теги
-            put("addr:napr:place", address.place.extractedName)
+            put("napr:pl", address.place.extractedName)
             put("addr:street", address.street.extractedName)
             put("addr:housenumber", address.houseNumber.extractedNumber)
 
@@ -92,7 +92,7 @@ object TagCreator {
         additionalTags: Map<String, String>,
     ): MutableMap<String, String> {
         val tags = mutableMapOf<String, String>()
-        tags.put("addr:napr:place", address.place.extractedName)
+        tags.put("napr:pl", address.place.extractedName)
         tags.put("addr:street", osmStreetName)
         tags.put("addr:housenumber", address.houseNumber.extractedNumber)
 
