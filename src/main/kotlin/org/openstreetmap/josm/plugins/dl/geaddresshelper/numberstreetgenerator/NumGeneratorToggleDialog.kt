@@ -26,6 +26,7 @@ import java.awt.Font
 import java.awt.Toolkit
 import java.awt.datatransfer.StringSelection
 import java.awt.event.ActionEvent
+import java.awt.event.ItemEvent
 import java.awt.event.KeyEvent
 import javax.swing.BorderFactory
 import javax.swing.BoxLayout
@@ -118,12 +119,26 @@ class NumGeneratorToggleDialog : ToggleDialog(
 
     private fun setupListeners() {
         val updateAction = { updateGeneratedText() }
+        val udpataActionCond =
         // Слушатели для радио-кнопок
         mainNumberSelectorPanel.setupRadioButtonsListeners(updateAction)
         secondaryNumberSelectorPanel.setupRadioButtonsListeners(updateAction)
-        typeMainRadio.addActionListener { updateAction() }
-        typeLaneRadio.addActionListener { updateAction() }
-        typeDeadEndRadio.addActionListener { updateAction() }
+
+        typeMainRadio.addItemListener { e ->
+            if (e.stateChange == ItemEvent.SELECTED) {
+                updateAction()
+            }
+        }
+        typeLaneRadio.addItemListener { e ->
+            if (e.stateChange == ItemEvent.SELECTED) {
+                updateAction()
+            }
+        }
+        typeDeadEndRadio.addItemListener { e ->
+            if (e.stateChange == ItemEvent.SELECTED) {
+                updateAction()
+            }
+        }
 
         // Слушатели для спиннеров
         mainNumberSelectorPanel.setupSpinnerListener(updateAction)
