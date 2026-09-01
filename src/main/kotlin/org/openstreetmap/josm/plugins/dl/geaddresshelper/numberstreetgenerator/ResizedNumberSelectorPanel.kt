@@ -1,16 +1,17 @@
 package org.openstreetmap.josm.plugins.dl.geaddresshelper.numberstreetgenerator
 
+import org.openstreetmap.josm.tools.Logging
 import java.awt.Dimension
 import java.awt.FlowLayout
 import java.awt.event.ComponentAdapter
 import java.awt.event.ComponentEvent
+import java.awt.event.ItemEvent
 import javax.swing.ButtonGroup
 import javax.swing.JPanel
 import javax.swing.JRadioButton
 import javax.swing.JSpinner
 import javax.swing.SpinnerNumberModel
 import javax.swing.UIManager
-import org.openstreetmap.josm.tools.Logging
 
 class ResizedNumberSelectorPanel() : JPanel(FlowLayout(FlowLayout.LEFT, 0, 0)) {
     private val buttonGroup = ButtonGroup()
@@ -52,12 +53,18 @@ class ResizedNumberSelectorPanel() : JPanel(FlowLayout(FlowLayout.LEFT, 0, 0)) {
         return spinner.value as Int
     }
 
-    fun setValue(value : Int) {
+    fun setValue(value: Int) {
         radioButtons[value]?.setSelected(true)
     }
 
     fun setupRadioButtonsListeners(updateAction: () -> Unit) {
-        radioButtons.values.forEach { it.addActionListener { updateAction() } }
+        radioButtons.values.forEach {
+            it.addItemListener { e ->
+                if (e.stateChange == ItemEvent.SELECTED) {
+                    updateAction()
+                }
+            }
+        }
     }
 
     fun setupSpinnerListener(updateAction: () -> Unit) {
