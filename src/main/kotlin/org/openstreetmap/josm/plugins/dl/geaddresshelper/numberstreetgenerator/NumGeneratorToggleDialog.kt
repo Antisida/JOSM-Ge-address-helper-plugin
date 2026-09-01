@@ -119,26 +119,14 @@ class NumGeneratorToggleDialog : ToggleDialog(
 
     private fun setupListeners() {
         val updateAction = { updateGeneratedText() }
-        val udpataActionCond =
-        // Слушатели для радио-кнопок
+        // Слушатели для числовых радио-кнопок
         mainNumberSelectorPanel.setupRadioButtonsListeners(updateAction)
         secondaryNumberSelectorPanel.setupRadioButtonsListeners(updateAction)
 
-        typeMainRadio.addItemListener { e ->
-            if (e.stateChange == ItemEvent.SELECTED) {
-                updateAction()
-            }
-        }
-        typeLaneRadio.addItemListener { e ->
-            if (e.stateChange == ItemEvent.SELECTED) {
-                updateAction()
-            }
-        }
-        typeDeadEndRadio.addItemListener { e ->
-            if (e.stateChange == ItemEvent.SELECTED) {
-                updateAction()
-            }
-        }
+        // Слушатели выбора типа улицы
+        typeMainRadio.addItemListener { e -> if (e.stateChange == ItemEvent.SELECTED) { updateAction() } }
+        typeLaneRadio.addItemListener { e -> if (e.stateChange == ItemEvent.SELECTED) { updateAction() } }
+        typeDeadEndRadio.addItemListener { e -> if (e.stateChange == ItemEvent.SELECTED) { updateAction() } }
 
         // Слушатели для спиннеров
         mainNumberSelectorPanel.setupSpinnerListener(updateAction)
@@ -173,6 +161,7 @@ class NumGeneratorToggleDialog : ToggleDialog(
         addrStreetTextArea.text = addrText
     }
 
+    /** Перенести теги на выбранные улицы */
     inner class ApplyStreetTagsAction : JosmAction(
         "Apply name", "street_blue.svg", "Apply name to selected ways", Shortcut.registerShortcut(
             "data:napr_apply_addr_street", "Apply name to selected ways", KeyEvent.KEY_LOCATION_UNKNOWN, Shortcut.NONE
@@ -187,7 +176,7 @@ class NumGeneratorToggleDialog : ToggleDialog(
             UndoRedoHandler.getInstance().add(sequenceCommand)
         }
     }
-
+    /** Перенести теги на выбранные здания */
     inner class ApplyBuildingTagsAction : JosmAction(
         "Apply addr:street", "building_blue.svg", "Apply addr:street to selected buildings", Shortcut.registerShortcut(
             "data:napr_apply_addr_street",
@@ -206,6 +195,7 @@ class NumGeneratorToggleDialog : ToggleDialog(
         }
     }
 
+    /** Копирование тегов addr:street и addr:housenumber в буфер */
     inner class CopyBuildingTagsAction : JosmAction(
         "Copy addr:street", "building_grey.svg", "Copy addr:street",
         Shortcut.registerShortcut(
@@ -221,6 +211,7 @@ class NumGeneratorToggleDialog : ToggleDialog(
         }
     }
 
+    /** Копирование тегов name... в буфер */
     inner class CopyStreetTagsAction : JosmAction(
         "Copy name", "street_grey.svg", "Copy street name", Shortcut.registerShortcut(
             "data:napr_copy_name",
@@ -260,10 +251,11 @@ class NumGeneratorToggleDialog : ToggleDialog(
     override fun selectionChanged(event: DataSelectionListener.SelectionChangeEvent) {
         val selection: Set<OsmPrimitive> = event.selection
         updateButtonState(selection)
-        updateCheckboxState(selection)
+        updateCheckboxValues(selection)
     }
 
-    private fun updateCheckboxState(selection: Set<OsmPrimitive>) {
+    /** Изменения значений в панели если выделенный объект содержит нумерованную улицу в своих тегах */
+    private fun updateCheckboxValues(selection: Set<OsmPrimitive>) {
         val streetNames = selection.mapNotNull {
             when {
                 it.hasKey("highway") -> it["name"]
@@ -290,6 +282,7 @@ class NumGeneratorToggleDialog : ToggleDialog(
         }
     }
 
+    /** Активация/деактивация кнопок в зависимости от выделенных объектов */
     private fun updateButtonState(selection: Set<OsmPrimitive>) {
         if (selection.getStreets().isNotEmpty()) applyStreetTagsAction.setEnabled(true)
         else applyStreetTagsAction.setEnabled(false)
@@ -297,14 +290,14 @@ class NumGeneratorToggleDialog : ToggleDialog(
         else applyBuildingTagsAction.setEnabled(false)
     }
 
-    /**  Нужен для активации кнопок при добавлении тега highway */
+    /** Нужен для активации кнопок при добавлении тега highway */
     override fun processDatasetEvent(event: AbstractDatasetChangedEvent?) {
         if (event !is TagsChangedEvent) return
         val primitive = event.primitive ?: return
         if (primitive.type != OsmPrimitiveType.WAY) return
 
         if (event.primitive.hasKey("highway")) applyStreetTagsAction.setEnabled(true)
-        // здания добавляются чаще всего с помощью режима B, который не выделяет здания после добавления
+        // отключен, т.к. здания добавляются чаще всего с помощью режима B, который не выделяет здания после добавления
 //        if (event.primitive.hasKey("building")) applyBuildingTagsAction.setEnabled(true)
     }
 

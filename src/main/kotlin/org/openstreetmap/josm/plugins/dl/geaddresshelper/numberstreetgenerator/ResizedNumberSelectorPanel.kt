@@ -18,6 +18,8 @@ class ResizedNumberSelectorPanel() : JPanel(FlowLayout(FlowLayout.LEFT, 0, 0)) {
     private val radioButtons = mutableMapOf<Int, JRadioButton>()
     private val spinner = JSpinner(SpinnerNumberModel(11, 3, 50, 1))
     private val maxButtonsCount = 30
+
+    /** Переменная запрещающая выполнение слушателя (генерация тегов) при изменении значения в спиннере когда изменяется ширина окна */
     private var isProgrammaticChange = false
     private val pixelsPerCheckbox = calculatePixelsPerCheckbox()
 
@@ -76,6 +78,7 @@ class ResizedNumberSelectorPanel() : JPanel(FlowLayout(FlowLayout.LEFT, 0, 0)) {
         }
     }
 
+    /** Изменение количество чекбоксов и значения в спиннере */
     private fun updateCheckboxCount() {
         isProgrammaticChange = true
 
@@ -109,30 +112,26 @@ class ResizedNumberSelectorPanel() : JPanel(FlowLayout(FlowLayout.LEFT, 0, 0)) {
         isProgrammaticChange = false
     }
 
-    // Разрешаем панели растягиваться по горизонтали без ограничений чтобы лисенер изменения размера
-    // работал
+    /** Разрешаем панели растягиваться по горизонтали без ограничений чтобы слушатель изменения размера работал */
     override fun getMaximumSize(): Dimension {
         return Dimension(Int.MAX_VALUE, preferredSize.height)
     }
 
-    /**
-     * Рассчитывает точную ширину одной радиокнопки с учетом текущего шрифта и размера системной
-     * иконки переключателя.
-     */
+    /** Расчет ширины одного чекбокса с учетом текущего шрифта и размера системной иконки переключателя. */
     private fun calculatePixelsPerCheckbox(): Int {
         val metrics = getFontMetrics(font)
 
         // 1. Ширина самого длинного текста ("50") под текущий шрифт
         val textWidth = metrics.stringWidth("50")
-        Logging.info("textWidth: $textWidth")
+        Logging.debug("textWidth: $textWidth")
 
         // 2. Ширина иконки радиокнопки из текущей темы (или 16px по умолчанию)
         val iconWidth = UIManager.getIcon("RadioButton.icon")?.iconWidth ?: 16
-        Logging.info("iconWidth: $iconWidth")
+        Logging.debug("iconWidth: $iconWidth")
 
         // 3. Отступ между иконкой и текстом (обычно 4px) + внешние поля
         val gap = UIManager.getInt("RadioButton.iconTextGap").let { if (it > 0) it else 4 }
-        Logging.info("gap: $gap")
+        Logging.debug("gap: $gap")
         val padding = 8 // левый и правый отступы кнопки
 
         return textWidth + iconWidth + gap + padding
