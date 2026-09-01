@@ -26,6 +26,13 @@ data class RawNaprDto(
                 ?: emptyList()
         return allAddrStrings
     }
+
+    fun getDataString(): List<String> {
+        val allAddrStrings =
+            result?.flatMap { listOfNotNull(it.descript, it.resulttext, it.name) }
+                ?: emptyList()
+        return allAddrStrings
+    }
 }
 
 @SuppressWarnings("kotlin:S117")

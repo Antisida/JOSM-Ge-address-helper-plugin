@@ -113,6 +113,7 @@ class SelectAction :
           val commands: MutableList<Command> = mutableListOf()
           val parsingResults: MutableList<ParseResult> = mutableListOf()
           for (naprResult in naprResults.filter { it.third.isUseful() }) {
+            val dataNaprStrings = naprResult.third.getDataString()
             val usefulNaprStrings = naprResult.third.getUsefulString()
             val parsedAddressList: List<Address> = MainParser.parse(usefulNaprStrings)
             var matchedOsmStreetName: String? = null
@@ -129,7 +130,7 @@ class SelectAction :
                 naprResult.first,
                 naprResult.second,
                 parsedAddressList,
-                usefulNaprStrings,
+                dataNaprStrings,
                 matchedOsmStreetName,
               )
             )
@@ -155,7 +156,7 @@ class SelectAction :
                     BUILDING,
                     result.matchStreet,
                     address,
-                    result.usefulNaprStrings,
+                    result.rawNaprStrings,
                     mapOf(),
                   )
                 val chBuildingCommands = CommandHelper.toChangeCommands(tags, result.osmPrimitive)
@@ -176,7 +177,7 @@ class SelectAction :
                     NODE,
                     null,
                     result.parsedAddressList[0],
-                    result.usefulNaprStrings,
+                    result.rawNaprStrings,
                     mapOf("DOUBLE" to "ADDRESS"),
                   )
                 val node = OsmPrimitiveHelper.createNode(result.eastNorth, tags)
@@ -188,16 +189,16 @@ class SelectAction :
                     NODE,
                     null,
                     result.parsedAddressList[0],
-                    result.usefulNaprStrings,
+                    result.rawNaprStrings,
                     emptyMap(),
                   )
                 val node = OsmPrimitiveHelper.createNode(result.eastNorth, tags)
                 commands.add(AddCommand(dataSet, node))
               }
               ActionType.CREATE_MULTIPLE_ADDR_NODE -> {
-                if (result.usefulNaprStrings.isNotEmpty()) {
+                if (result.rawNaprStrings.isNotEmpty()) {
                   val tags: Map<String, String> =
-                    TagCreator.create(NODE, null, null, result.usefulNaprStrings, mapOf())
+                    TagCreator.create(NODE, null, null, result.rawNaprStrings, mapOf())
                   val node = OsmPrimitiveHelper.createNode(result.eastNorth, tags)
                   commands.add(AddCommand(dataSet, node))
                 }

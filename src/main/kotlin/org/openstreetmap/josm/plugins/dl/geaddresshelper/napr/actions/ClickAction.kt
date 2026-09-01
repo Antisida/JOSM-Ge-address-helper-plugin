@@ -78,22 +78,20 @@ class ClickAction :
 
         val naprDto: RawNaprDto? = NaprClient.executeRequest(mouseEastNorth)
 
-        val usefulString = naprDto?.getUsefulString()?.takeIf { it.isNotEmpty() }
-        if (usefulString != null) {
-            val parsedAddressList: List<Address> = MainParser.parse(usefulString)
+        val dataString = naprDto?.getDataString()
+        if (!dataString.isNullOrEmpty()) {
+            val usefulString = naprDto.getUsefulString()
+            val parsedAddress : Address? = MainParser.parse(usefulString).singleOrNull()
             val tags = TagCreator.create(
                 type = NODE,
                 osmStreet = null,
-                rawNaprString = usefulString,
-                address = parsedAddressList.singleOrNull(),
+                rawNaprString = naprDto.getDataString(),
+                address = parsedAddress,
                 additionalTags = emptyMap()
             )
             val node = OsmPrimitiveHelper.createNode(mouseEastNorth, tags)
 
-            val sequenceCommand = SequenceCommand(
-                I18n.tr("Node added"),
-                AddCommand(dataSet, node)
-            )
+            val sequenceCommand = SequenceCommand(I18n.tr("Node added"), AddCommand(dataSet, node))
             UndoRedoHandler.getInstance().add(sequenceCommand)
 
             dataSet.setSelected(node)

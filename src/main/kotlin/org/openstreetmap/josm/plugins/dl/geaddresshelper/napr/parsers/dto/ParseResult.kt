@@ -9,7 +9,7 @@ data class ParseResult(
     val eastNorth: EastNorth,
     val osmPrimitive: OsmPrimitive,
     val parsedAddressList: List<Address>,
-    val usefulNaprStrings: List<String>,
+    val rawNaprStrings: List<String>,
     val matchStreet: String?,
     var resultAction: ActionType? = null,
 ) {
