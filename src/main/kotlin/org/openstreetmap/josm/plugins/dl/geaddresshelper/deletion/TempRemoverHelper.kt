@@ -28,6 +28,10 @@ object TempRemoverHelper {
         "napr:addr:raw:2",
         "napr:addr:raw:3",
         "napr:addr:raw:4",
+        "napr:addr:raw:5",
+        "napr:addr:raw:6",
+        "napr:addr:raw:7",
+        "napr:addr:raw:8",
         "addr:GE:napr",
         "napr:addr"
     )
