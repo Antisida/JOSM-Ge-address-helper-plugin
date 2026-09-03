@@ -30,6 +30,7 @@ data class RawNaprDto(
     fun getDataString(): List<String> {
         val allAddrStrings =
             result?.flatMap { listOfNotNull(it.descript, it.resulttext, it.name) }
+                ?.filter { line -> line.any { it.isLetter() } } //удаляем строки типа "22.28.05.054"
                 ?: emptyList()
         return allAddrStrings
     }
