@@ -85,7 +85,7 @@ class ClickAction :
             val tags = TagCreator.create(
                 type = NODE,
                 osmStreet = null,
-                rawNaprString = naprDto.getDataString(),
+                rawNaprString = dataString,
                 address = parsedAddress,
                 additionalTags = emptyMap()
             )
