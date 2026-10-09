@@ -212,10 +212,9 @@ class OsmMatcher1 {
         // Содержит обычные цифры (0-9)
         if (clean.any { it.isDigit() }) return true
 
-        // Содержит римские цифры (включая окончания типа "ii-я", "iv-й")
-        // Проверка идет только по латинским буквам, русская "и" или "в" сюда не попадут
-        val romanRegex = Regex("^[ivxlcdm]+(-[а-яa-z]+)?$")
-        return romanRegex.matches(clean)
+        // Содержит римские цифры
+        val romanRegex = Regex("[IVXLCDM]+")
+        return romanRegex.containsMatchIn(clean)
     }
 
     /**

@@ -6,26 +6,28 @@ import java.io.InputStreamReader
 object StreetDictionary {
     private const val FILE_NAME = "street-list/georgian_streets.csv"
 
-    val streets: Map<String, StreetTranslate> by lazy {
+    /**
+     * Ключ - названия на грузинском, русском, английском.
+     * Значение - StreetTranslate.
+     */
+    val streets: Map<String, StreetTranslation> by lazy {
         val inputStream = javaClass.classLoader.getResourceAsStream(FILE_NAME)
             ?: throw IllegalArgumentException("File $FILE_NAME not found in classpath!")
 
-        val dict: MutableMap<String, StreetTranslate> = HashMap()
+        val dict: MutableMap<String, StreetTranslation> = HashMap()
         BufferedReader(InputStreamReader(inputStream, Charsets.UTF_8))
             .useLines { lines ->
                 lines.drop(1) // заголовок
                     .map { line ->
                         val tokens = line.split(",")
-                        StreetTranslate(
-                            name = tokens[0].trim(),
-                            nameKa = tokens[1].trim(),
-                            nameEn = tokens[2].trim(),
-                            nameRu = tokens[3].trim()
+                        StreetTranslation(
+                            nameKa = tokens[0].trim(),
+                            nameEn = tokens[1].trim(),
+                            nameRu = tokens[2].trim()
                         )
                     }
                     .toSet()
                     .forEach {
-                        dict[it.name] = it
                         dict[it.nameKa] = it
                         dict[it.nameRu] = it
                         dict[it.nameEn] = it
@@ -34,8 +36,10 @@ object StreetDictionary {
         dict
     }
 
-    fun getFirstNotNullOrNull(name: String?, nameKa: String?, nameRu: String?, nameEn: String?): StreetTranslate? =
+    fun getFirstNotNullOrNull(name: String?, nameKa: String?, nameRu: String?, nameEn: String?): StreetTranslation? =
         sequenceOf(name, nameKa, nameRu, nameEn)
             .firstNotNullOfOrNull { n -> n?.let { streets[it] } }
+
+    fun getByNameOrNull(name: String): StreetTranslation? = streets[name]
 
 }

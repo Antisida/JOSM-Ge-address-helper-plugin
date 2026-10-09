@@ -2,9 +2,12 @@ package org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.parsers.dto
 
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.parsers.ParsingFlags
 
-data class HouseNumber(
+data class Place(
     val source: String,
-    val extractedNumber: String,
-    val flags: List<ParsingFlags>,
+    val status: String,
+    val name: String,
+    val flags: MutableList<ParsingFlags>,
     val isSuccess: Boolean
-)
+) {
+    fun getStatusWithName(): String = "$status $name"
+}

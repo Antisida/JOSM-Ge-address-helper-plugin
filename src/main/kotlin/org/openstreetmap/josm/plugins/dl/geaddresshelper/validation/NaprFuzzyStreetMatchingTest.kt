@@ -51,7 +51,7 @@ class NaprFuzzyStreetMatchingTest : Test(
                 && !entry.value.isIgnored(EGRNTestCode.NAPR_STREET_FUZZY_MATCHING)
             ) {
 //                Logging.info("XXXXX: $entry")
-                val parsedStreetName = address.parsedStreet.extractedName
+                val parsedStreetName = address.street.extractedName
                 val mostRelevantOsmName = entry.value.parseResult.matchStreet ?: ""
 //                val mostRelevantOsmName = address.parsedStreet.mostRelevantOsmName
                 var affectedPrimitives =

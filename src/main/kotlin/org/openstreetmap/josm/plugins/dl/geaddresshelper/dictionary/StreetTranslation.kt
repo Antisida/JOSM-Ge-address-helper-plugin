@@ -1,7 +1,6 @@
 package org.openstreetmap.josm.plugins.dl.geaddresshelper.dictionary
 
-data class StreetTranslate(
-    val name: String,
+data class StreetTranslation(
     val nameKa: String,
     val nameEn: String,
     val nameRu: String

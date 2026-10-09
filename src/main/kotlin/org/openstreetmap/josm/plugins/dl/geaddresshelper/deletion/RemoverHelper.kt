@@ -7,7 +7,7 @@ import org.openstreetmap.josm.data.osm.OsmPrimitive
 import org.openstreetmap.josm.data.osm.Relation
 import org.openstreetmap.josm.data.osm.Way
 
-object TempRemoverHelper {
+object RemoverHelper {
 
     data class ForDeleteDto(
         val nodesToDelete: MutableList<Node>,
@@ -23,21 +23,28 @@ object TempRemoverHelper {
     }
 
     val TEMP_TAGS: Collection<String> = setOf(
-        "warn:1",
-        "napr:addr:raw:1",
-        "napr:addr:raw:2",
-        "napr:addr:raw:3",
-        "napr:addr:raw:4",
-        "napr:addr:raw:5",
-        "napr:addr:raw:6",
-        "napr:addr:raw:7",
-        "napr:addr:raw:8",
-        "napr:addr:raw:9",
-        "napr:addr:raw:10",
-        "napr:addr:raw:11",
-        "napr:addr:raw:12",
-        "addr:GE:napr",
-        "napr:addr"
+        "napr:warn",
+        "napr:addr", //строка удачного парсинга
+        //сырые данные
+        "napr:raw:1",
+        "napr:raw:2",
+        "napr:raw:3",
+        "napr:raw:4",
+        "napr:raw:5",
+        "napr:raw:6",
+        "napr:raw:7",
+        "napr:raw:8",
+        "napr:raw:9",
+
+        "napr:pl:1",
+        "napr:pl:2",
+        "napr:pl:3",
+        "napr:pl:4",
+
+        "napr:pl:tr:1",
+        "napr:pl:tr:2",
+        "napr:pl:tr:3",
+        "napr:pl:tr:4",
     )
 
 

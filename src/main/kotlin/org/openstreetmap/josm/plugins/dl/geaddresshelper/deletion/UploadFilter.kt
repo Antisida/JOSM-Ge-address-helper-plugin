@@ -7,8 +7,8 @@ import org.openstreetmap.josm.command.SequenceCommand
 import org.openstreetmap.josm.data.APIDataSet
 import org.openstreetmap.josm.data.UndoRedoHandler
 import org.openstreetmap.josm.data.osm.IPrimitive
-import org.openstreetmap.josm.plugins.dl.geaddresshelper.deletion.TempRemoverHelper.TEMP_TAGS
-import org.openstreetmap.josm.plugins.dl.geaddresshelper.deletion.TempRemoverHelper.setToNull
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.deletion.RemoverHelper.TEMP_TAGS
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.deletion.RemoverHelper.setToNull
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.funs.containsTmpTags
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.funs.getForDelete
 import org.openstreetmap.josm.tools.I18n
@@ -20,9 +20,9 @@ class UploadFilter : UploadHook {
 
         if (forDelete.isNotEmpty()) {
             // удаляем данные помеченные к удалению, вместе со связанными, из датасета
-            val (nodesToDelete, waysToDelete, relationsToDelete, nodesToNotUpload) = TempRemoverHelper.prepareData(forDelete)
+            val (nodesToDelete, waysToDelete, relationsToDelete, nodesToNotUpload) = RemoverHelper.prepareData(forDelete)
             val delCommands: List<Command> =
-                TempRemoverHelper.toDeleteCommands(nodesToDelete, waysToDelete, relationsToDelete, nodesToNotUpload)
+                RemoverHelper.toDeleteCommands(nodesToDelete, waysToDelete, relationsToDelete, nodesToNotUpload)
             val command: Command = SequenceCommand(I18n.tr("Node deleted"), delCommands)
             UndoRedoHandler.getInstance().add(command)
 
