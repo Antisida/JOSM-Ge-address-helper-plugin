@@ -4,7 +4,7 @@ import org.openstreetmap.josm.data.APIDataSet
 import org.openstreetmap.josm.data.osm.DataSet
 import org.openstreetmap.josm.data.osm.OsmPrimitive
 import org.openstreetmap.josm.data.osm.OsmPrimitiveType
-import org.openstreetmap.josm.plugins.dl.geaddresshelper.deletion.TempRemoverHelper.TEMP_TAGS
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.deletion.RemoverHelper.TEMP_TAGS
 
 /** @return Список name, alt_name, old_name, short_name всех highway */
 fun DataSet.getAllStreetNames(): List<String> {

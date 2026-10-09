@@ -20,7 +20,7 @@ data class RawNaprDto(
             result
                 ?.flatMap { listOfNotNull(it.descript, it.resulttext, it.name) }
                 ?.filter { it.isNotEmpty() }
-                ?.filter { line -> "N" in line } // todo не теряем ли мы номера без N
+//                ?.filter { line -> "N" in line } // todo не теряем ли мы номера без N // это мешает парсить улицы, когда нет номера дома
                 ?.filter { line -> STREET_STATUS_AND_ABBR_SET.any { status -> status in line } }
             //    ?.filter { line -> !line.contains("ნაკვეთი") } //todo участок удалять при сплите
                 ?: emptyList()

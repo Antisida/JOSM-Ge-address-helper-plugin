@@ -142,7 +142,7 @@ object OsmStreetMatcher {
                         val lev = levenshtein(sWord, larger[j])
                         if (lev <= 1) {
                             // Запрещаем опечатки в цифрах/числах
-                            if (isForbiddenWord(sWord) || isForbiddenWord(larger[j])) {
+                            if (containDigit(sWord) || containDigit(larger[j])) {
                                 return null
                             }
                             matchedIdx = j
@@ -167,7 +167,7 @@ object OsmStreetMatcher {
             val extraIdx = usedInLarger.indexOf(false)
             if (extraIdx != -1) {
                 val extraWord = larger[extraIdx]
-                if (isForbiddenWord(extraWord)) {
+                if (containDigit(extraWord)) {
                     return null
                 }
             }
@@ -176,12 +176,13 @@ object OsmStreetMatcher {
         return MatchResult(wordCountDiff = diff, totalLevenshtein = totalLev)
     }
 
-    private fun isForbiddenWord(word: String): Boolean {
-        val clean = word.lowercase().trim('.', ',', '-', ' ')
+    val romanDigits = setOf('I', 'V', 'X', 'L'/*, 'C', 'D', 'M'*/)
+
+    private fun containDigit(word: String): Boolean {
+        val clean = word.uppercase()//.trim('.', ',', '-', ' ')
         if (clean.any { it.isDigit() }) return true
 
-        val romanRegex = Regex("^[ivxlcdm]+(-[а-яa-z]+)?$")
-        return romanRegex.matches(clean)
+        return clean.any { it in romanDigits }
     }
 
     private fun levenshtein(s1: String, s2: String): Int {

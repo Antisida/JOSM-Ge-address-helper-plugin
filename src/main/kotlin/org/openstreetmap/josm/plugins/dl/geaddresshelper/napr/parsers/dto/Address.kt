@@ -4,7 +4,7 @@ import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.parsers.ParsingFla
 
 data class Address(
     val source: String,
-    val place: Place,
+    var places: List<Place>,
     val street: Street,
     val houseNumber: HouseNumber,
     val flags: MutableList<ParsingFlags>,
@@ -14,7 +14,7 @@ data class Address(
     constructor(sourceString: String) :
             this(
                 sourceString,
-                Place("", "", mutableListOf(), false),
+                emptyList(),
                 Street("", "", mutableListOf(), false),
                 HouseNumber("", "", listOf(), false),
                 mutableListOf(ParsingFlags.SPLIT_FAILED),

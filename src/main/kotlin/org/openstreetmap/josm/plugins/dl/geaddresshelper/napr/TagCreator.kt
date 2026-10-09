@@ -2,6 +2,7 @@ package org.openstreetmap.josm.plugins.dl.geaddresshelper.napr
 
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.parsers.ParsingFlags
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.parsers.dto.Address
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.Transliterator
 
 object TagCreator {
     const val REMOVE_ME = "REMOVE ME!"
@@ -57,7 +58,28 @@ object TagCreator {
                 requireNotNull(osmStreet) { "OsmStreetName cannot be null while creating building's tags" }
                 forBuilding(osmStreet, address, rawNaprString, additionalTags)
             }
+            TagType.STREET -> {
+                requireNotNull(address) { "ParsedAddress cannot be null while creating street's tags" }
+                forStreet(rawNaprString, address, additionalTags)
+            }
         }
+    }
+
+    private fun forStreet(
+        rawString: List<String>,
+        address: Address,
+        additionalTags: Map<String, String>
+    ): Map<String, String> {
+        val tags = mutableMapOf<String, String>()
+        tags.putAll(toTagsIndexed("napr:pl", address.places.map { place -> place.name }))
+        tags.putAll(toTagsIndexed("napr:pl:tr", address.places.map { place -> Transliterator.transliterate(place.getStatusWithName()) }))
+        tags.put("name", address.street.extractedName)
+
+        tags.put("napr:addr", address.source)
+        tags.putAll(toTagsIndexed("napr:raw", rawString))
+
+        tags.putAll(additionalTags)
+        return tags
     }
 
     private fun forNode(
@@ -68,8 +90,8 @@ object TagCreator {
         putAll(forNode(rawString))
 
         if (address != null) {
-            // 2. Добавляем фиксированные теги
-            put("napr:pl", address.place.extractedName)
+            putAll(toTagsIndexed("napr:pl", address.places.map { place -> place.name + " : " + Transliterator.transliterate(place.getStatusWithName()) }))
+//            putAll(toTagsIndexed("napr:pl:tr", address.places.map { place -> Transliterator.transliterate(place.getStatusWithName()) }))
             put("addr:street", address.street.extractedName)
             put("addr:housenumber", address.houseNumber.extractedNumber)
 
@@ -82,7 +104,7 @@ object TagCreator {
 
     private fun forNode(rawString: List<String>): Map<String, String> = buildMap {
         put("fixme", "REMOVE ME!")
-        putAll(toRawTags(rawString))
+        putAll(toTagsIndexed("napr:raw", rawString))
     }
 
     private fun forBuilding(
@@ -92,26 +114,27 @@ object TagCreator {
         additionalTags: Map<String, String>,
     ): MutableMap<String, String> {
         val tags = mutableMapOf<String, String>()
-        tags.put("napr:pl", address.place.extractedName)
+        tags.putAll(toTagsIndexed("napr:pl", address.places.map { place -> place.name + " : " + Transliterator.transliterate(place.getStatusWithName()) }))
+//        tags.putAll(toTagsIndexed("napr:pl:tr", address.places.map { place -> Transliterator.transliterate(place.getStatusWithName()) }))
         tags.put("addr:street", osmStreetName)
         tags.put("addr:housenumber", address.houseNumber.extractedNumber)
 
         tags.put("napr:addr", address.source)
-        tags.putAll(toRawTags(rawString))
+        tags.putAll(toTagsIndexed("napr:raw", rawString))
 
         tags.putAll(additionalTags)
         return tags
     }
 
-    private fun toRawTags(rawString: List<String>): Map<String, String> = buildMap {
-        // 1. Наполняем мапу сырыми адресами
-        rawString.distinct().forEachIndexed { index, string ->
-            put("napr:raw:${index + 1}", string)
+    private fun toTagsIndexed(tagTemplate: String, strings: List<String>): Map<String, String> = buildMap {
+        strings.distinct().forEachIndexed { index, string ->
+            put("$tagTemplate:${index + 1}", string)
         }
     }
 
     enum class TagType {
         NODE,
         BUILDING,
+        STREET
     }
 }

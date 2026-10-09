@@ -12,20 +12,20 @@ import org.openstreetmap.josm.tools.Logging
 object AddressParser {
 
     fun parse(sourceString: String): Address {
-        val (placeString, streetString, houseNumberString) = splitAddressNew(
+        val (placeString, streetString, houseNumberString) = splitAddress(
             sourceString
                 .removeParenthesesContent()
                 .insertMissingComma()
                 .removeCommasBetweenStatuses(STREET_STATUS_AND_ABBR_SET.toList())
         )
 
-        val place: Place = PlaceParser.parse(placeString) ?: Place("", "", mutableListOf(), false)
+        val place: Place? = PlaceParser.parse(placeString)
         val street: Street = StreetParser.parse(streetString) ?: Street("", "", mutableListOf(), false)
         val houseNumber: HouseNumber = HouseNumberParser.parse(houseNumberString) ?: HouseNumber("", "", listOf(), false)
         Logging.info("sourceString $sourceString, street = ${street.extractedName}, hn = ${houseNumber.extractedNumber}")
         return Address(
             sourceString,
-            place,
+            if (place != null) listOf(place) else emptyList(),
             street,
             houseNumber,
             mutableListOf(),
@@ -55,7 +55,7 @@ object AddressParser {
         if (statuses.isEmpty()) return this
 
         // Экранируем спецсимволы и собираем регулярное выражение для поиска слов
-        val escapedWords = statuses.map { Regex.escape(it) }.joinToString("|")
+        val escapedWords = statuses.joinToString("|") { Regex.escape(it) }
         val wordRegex = """(?U)\b(?:$escapedWords)\b""".toRegex()
 
         // Находим все совпадения слов из списка в нашей строке
@@ -80,12 +80,13 @@ object AddressParser {
         return result.toString()
     }
 
-    private fun splitAddressNew(string: String): SplitDto {
+    private fun splitAddress(string: String): SplitDto {
         val list: List<String> = string.split(",")
-        val place: String? = list.filter { line -> PLACE_SET.any { status -> status in line } }.takeIf { it.size == 1 }?.get(0)
-        val street: String? = list.filter { line -> STREET_STATUS_AND_ABBR_SET.any { status -> status in line } }.takeIf { it.size == 1 }?.get(0)
-        val houseNumber: String? = list.filter { line -> "N" in line }.takeIf { it.isNotEmpty() }?.lastOrNull()
-        return SplitDto(place, street, houseNumber)
+        val placeString: String? = list.filter { line -> PLACE_SET.any { status -> status in line } }.takeIf { it.size == 1 }?.get(0)
+        val streetString: String? =
+            list.filter { line -> STREET_STATUS_AND_ABBR_SET.any { status -> status in line } }.takeIf { it.size == 1 }?.get(0)
+        val houseNumberString: String? = list.filter { line -> "N" in line }.takeIf { it.isNotEmpty() }?.lastOrNull()
+        return SplitDto(placeString, streetString, houseNumberString)
     }
 
 }

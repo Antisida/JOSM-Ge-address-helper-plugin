@@ -62,7 +62,7 @@ class DictionaryAction :
                 val tags = mutableMapOf<String, String>()
                 val found = StreetDictionary.getFirstNotNullOrNull(name, nameKa, nameRu, nameEn)
                 if (found != null) {
-                    if (name == null) tags.put(NAME_TAG, found.name)
+                    if (name == null) tags.put(NAME_TAG, found.nameKa)
                     if (nameKa == null) tags.put(NAME_KA_TAG, found.nameKa)
                     if (nameEn == null) tags.put(NAME_EN_TAG, found.nameEn)
                     if (nameRu == null) tags.put(NAME_RU_TAG, found.nameRu)

@@ -111,12 +111,13 @@ class SelectAction :
                     val dataNaprStrings = naprResult.third.getDataString()
                     val usefulNaprStrings = naprResult.third.getUsefulString()
                     val parsedAddressList: List<Address> = MainParser.parse(usefulNaprStrings)
+                    val fullAddresses = parsedAddressList.filter { it.isSuccess }
                     var matchedOsmStreetName: String? = null
-                    if (parsedAddressList.size == 1)
+                    if (fullAddresses.size == 1)
                         matchedOsmStreetName =
                             OsmStreetMatcher.findByNameAndDistance(
                                 dataSet,
-                                parsedAddressList.first().street.extractedName,
+                                fullAddresses.first().street.extractedName,
                                 naprResult.second,
                                 DISTANCE_FOR_STREET_WAY_SEARCH.get(),
                             )
@@ -124,7 +125,7 @@ class SelectAction :
                         ParseResult(
                             naprResult.first,
                             naprResult.second,
-                            parsedAddressList,
+                            fullAddresses,
                             dataNaprStrings,
                             matchedOsmStreetName,
                         )
@@ -136,7 +137,7 @@ class SelectAction :
                         dataSet
                             .allPrimitives()
                             .getAddrBuildings(MassActionSettingsReader.FILTER_LIST_ADDR.get()),
-                        parsingResults.filter { it.parsedAddressList.size == 1 },
+                        parsingResults.filter { it.parsedAddressList.size == 1 }
                     )
                 for (result: ParseResult in parsingResults) {
                     result.resultAction = analyzer.defineAction(result)
@@ -151,7 +152,7 @@ class SelectAction :
                                     BUILDING,
                                     result.matchStreet,
                                     address,
-                                    result.rawNaprStrings,
+                                    listOf(address.source),
                                     mapOf(),
                                 )
                             val chBuildingCommands = CommandHelper.toChangeCommands(tags, result.osmPrimitive)
