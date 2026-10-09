@@ -19,7 +19,7 @@ plugins {
 }
 
 group 'org.openstreetmap.josm.plugins.dl.geaddresshelper'
-version '15'
+version '16'
 
 repositories {
     mavenCentral()
@@ -94,6 +94,7 @@ tasks.named('runJosm') {
 tasks.register('shrinkPluginJar', ProGuardTask) {
     dependsOn tasks.named('jar')
 
+//    injars(tasks.named('jar').flatMap { it.archiveFile }, filter: '!org/openstreetmap/josm/plugins/dl/geaddresshelper/settings/**')
     injars tasks.named('jar').flatMap { it.archiveFile }
     outjars layout.buildDirectory.file("dist/shrink/georgian-address-helper.jar")
 

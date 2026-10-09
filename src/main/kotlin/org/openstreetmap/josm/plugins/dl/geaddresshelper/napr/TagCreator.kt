@@ -71,8 +71,8 @@ object TagCreator {
         additionalTags: Map<String, String>
     ): Map<String, String> {
         val tags = mutableMapOf<String, String>()
-        tags.putAll(toTagsIndexed("napr:pl", address.places.map { place -> place.name }))
-        tags.putAll(toTagsIndexed("napr:pl:tr", address.places.map { place -> Transliterator.transliterate(place.getStatusWithName()) }))
+        tags.putAll(toTagsIndexed("napr:pl", address.places.map { place -> place.name + " : " + Transliterator.transliterate(place.getStatusWithName()) }))
+//        tags.putAll(toTagsIndexed("napr:pl:tr", address.places.map { place -> Transliterator.transliterate(place.getStatusWithName()) }))
         tags.put("name", address.street.extractedName)
 
         tags.put("napr:addr", address.source)
