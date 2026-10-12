@@ -38,8 +38,7 @@ import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.OsmPrimitiveHelper
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.TagCreator
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.TagCreator.FIXME_TAG
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.TagCreator.REMOVE_ME
-import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.TagCreator.TagType.BUILDING
-import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.TagCreator.TagType.NODE
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.parsers.ActionType.*
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.parsers.OsmStreetMatcher
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.validation.N_ValidationRecord
 import org.openstreetmap.josm.tools.I18n
@@ -132,32 +131,25 @@ class SelectAction :
                     )
                 }
 
-                val analyzer =
-                    ResultSetAnalyzer(
-                        dataSet
-                            .allPrimitives()
-                            .getAddrBuildings(MassActionSettingsReader.FILTER_LIST_ADDR.get()),
-                        parsingResults.filter { it.parsedAddressList.size == 1 }
-                    )
-                for (result: ParseResult in parsingResults) {
-                    result.resultAction = analyzer.defineAction(result)
-                }
+                val analyzer = ResultSetAnalyzer(
+                    dataSet.allPrimitives().getAddrBuildings(MassActionSettingsReader.FILTER_LIST_ADDR.get()),
+                    parsingResults.filter { it.parsedAddressList.size == 1 }
+                )
 
                 for (result: ParseResult in parsingResults) {
-                    when (result.resultAction) {
-                        ActionType.ADD_ADDR_TAGS -> {
-                            val address = result.parsedAddressList[0]
-                            val tags: Map<String, String> =
-                                TagCreator.create(
-                                    BUILDING,
-                                    result.matchStreet,
-                                    address,
-                                    listOf(address.source),
-                                    mapOf(),
-                                )
+                    val resultAction = analyzer.defineAction(result)
+
+                    //если адрес не один - не добавляем адресные теги
+                    val address: Address? = if (result.parsedAddressList.size == 1) result.parsedAddressList[0] else null
+                    val additionalTags = getAdditionalTags(resultAction, result.matchStreet)
+                    val tegCreationFunction = TagCreator.getTegCreationFunction(resultAction)
+                    val tags: Map<String, String> = tegCreationFunction.invoke(result.rawNaprStrings, address, additionalTags)
+                    when (resultAction) {
+                        ADD_ADDR_TAGS -> {
                             val chBuildingCommands = CommandHelper.toChangeCommands(tags, result.osmPrimitive)
                             commands.addAll(chBuildingCommands)
 
+                            requireNotNull(address) { "ParsedAddress cannot be null while creating building's tags" }
                             if (result.matchStreet != address.street.extractedName) {
                                 address.street.flags.add(ParsingFlags.STREET_NAME_FUZZY_MATCH)
                             }
@@ -168,41 +160,11 @@ class SelectAction :
                             }
                         }
 
-                        ActionType.CREATE_NODE_DOUBLE -> {
-                            val tags: Map<String, String> =
-                                TagCreator.create(
-                                    NODE,
-                                    null,
-                                    result.parsedAddressList[0],
-                                    result.rawNaprStrings,
-                                    mapOf("napr:warn" to "DUPLICATE ADDRESS"),
-                                )
+                        else -> {
                             val node = OsmPrimitiveHelper.createNode(result.eastNorth, tags)
                             commands.add(AddCommand(dataSet, node))
                         }
 
-                        ActionType.CREATE_NODE -> {
-                            val tags: Map<String, String> =
-                                TagCreator.create(
-                                    NODE,
-                                    null,
-                                    result.parsedAddressList[0],
-                                    result.rawNaprStrings,
-                                    emptyMap(),
-                                )
-                            val node = OsmPrimitiveHelper.createNode(result.eastNorth, tags)
-                            commands.add(AddCommand(dataSet, node))
-                        }
-
-                        ActionType.CREATE_MULTIPLE_ADDR_NODE -> {
-                            if (result.rawNaprStrings.isNotEmpty()) {
-                                val tags: Map<String, String> =
-                                    TagCreator.create(NODE, null, null, result.rawNaprStrings, mapOf())
-                                val node = OsmPrimitiveHelper.createNode(result.eastNorth, tags)
-                                commands.add(AddCommand(dataSet, node))
-                            }
-                        }
-                        else -> throw AssertionError()
                     }
                 }
                 // удаление выбранных временных точек при повторных запросах
@@ -210,19 +172,14 @@ class SelectAction :
                     commands.add(DeleteCommand(nodesForRemove))
                 }
 
-                val primitivesToValidate =
-                    GeAddressHelperPlugin.cache.responses.keys.filter { !it.isDeleted }
+                val primitivesToValidate = GeAddressHelperPlugin.cache.responses.keys.filter { !it.isDeleted }
                 if (primitivesToValidate.isNotEmpty()) {
                     GeAddressHelperPlugin.runEgrnValidation(primitivesToValidate)
                     Logging.info("finish validate: $primitivesToValidate")
                 }
 
                 if (commands.isNotEmpty()) {
-                    val command: Command =
-                        SequenceCommand(
-                            I18n.tr("Added node from GeorgiaAddressHelper"),
-                            commands,
-                        )
+                    val command: Command = SequenceCommand(I18n.tr("Added node from GeorgiaAddressHelper"), commands)
                     UndoRedoHandler.getInstance().add(command)
                 }
 
@@ -232,8 +189,7 @@ class SelectAction :
             override fun cancel() {
                 Logging.info("Запрос был отменен пользователем.")
             }
-        }
-            .run()
+        }.run()
     }
 
     private fun toValidationRecords(
@@ -241,5 +197,13 @@ class SelectAction :
         parseResult: ParseResult
     ): List<N_ValidationRecord> {
         return listOf(N_ValidationRecord(eastNorth, parseResult))
+    }
+
+    private fun getAdditionalTags(actionType: ActionType, matchStreet: String?): Map<String, String> {
+        return when (actionType) {
+            ADD_ADDR_TAGS -> if (matchStreet != null) mapOf("addr:street" to matchStreet) else emptyMap()
+            CREATE_NODE_DOUBLE -> mapOf("napr:warn" to "DUPLICATE ADDRESS")
+            CREATE_MULTIPLE_ADDR_NODE, CREATE_NODE -> emptyMap()
+        }
     }
 }

@@ -6,6 +6,8 @@ import org.openstreetmap.josm.data.osm.Node
 import org.openstreetmap.josm.data.osm.OsmPrimitive
 import org.openstreetmap.josm.data.osm.Relation
 import org.openstreetmap.josm.data.osm.Way
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.TagCreator.NAPR_ADDR_TAG
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.TagCreator.NAPR_WARN_TAG
 
 object RemoverHelper {
 
@@ -23,8 +25,8 @@ object RemoverHelper {
     }
 
     val TEMP_TAGS: Collection<String> = setOf(
-        "napr:warn",
-        "napr:addr", //строка удачного парсинга
+        NAPR_WARN_TAG,
+        NAPR_ADDR_TAG, //строка удачного парсинга
         //сырые данные
         "napr:raw:1",
         "napr:raw:2",

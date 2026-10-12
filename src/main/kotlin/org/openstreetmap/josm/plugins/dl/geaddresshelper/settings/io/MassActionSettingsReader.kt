@@ -2,6 +2,7 @@ package org.openstreetmap.josm.plugins.dl.geaddresshelper.settings.io
 
 
 import org.openstreetmap.josm.data.preferences.BooleanProperty
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.TagCreator.ADDR_HOUSENUMBER_TAG
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.settings.model.MapStringListProperty
 
 class MassActionSettingsReader {
@@ -13,7 +14,7 @@ class MassActionSettingsReader {
          */
        val EGRN_MASS_ACTION_FILTER_LIST = MapStringListProperty(
             "dl.geaddresshelper.mass.filtering_tag_map",
-            mapOf("fixme" to listOf("*"), "building" to listOf("garage","shed","roof","shack"), "addr:housenumber" to listOf("*"))
+            mapOf("fixme" to listOf("*"), "building" to listOf("garage","shed","roof","shack"), ADDR_HOUSENUMBER_TAG to listOf("*"))
          )
 
         val FILTER_LIST_ADDR = MapStringListProperty(

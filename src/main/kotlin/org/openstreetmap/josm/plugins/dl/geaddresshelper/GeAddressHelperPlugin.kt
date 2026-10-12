@@ -18,7 +18,6 @@ import org.openstreetmap.josm.plugins.PluginInformation
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.actions.ClickAction
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.deletion.DeleteTmpAction
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.dictionary.DictionaryAction
-import org.openstreetmap.josm.plugins.dl.geaddresshelper.numberstreetgenerator.dialog.NumberedStreetAction
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.actions.SelectAction
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.numberstreetgenerator.NumGeneratorToggleDialog
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.settings.io.CommonSettingsReader
@@ -26,6 +25,8 @@ import org.openstreetmap.josm.plugins.dl.geaddresshelper.settings.io.ValidationS
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.GeometryHelper
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.uploadhooks.PluginCacheCleaner
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.deletion.UploadFilter
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.TagCreator.ADDR_HOUSENUMBER_TAG
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.TagCreator.ADDR_STREET_TAG
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.validation.N_ValidationCache
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.validation.NaprFuzzyStreetMatchingTest
 import org.openstreetmap.josm.tools.Geometry
@@ -57,7 +58,6 @@ class GeAddressHelperPlugin(info: PluginInformation) : Plugin(info) {
     val clickAction: ClickAction = ClickAction()
     val dictionaryAction: DictionaryAction = DictionaryAction()
     val deleteTmpAction: DeleteTmpAction = DeleteTmpAction()
-    val numberedStreetAction: NumberedStreetAction = NumberedStreetAction()
 
     fun runEgrnValidation(selection: Collection<OsmPrimitive?>) {
       val map = MainApplication.getMap()
@@ -106,7 +106,7 @@ class GeAddressHelperPlugin(info: PluginInformation) : Plugin(info) {
         OsmDataManager.getInstance().editDataSet.allNonDeletedCompletePrimitives().filter { p ->
           p !is Node &&
             p.hasKey("building") &&
-            p.hasKey("addr:housenumber") &&
+            p.hasKey(ADDR_HOUSENUMBER_TAG) &&
             (p.hasKey("addr:street") || p.hasKey("addr:place"))
         }
       val osmBuildingsAddressMap = osmBuildingsWithAddress.groupBy { getOsmInlineAddress(it) }
@@ -115,9 +115,9 @@ class GeAddressHelperPlugin(info: PluginInformation) : Plugin(info) {
 
     private fun getOsmInlineAddress(p: OsmPrimitive): String {
       return if (p.hasKey("addr:street")) {
-        "${p["addr:street"]}, ${p["addr:housenumber"]}"
+        "${p[ADDR_STREET_TAG]}, ${p[ADDR_HOUSENUMBER_TAG]}"
       } else {
-        "${p["addr:place"]}, ${p["addr:housenumber"]}"
+        "${p["addr:place"]}, ${p[ADDR_HOUSENUMBER_TAG]}"
       }
     }
 
@@ -179,7 +179,6 @@ class GeAddressHelperPlugin(info: PluginInformation) : Plugin(info) {
     subMenu.add(clickAction)
     subMenu.add(dictionaryAction)
     subMenu.add(deleteTmpAction)
-    subMenu.add(numberedStreetAction)
 
     menu.add(subMenu)
   }

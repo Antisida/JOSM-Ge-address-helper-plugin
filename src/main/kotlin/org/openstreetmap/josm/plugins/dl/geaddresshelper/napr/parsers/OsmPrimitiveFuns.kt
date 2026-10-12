@@ -2,6 +2,8 @@ package org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.parsers
 
 import org.openstreetmap.josm.data.osm.Node
 import org.openstreetmap.josm.data.osm.OsmPrimitive
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.TagCreator.ADDR_HOUSENUMBER_TAG
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.TagCreator.ADDR_STREET_TAG
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.TagCreator.BUILDING_TAG
 
 fun Collection<OsmPrimitive>.getBuildings(
@@ -31,10 +33,10 @@ fun Collection<OsmPrimitive>.getAddrBuildings(
             }
           }
       }
-  val primitive = filter[0]
-  primitive.hasTag("addr:street")
-  primitive.hasTag("addr:housenumber")
-  primitive.hasTag("building")
-  val filter1 = filter.filter { it.hasTag("addr:street") && it.hasTag("addr:housenumber") }
+//  val primitive = filter[0]
+//  primitive.hasTag(ADDR_STREET_TAG)
+//  primitive.hasTag(ADDR_HOUSENUMBER_TAG)
+//  primitive.hasTag("building")
+  val filter1 = filter.filter { it.hasTag(ADDR_STREET_TAG) && it.hasTag(ADDR_HOUSENUMBER_TAG) }
   return filter1
 }

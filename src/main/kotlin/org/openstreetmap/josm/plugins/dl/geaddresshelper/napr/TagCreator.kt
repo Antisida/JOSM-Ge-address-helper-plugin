@@ -1,13 +1,25 @@
 package org.openstreetmap.josm.plugins.dl.geaddresshelper.napr
 
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.parsers.ActionType
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.parsers.ActionType.*
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.parsers.ParsingFlags
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.parsers.dto.Address
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.Transliterator
 
 object TagCreator {
+    const val BUILDING_TAG = "building"
+    const val ADDR_STREET_TAG = "addr:street"
+    const val ADDR_HOUSENUMBER_TAG = "addr:housenumber"
+
     const val REMOVE_ME = "REMOVE ME!"
     const val FIXME_TAG = "fixme"
-    const val BUILDING_TAG = "building"
+
+    const val NAPR_PL_TAG = "napr:pl"
+    const val NAPR_RAW_TAG = "napr:raw"
+    const val NAPR_ADDR_TAG = "napr:addr"
+    const val NAPR_WARN_TAG = "napr:warn"
+
+
     val STREET_STATUS_AND_ABBR_SET =
         setOf(
             "ქუჩა",
@@ -44,86 +56,73 @@ object TagCreator {
     //  "მუნიციპალიტეტი", //муниципалитет
 
 
-    fun create(
-        type: TagType,
-        osmStreet: String?,
-        address: Address?,
-        rawNaprString: List<String>,
-        additionalTags: Map<String, String>,
-    ): Map<String, String> {
-        return when (type) {
-            TagType.NODE -> forNode(rawNaprString, address, additionalTags)
-            TagType.BUILDING -> {
-                requireNotNull(address) { "ParsedAddress cannot be null while creating building's tags" }
-                requireNotNull(osmStreet) { "OsmStreetName cannot be null while creating building's tags" }
-                forBuilding(osmStreet, address, rawNaprString, additionalTags)
+    fun forStreetFunction(): (List<String>, Address?, Map<String, String>) -> Map<String, String> {
+        return { rawString, address, additionalTags ->
+            val tags = mutableMapOf<String, String>()
+            if (address != null) {
+                tags.putAll(
+                    toTagsIndexed(
+                        NAPR_PL_TAG,
+                        address.places.map { place -> place.name + " : " + Transliterator.transliterate(place.getStatusWithName()) })
+                )
+//              tags.putAll(toTagsIndexed("napr:pl:tr", address.places.map { place -> Transliterator.transliterate(place.getStatusWithName()) }))
+                tags.put("name", address.street.extractedName)
+
+                tags.put(NAPR_ADDR_TAG, address.source)
             }
-            TagType.STREET -> {
-                requireNotNull(address) { "ParsedAddress cannot be null while creating street's tags" }
-                forStreet(rawNaprString, address, additionalTags)
-            }
+            tags.putAll(toTagsIndexed(NAPR_RAW_TAG, rawString))
+            tags.putAll(additionalTags)
+            tags
         }
     }
 
-    private fun forStreet(
-        rawString: List<String>,
-        address: Address,
-        additionalTags: Map<String, String>
-    ): Map<String, String> {
-        val tags = mutableMapOf<String, String>()
-        tags.putAll(toTagsIndexed("napr:pl", address.places.map { place -> place.name + " : " + Transliterator.transliterate(place.getStatusWithName()) }))
-//        tags.putAll(toTagsIndexed("napr:pl:tr", address.places.map { place -> Transliterator.transliterate(place.getStatusWithName()) }))
-        tags.put("name", address.street.extractedName)
+    fun forNodeFunction(): (List<String>, Address?, Map<String, String>) -> Map<String, String> {
+        return { rawString, address, additionalTags ->
+            buildMap {
+                putAll(forNode(rawString))
 
-        tags.put("napr:addr", address.source)
-        tags.putAll(toTagsIndexed("napr:raw", rawString))
+                if (address != null) {
+                    putAll(
+                        toTagsIndexed(
+                            NAPR_PL_TAG,
+                            address.places.map { place -> place.name + " : " + Transliterator.transliterate(place.getStatusWithName()) })
+                    )
+//                  putAll(toTagsIndexed("napr:pl:tr", address.places.map { place -> Transliterator.transliterate(place.getStatusWithName()) }))
+                    put(ADDR_STREET_TAG, address.street.extractedName)
+                    put(ADDR_HOUSENUMBER_TAG, address.houseNumber.extractedNumber)
 
-        tags.putAll(additionalTags)
-        return tags
-    }
-
-    private fun forNode(
-        rawString: List<String>,
-        address: Address?,
-        additionalTags: Map<String, String>,
-    ): Map<String, String> = buildMap {
-        putAll(forNode(rawString))
-
-        if (address != null) {
-            putAll(toTagsIndexed("napr:pl", address.places.map { place -> place.name + " : " + Transliterator.transliterate(place.getStatusWithName()) }))
-//            putAll(toTagsIndexed("napr:pl:tr", address.places.map { place -> Transliterator.transliterate(place.getStatusWithName()) }))
-            put("addr:street", address.street.extractedName)
-            put("addr:housenumber", address.houseNumber.extractedNumber)
-
-            if (address.street.flags.contains(ParsingFlags.GENITIVE_APPLIED)) {
-                put("napr:warn", "TO GENITIVE CASE")
+                    if (address.street.flags.contains(ParsingFlags.GENITIVE_APPLIED)) {
+                        put(NAPR_WARN_TAG, "TO GENITIVE CASE")
+                    }
+                }
+                putAll(additionalTags)
             }
         }
-        putAll(additionalTags)
     }
 
     private fun forNode(rawString: List<String>): Map<String, String> = buildMap {
-        put("fixme", "REMOVE ME!")
-        putAll(toTagsIndexed("napr:raw", rawString))
+        put(FIXME_TAG, REMOVE_ME)
+        putAll(toTagsIndexed(NAPR_RAW_TAG, rawString))
     }
 
-    private fun forBuilding(
-        osmStreetName: String,
-        address: Address,
-        rawString: List<String>,
-        additionalTags: Map<String, String>,
-    ): MutableMap<String, String> {
-        val tags = mutableMapOf<String, String>()
-        tags.putAll(toTagsIndexed("napr:pl", address.places.map { place -> place.name + " : " + Transliterator.transliterate(place.getStatusWithName()) }))
-//        tags.putAll(toTagsIndexed("napr:pl:tr", address.places.map { place -> Transliterator.transliterate(place.getStatusWithName()) }))
-        tags.put("addr:street", osmStreetName)
-        tags.put("addr:housenumber", address.houseNumber.extractedNumber)
+    fun forBuildingFunction(): (List<String>, Address?, Map<String, String>) -> Map<String, String> {
+        return { rawString, address, additionalTags ->
+            val tags = mutableMapOf<String, String>()
+            requireNotNull(address) { "ParsedAddress cannot be null while creating building's tags" }
+            tags.putAll(
+                toTagsIndexed(
+                    NAPR_PL_TAG,
+                    address.places.map { place -> place.name + " : " + Transliterator.transliterate(place.getStatusWithName()) })
+            )
+//          tags.putAll(toTagsIndexed("napr:pl:tr", address.places.map { place -> Transliterator.transliterate(place.getStatusWithName()) }))
+            tags.put("addr:housenumber", address.houseNumber.extractedNumber)
 
-        tags.put("napr:addr", address.source)
-        tags.putAll(toTagsIndexed("napr:raw", rawString))
+            tags.put(NAPR_ADDR_TAG, address.source)
+            tags.putAll(toTagsIndexed(NAPR_RAW_TAG, rawString))
 
-        tags.putAll(additionalTags)
-        return tags
+            tags.putAll(additionalTags)
+            tags
+        }
     }
 
     private fun toTagsIndexed(tagTemplate: String, strings: List<String>): Map<String, String> = buildMap {
@@ -132,9 +131,11 @@ object TagCreator {
         }
     }
 
-    enum class TagType {
-        NODE,
-        BUILDING,
-        STREET
+    fun getTegCreationFunction(resultAction: ActionType): (List<String>, Address?, Map<String, String>) -> Map<String, String> {
+        return when (resultAction) {
+            CREATE_NODE, CREATE_NODE_DOUBLE, CREATE_MULTIPLE_ADDR_NODE -> forNodeFunction()
+            ADD_ADDR_TAGS -> forBuildingFunction()
+        }
     }
+
 }

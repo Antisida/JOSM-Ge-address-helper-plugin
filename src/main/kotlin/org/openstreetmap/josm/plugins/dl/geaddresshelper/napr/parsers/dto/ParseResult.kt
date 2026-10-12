@@ -3,22 +3,22 @@ package org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.parsers.dto
 import org.openstreetmap.josm.data.coor.EastNorth
 import org.openstreetmap.josm.data.osm.OsmPrimitive
 import org.openstreetmap.josm.data.osm.TagMap
-import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.parsers.ActionType
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.TagCreator.ADDR_HOUSENUMBER_TAG
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.TagCreator.ADDR_STREET_TAG
 
 data class ParseResult(
     val eastNorth: EastNorth,
     val osmPrimitive: OsmPrimitive,
     val parsedAddressList: List<Address>,
     val rawNaprStrings: List<String>,
-    val matchStreet: String?,
-    var resultAction: ActionType? = null,
+    val matchStreet: String?
 ) {
 
-    fun getTags(): TagMap {
+    fun getAddrTags(): TagMap {
         require(parsedAddressList.size == 1) { "Not applicable" }
         return TagMap(
-            "addr:housenumber", parsedAddressList.first().houseNumber.extractedNumber,
-            "addr:street", matchStreet,
+            ADDR_HOUSENUMBER_TAG, parsedAddressList.first().houseNumber.extractedNumber,
+            ADDR_STREET_TAG, matchStreet,
         )
     }
 }

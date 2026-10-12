@@ -12,8 +12,6 @@ import org.openstreetmap.josm.plugins.dl.geaddresshelper.dictionary.StreetDictio
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.dictionary.StreetTranslation
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.OsmPrimitiveHelper
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.TagCreator
-import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.TagCreator.TagType.NODE
-import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.TagCreator.TagType.STREET
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.api.NaprClient
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.api.RawNaprDto
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.parsers.MainParser
@@ -97,13 +95,7 @@ class ClickAction :
 
             //create node
             val fullAddresses = parsedAddresses.filter { it.isSuccess }
-            val tags = TagCreator.create(
-                type = NODE,
-                osmStreet = null,
-                rawNaprString = naprDto.getDataString(),
-                address = fullAddresses.singleOrNull(),
-                additionalTags = emptyMap()
-            )
+            val tags = TagCreator.forNodeFunction().invoke(naprDto.getDataString(), fullAddresses.singleOrNull(), emptyMap())
             val node = OsmPrimitiveHelper.createNode(mouseEastNorth, tags)
             val sequenceCommand = SequenceCommand(I18n.tr("Node added"), AddCommand(dataSet, node))
             commands.add(sequenceCommand)
@@ -120,13 +112,7 @@ class ClickAction :
                         nameTags.put(NAME_EN_TAG, found.nameEn)
                         nameTags.put(NAME_RU_TAG, found.nameRu)
                     }
-                    val tags = TagCreator.create(
-                        type = STREET,
-                        osmStreet = null,
-                        rawNaprString = naprDto.getDataString(),
-                        address = distinctByStreet[0],
-                        additionalTags = nameTags
-                    )
+                    val tags = TagCreator.forStreetFunction().invoke(naprDto.getDataString(), distinctByStreet[0], nameTags)
                     val streets = dataSet.selected.getStreets()
 
                     val chStreetCommands = CommandHelper.toChangeCommandsSimple(tags, streets)

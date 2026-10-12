@@ -2,6 +2,8 @@ package org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.parsers
 
 import org.openstreetmap.josm.data.osm.OsmPrimitive
 import org.openstreetmap.josm.data.osm.TagMap
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.TagCreator.ADDR_HOUSENUMBER_TAG
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.TagCreator.ADDR_STREET_TAG
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.parsers.dto.ParseResult
 import org.openstreetmap.josm.tools.Geometry
 import org.openstreetmap.josm.tools.Geometry.getDistance
@@ -45,7 +47,7 @@ class ResultSetAnalyzer {
     results: List<ParseResult>
   ): MutableMap<TagMap, MutableSet<OsmPrimitive>> {
     return results
-      .groupBy { it.getTags() }
+      .groupBy { it.getAddrTags() }
       .mapValues { entry ->
         entry.value.map { it.osmPrimitive }.toMutableSet()
       }
@@ -54,7 +56,7 @@ class ResultSetAnalyzer {
 
   private fun getAddrTags(tagMap: TagMap): TagMap {
     val addrTags = tagMap.filterKeys { key ->
-      key == "addr:street" || key == "addr:housenumber"
+      key == ADDR_STREET_TAG || key == ADDR_HOUSENUMBER_TAG
     }
     val result = TagMap()
     if (addrTags.isEmpty()) return result
@@ -70,7 +72,7 @@ class ResultSetAnalyzer {
 
     return when {
       result.matchStreet == null -> ActionType.CREATE_NODE
-      isDouble(result.getTags(), result.osmPrimitive) -> ActionType.CREATE_NODE_DOUBLE
+      isDouble(result.getAddrTags(), result.osmPrimitive) -> ActionType.CREATE_NODE_DOUBLE
       else -> ActionType.ADD_ADDR_TAGS
     }
   }
