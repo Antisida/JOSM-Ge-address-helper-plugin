@@ -103,7 +103,7 @@ class ClickAction :
             //пытаемся присвоить улице имя
             var streetSuccess = false
             if (dataSet.selected.containsStreetsOnly()) {
-                val distinctByStreet = parsedAddresses.distinctBy { it.street }
+                val distinctByStreet = parsedAddresses.distinctBy { it.street.extractedName }
                 if (distinctByStreet.size == 1) {
                     val found: StreetTranslation? = StreetDictionary.getByNameOrNull(distinctByStreet[0].street.extractedName)
                     val nameTags = mutableMapOf<String, String>()

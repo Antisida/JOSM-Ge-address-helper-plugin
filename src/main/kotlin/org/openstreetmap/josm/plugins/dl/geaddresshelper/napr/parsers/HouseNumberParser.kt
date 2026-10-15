@@ -1,6 +1,7 @@
 package org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.parsers
 
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.parsers.dto.HouseNumber
+import kotlin.text.trim
 
 object HouseNumberParser {
     private const val NOT_PARSED: String = "NOT_PARSED"
@@ -11,8 +12,10 @@ object HouseNumberParser {
         val parseContext =
             ParseContext(sourceString)
                 .removeParenthesesContent(ParsingFlags.PARENTHESES_REMOVED)
+                .trim()
                 //            .log("After removeParenthesesContent")
                 .collapseDuplicateCommas(ParsingFlags.COMMAS_COLLAPSED)
+                .trim()
                 //            .log("After collapseDuplicateCommas")
                 .replace("N", "")
                 .replace(" ", "")

@@ -73,7 +73,6 @@ fun ParseContext.removeParenthesesContent(vararg availableFlags: ParsingFlags): 
 
         s.replace(regex, "")
             .replace("""(?U)\s+""".toRegex(), " ") // Схлопываем разбежавшиеся пробелы в один
-            .trim()                            // Убираем пробелы по краям, если скобки были в начале/конце
     }
 
 /**
@@ -90,7 +89,7 @@ fun ParseContext.collapseDuplicateCommas(vararg availableFlags: ParsingFlags): P
         // Заменяем найденное комбо на одну запятую с последующим пробелом для красоты
         s.replace(regex, ", ")
             .replace("""(?U)\s+""".toRegex(), " ") // Схлопываем случайные двойные пробелы
-            .trim()
+
     }
 
 /**

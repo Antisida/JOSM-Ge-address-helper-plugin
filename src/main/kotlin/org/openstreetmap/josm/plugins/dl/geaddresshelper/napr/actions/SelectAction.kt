@@ -40,6 +40,7 @@ import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.TagCreator.FIXME_T
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.TagCreator.REMOVE_ME
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.parsers.ActionType.*
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.parsers.OsmStreetMatcher
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.funs.getNamedStreets
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.validation.N_ValidationRecord
 import org.openstreetmap.josm.tools.I18n
 import org.openstreetmap.josm.tools.Logging
@@ -107,25 +108,25 @@ class SelectAction :
                 val commands: MutableList<Command> = mutableListOf()
                 val parsingResults: MutableList<ParseResult> = mutableListOf()
                 for (naprResult in naprResults.filter { it.third.isUseful() }) {
-                    val dataNaprStrings = naprResult.third.getDataString()
-                    val usefulNaprStrings = naprResult.third.getUsefulString()
+                    val rawNaprDto: RawNaprDto = naprResult.third
+                    val usefulNaprStrings = rawNaprDto.getUsefulString()
                     val parsedAddressList: List<Address> = MainParser.parse(usefulNaprStrings)
                     val fullAddresses = parsedAddressList.filter { it.isSuccess }
                     var matchedOsmStreetName: String? = null
-                    if (fullAddresses.size == 1)
-                        matchedOsmStreetName =
-                            OsmStreetMatcher.findByNameAndDistance(
-                                dataSet,
-                                fullAddresses.first().street.extractedName,
-                                naprResult.second,
-                                DISTANCE_FOR_STREET_WAY_SEARCH.get(),
-                            )
+                    if (fullAddresses.size == 1) {
+                        matchedOsmStreetName = OsmStreetMatcher.findByNameAndDistance(
+                            dataSet.getNamedStreets(),
+                            fullAddresses.first().street.extractedName,
+                            naprResult.second,
+                            DISTANCE_FOR_STREET_WAY_SEARCH.get(),
+                        )
+                    }
                     parsingResults.add(
                         ParseResult(
                             naprResult.first,
                             naprResult.second,
                             fullAddresses,
-                            dataNaprStrings,
+                            rawNaprDto.getDataString(),
                             matchedOsmStreetName,
                         )
                     )

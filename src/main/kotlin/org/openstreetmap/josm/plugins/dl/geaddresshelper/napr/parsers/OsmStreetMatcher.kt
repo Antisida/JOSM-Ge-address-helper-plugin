@@ -1,49 +1,42 @@
 package org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.parsers
 
-import org.openstreetmap.josm.data.osm.DataSet
 import org.openstreetmap.josm.data.osm.OsmPrimitive
-import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.funs.getAllStreetNames
-import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.funs.getNamedStreets
 import org.openstreetmap.josm.tools.Geometry
 
 object OsmStreetMatcher {
 
-    data class MatchResult(val wordCountDiff: Int, val totalLevenshtein: Int)
-
-    //без расстояния (не используется)
-    fun findByName(dataSet: DataSet, query: String): String? {
-        return findBestMatch(query, dataSet.getAllStreetNames())
+    fun findByNameAndDistance(streets: List<OsmPrimitive>, query: String, building: OsmPrimitive, distance: Int): String? {
+        val byDistance: List<OsmPrimitive> = streets.filter { Geometry.getDistance(building, it) < distance }
+        val candidateNames: List<String> = byDistance
+            .map { listOfNotNull(it.get("name"), it.get("alt_name"), it.get("old_name"), it.get("short_name")) }
+            .flatten()
+        return getBestOrNull(candidateNames, query)
     }
 
-    fun findByNameAndDistance(dataSet: DataSet, query: String, building: OsmPrimitive, distance: Int): String? {
-        val byDistance: List<Triple<String, OsmPrimitive, MatchResult>> =
-            findBestMatch(dataSet.getNamedStreets(), query)
-                .filter { Geometry.getDistance(building, it.second) < distance }
 
-        if (byDistance.isNotEmpty()) {
-            val best = byDistance.minWithOrNull(
-                compareBy<Triple<String, OsmPrimitive, MatchResult>> { it.third.wordCountDiff }
-                    .thenBy { it.third.totalLevenshtein }
-            )
-            //имя в osm
-            if (best != null) return best.first
-        }
-        return null
+    //дает самый подходящий результат (если подходящие есть), если нет подходящих - то нулл
+    fun getBestOrNull(
+        candidateNames: List<String>,
+        query: String
+    ): String? {
+        return  candidateNames.mapNotNull { cand ->
+            val result: MatchResult = getMatchResult(cand, query)
+            if (result.isMatched()) cand to result else null
+        }.minByOrNull { it.second }?.first
     }
 
-    /**
+ /*   *//**
      * @return: Лист найденных улиц. <имя в осм, вей, результат>
      * Близкий OsmPrimitive (вей) по 'name', 'alt_name', 'old_name', 'short_name' или null
      * кандидат должен быть равен по длине запросу или быть длиннее ровно на 1 слово,
      * одно слово должно совпадать точно(статусная часть), другие могут отличаться на 1 символ
-     */
-    private fun findBestMatch(
-        list: List<OsmPrimitive>,
+     *//*
+    private fun getMatchFromListWay(
+        ways: List<OsmPrimitive>,
         query: String
     ): List<Triple<String, OsmPrimitive, MatchResult>> {
-        val matches = list.mapNotNull { osmCandidateWay ->
-            val osmNameToMatchResult: Pair<String, MatchResult>? =
-                checkMatch(osmCandidateWay, query)
+        val matches = ways.mapNotNull { osmCandidateWay ->
+            val osmNameToMatchResult: Pair<String, MatchResult>? = checkMatchOneWay(osmCandidateWay, query)
             //имя в osm -- way с этим именем -- matchResult
             if (osmNameToMatchResult != null) Triple(
                 osmNameToMatchResult.first,
@@ -52,43 +45,25 @@ object OsmStreetMatcher {
             )
             else null
         }
-
         return matches
-    }
+    }*/
 
-    /** @return: MatchResult для одного OsmPrimitive или null*/
-    private fun checkMatch(candidate: OsmPrimitive, query: String): Pair<String, MatchResult>? {
+/*    *//** @return: название улицы к MatchResult для одного OsmPrimitive или null*//*
+    private fun checkMatchOneWay(candidate: OsmPrimitive, query: String): Pair<String, MatchResult>? {
         val names = listOfNotNull(
             candidate.get("name"),
             candidate.get("alt_name"),
             candidate.get("old_name"),
             candidate.get("short_name")
         )
-        val candidateToResult: Pair<String, MatchResult>? = names.mapNotNull { cand ->
-            val result = checkMatch(cand, query)
-            if (result != null) cand to result else null
-        }.minWithOrNull(
-            compareBy<Pair<String, MatchResult>> { it.second.wordCountDiff }
-                .thenBy { it.second.totalLevenshtein }
-        )
+        val candidateToResult: Pair<String, MatchResult>? =
+            names.mapNotNull { cand ->
+                val result: MatchResult = getMatchResult(cand, query)
+                if (result.isMatched()) cand to result else null
+            }
+                .minWithOrNull(compareBy<Pair<String, MatchResult>> { it.second.diff }.thenBy { it.second.totalLevenshtein })
         return candidateToResult
-    }
-
-    /**
-     * Ищет самую близкую подходящую строку из списка.
-     * Тут кандидат должен быть равен по длине запросу или быть длиннее ровно на 1 слово.
-     */
-    private fun findBestMatch(query: String, list: List<String>): String? {
-        val matches = list.mapNotNull { candidate ->
-            val result = checkMatch(candidate, query)
-            if (result != null) candidate to result else null
-        }
-
-        return matches.minWithOrNull(
-            compareBy<Pair<String, MatchResult>> { it.second.wordCountDiff }
-                .thenBy { it.second.totalLevenshtein }
-        )?.first
-    }
+    }*/
 
     private fun cleanString(text: String): String {
         return text.filter { it.isLetterOrDigit() || it.isWhitespace() }
@@ -98,83 +73,192 @@ object OsmStreetMatcher {
      * Проверяет строки на соответствие правилам.
      * Теперь строго: кандидат должен быть равен по длине запросу или быть длиннее ровно на 1 слово.
      */
-    fun checkMatch(candidate: String, query: String): MatchResult? {
-        val cleanedCandidate = cleanString(candidate)
-        val cleanedQuery = cleanString(query)
+    fun getMatchResult(candidate: String, query: String): MatchResult {
+        val cleanedCandidate: String = cleanString(candidate)
+        val cleanedQuery: String = cleanString(query)
 
         val w1 = cleanedCandidate.lowercase().split(Regex("\\s+")).filter { it.isNotEmpty() } // Кандидат
         val w2 = cleanedQuery.lowercase().split(Regex("\\s+")).filter { it.isNotEmpty() }    // Запрос
 
-        // НОВОЕ ПРАВИЛО: Разница (Кандидат - Запрос) должна быть строго 0 или 1.
+        // Разница (Кандидат - Запрос) должна быть строго 0 или 1. Нас не интересуют более короткие названия, чем запрос.
         // Если кандидат меньше (разница отрицательная) или слишком длинный — сразу отбрасываем.
         val diff = w1.size - w2.size
         if (diff !in 0..1) {
-            return null
+            return MatchResult(
+                cleanedCandidate.length,
+                cleanedQuery.length,
+                w1.size,
+                w2.size,
+                -1,
+                -1,
+                w1.size - w2.size,
+                -1,
+                listOf(MatchFlag.DIFF_MORE_THEN_ONE_WORD)
+            )
         }
 
         // Так как кандидат гарантированно больше или равен запросу:
         val smaller = w2 // Запрос
         val larger = w1  // Кандидат
 
-        val usedInLarger = BooleanArray(larger.size)
-        var exactCount = 0
+        val usedInLarger = BooleanArray(larger.size)   //индексы слов в larger, для которых нашлось совпадение
+        val usedInSmoller = BooleanArray(smaller.size) //индексы слов в larger, для которых нашлось совпадение
+        var exactCount = 0 //счетчик точных совпадений
+        var fuzzyCount = 0 //счетчик неточных совпадений
         var totalLev = 0
+
+        val flags: MutableList<MatchFlag> = mutableListOf()
 
         // Сопоставляем каждое слово из запроса (smaller) со словом из кандидата (larger)
         for (sWord in smaller) {
-            var matchedIdx = -1
+            /*  var matchedIdx = -1*/
 
             // 1. Ищем точное совпадение
-            for (j in larger.indices) {
-                if (!usedInLarger[j] && sWord == larger[j]) {
-                    matchedIdx = j
-                    break
-                }
-            }
-
-            if (matchedIdx != -1) {
-                usedInLarger[matchedIdx] = true
+            ////---------------
+            val idx: Int = getIdx(sWord, larger, usedInLarger)
+            if (idx != -1) {
+                usedInLarger[idx] = true
+                usedInSmoller[smaller.indexOf(sWord)] = true
                 exactCount++
+                /*for (j in larger.indices) {
+                    if (!usedInLarger[j] && sWord == larger[j]) {
+                        matchedIdx = j
+                        break
+                    }
+                }
+
+                if (matchedIdx != -1) {
+                    usedInLarger[matchedIdx] = true
+                    usedInSmoller[smaller.indexOf(sWord)] = true
+                    exactCount++*/
             } else {
                 // 2. Если точного нет, ищем с опечаткой в 1 символ
-                for (j in larger.indices) {
+                val maxLev: Int = 1
+                val idxl: Int = getIdx(sWord, larger, usedInLarger, maxLev)
+                if (idxl != -1) {
+                    flags.add(MatchFlag.DIFF_LEV)
+                    fuzzyCount++
+                    totalLev += maxLev //fixme тут верно пока значение 1
+                    usedInLarger[idxl] = true
+                    usedInSmoller[smaller.indexOf(sWord)] = true
+                }
+                /*for (j in larger.indices) {
                     if (!usedInLarger[j]) {
                         val lev = levenshtein(sWord, larger[j])
-                        if (lev <= 1) {
+                        if (lev <= 1) { // эту проверку надо вынести из этого метода наружу
                             // Запрещаем опечатки в цифрах/числах
                             if (containDigit(sWord) || containDigit(larger[j])) {
-                                return null
+                                break
                             }
                             matchedIdx = j
                             totalLev += lev
+                            flags.add(MatchFlag.DIFF_ONE_LETTER)
                             break
                         }
                     }
                 }
                 if (matchedIdx != -1) {
+                    exactCount++
                     usedInLarger[matchedIdx] = true
-                } else {
-                    return null // Слово из запроса не нашлось в кандидате
+                    usedInSmoller[smaller.indexOf(sWord)] = true
+                }*/
+            }
+        }
+
+        val wordCountMatch = usedInSmoller.count { it }
+        val wordCountNotMatch = larger.size - wordCountMatch
+
+        // Обязательно должно быть хотя бы 2 совпадения (статусная часть и еще что-нибудь)
+        if (exactCount + fuzzyCount < 2) { //todo вынести в результат
+            flags.add(MatchFlag.MATCHED_WORD_LESS_THEN_TWO)
+        }
+
+        // 3. количество слов одинаковое, только одно слово не совпало - проверяем не сокращение ли это
+        if (larger.size == smaller.size) {
+            if (larger.size - exactCount == 1) {
+                val idxSmallerNotFound = usedInSmoller.indexOf(false) //индекс не найденное слово в коротком
+                val idxLargerNotFound = usedInLarger.indexOf(false)
+                if (idxSmallerNotFound != -1 && idxLargerNotFound != -1) {
+                    val smallerNotFound = smaller[idxSmallerNotFound]
+                    val largerNotFound = larger[idxLargerNotFound]
+                    if (largerNotFound.startsWith(smallerNotFound)
+                        || smallerNotFound.startsWith(largerNotFound)
+                    ) {
+                        flags.add(MatchFlag.ABBR)
+                    }
                 }
             }
         }
 
-        // Обязательно должно быть хотя бы одно точное совпадение
-        if (exactCount < 1) return null
-
-        // 3. Если кандидат длиннее на 1 слово, проверяем лишнее слово на "запрещенность"
+        // 4. Если кандидат длиннее на 1 слово, проверяем лишнее слово на "запрещенность" (не должно содержать цифры) случай с В Ленина и Ленина
         if (larger.size > smaller.size) {
             val extraIdx = usedInLarger.indexOf(false)
             if (extraIdx != -1) {
                 val extraWord = larger[extraIdx]
                 if (containDigit(extraWord)) {
-                    return null
+                    flags.add(MatchFlag.ONLY_ONE_DIFF_WORD_CONTAINS_DIGIT)
                 }
             }
         }
-
-        return MatchResult(wordCountDiff = diff, totalLevenshtein = totalLev)
+        return MatchResult(
+            cleanedCandidate.length,
+            cleanedQuery.length,
+            w1.size,
+            w2.size,
+            wordCountNotMatch,
+            wordCountMatch,
+            w1.size - w2.size,
+            totalLev,
+            flags
+        )
     }
+
+    private fun getIdx(string: String, list: List<String>, usedInLarger: BooleanArray): Int {
+        for (j in list.indices) {
+            if (!usedInLarger[j] && string == list[j]) {
+                return j
+            }
+        }
+        return -1
+    }
+
+    private fun getIdx(string: String, list: List<String>, usedInLarger: BooleanArray, maxLev: Int): Int {
+        for (j in list.indices) {
+            if (!usedInLarger[j]) {
+                val lev = levenshtein(string, list[j])
+                if (lev <= maxLev) { // эту проверку надо вынести из этого метода наружу
+                    // Запрещаем опечатки в цифрах/числах
+                    if (containDigit(string) || containDigit(list[j])) {
+                        break
+                    }
+                    return j
+                }
+            }
+        }
+        return -1
+    }
+
+
+//    fun Collection<String>.indexOf(str: String): Integer {
+//        return this.filter {
+//            it !is Node &&
+//                    it.hasTag(BUILDING_TAG) &&
+//                    ignoreTags.all { (key, values) ->
+//                        values.none { tagValue ->
+//                            it.hasTag(key, tagValue) || (it.hasKey(key) && tagValue == "*")
+//                        }
+//                    }
+//        }
+//    }
+//
+//    private fun
+//            for (j in larger.indices)
+//    {
+//        if (!usedInLarger[j] && sWord == larger[j]) {
+//            matchedIdx = j
+//            break
+//        }
+//    }
 
     val romanDigits = setOf('I', 'V', 'X', 'L'/*, 'C', 'D', 'M'*/)
 
@@ -200,37 +284,4 @@ object OsmStreetMatcher {
         return dp[s2.length]
     }
 
-    fun filterUniqueStrings(list: List<String>): List<String> {
-        // 1. Сортируем по длине строки (от коротких к длинным)
-        val sorted = list.sortedBy { it.length }
-        val toRemove = mutableSetOf<String>()
-
-        for (i in sorted.indices) {
-            val query = sorted[i]
-            // Если строка уже помечена на удаление, пропускаем её шаг проверки
-            if (query in toRemove) continue
-
-            // 2. Ищем все более длинные строки, которые подходят под наш запрос
-            val matchingCandidates = sorted.drop(i + 1).filter { candidate ->
-                candidate !in toRemove && checkMatch(candidate, query) != null
-            }
-
-            if (matchingCandidates.isNotEmpty()) {
-                // Короткую строку (базис) удаляем, так как нашли более полные описания
-                toRemove.add(query)
-
-                // Из всех найденных кандидатов оставляем только самый длинный (полный),
-                // а промежуточные варианты (например, "улица М Лермонтова") отправляем в toRemove
-                val longestCandidate = matchingCandidates.maxByOrNull { it.length }
-                matchingCandidates.forEach { candidate ->
-                    if (candidate != longestCandidate) {
-                        toRemove.add(candidate)
-                    }
-                }
-            }
-        }
-
-        // Возвращаем только те строки, которые не попали в список на удаление
-        return sorted.filter { it !in toRemove }
-    }
 }
