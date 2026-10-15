@@ -1,78 +1,29 @@
 package org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.parsers
 
 import org.openstreetmap.josm.data.osm.OsmPrimitive
-import org.openstreetmap.josm.tools.Geometry
 
 object OsmStreetMatcher {
 
-    fun findByNameAndDistance(streets: List<OsmPrimitive>, query: String, building: OsmPrimitive, distance: Int): String? {
-        val byDistance: List<OsmPrimitive> = streets.filter { Geometry.getDistance(building, it) < distance }
-        val candidateNames: List<String> = byDistance
+    fun findBestOrNull(streets: List<OsmPrimitive>, query: String): String? {
+        val candidateNames: List<String> = streets
             .map { listOfNotNull(it.get("name"), it.get("alt_name"), it.get("old_name"), it.get("short_name")) }
             .flatten()
-        return getBestOrNull(candidateNames, query)
+        return bestOrNull(candidateNames, query)
     }
 
-
-    //дает самый подходящий результат (если подходящие есть), если нет подходящих - то нулл
-    fun getBestOrNull(
-        candidateNames: List<String>,
-        query: String
-    ): String? {
-        return  candidateNames.mapNotNull { cand ->
-            val result: MatchResult = getMatchResult(cand, query)
-            if (result.isMatched()) cand to result else null
+    /** @return: самый подходящий результат (если подходящие есть) из списка candidateNames, если нет подходящих - null */
+    fun bestOrNull(candidateNames: List<String>, query: String): String? {
+        return candidateNames.mapNotNull { candidate ->
+            val result: MatchResult = getMatchResult(candidate, query)
+            if (result.isMatched()) candidate to result else null
         }.minByOrNull { it.second }?.first
     }
-
- /*   *//**
-     * @return: Лист найденных улиц. <имя в осм, вей, результат>
-     * Близкий OsmPrimitive (вей) по 'name', 'alt_name', 'old_name', 'short_name' или null
-     * кандидат должен быть равен по длине запросу или быть длиннее ровно на 1 слово,
-     * одно слово должно совпадать точно(статусная часть), другие могут отличаться на 1 символ
-     *//*
-    private fun getMatchFromListWay(
-        ways: List<OsmPrimitive>,
-        query: String
-    ): List<Triple<String, OsmPrimitive, MatchResult>> {
-        val matches = ways.mapNotNull { osmCandidateWay ->
-            val osmNameToMatchResult: Pair<String, MatchResult>? = checkMatchOneWay(osmCandidateWay, query)
-            //имя в osm -- way с этим именем -- matchResult
-            if (osmNameToMatchResult != null) Triple(
-                osmNameToMatchResult.first,
-                osmCandidateWay,
-                osmNameToMatchResult.second
-            )
-            else null
-        }
-        return matches
-    }*/
-
-/*    *//** @return: название улицы к MatchResult для одного OsmPrimitive или null*//*
-    private fun checkMatchOneWay(candidate: OsmPrimitive, query: String): Pair<String, MatchResult>? {
-        val names = listOfNotNull(
-            candidate.get("name"),
-            candidate.get("alt_name"),
-            candidate.get("old_name"),
-            candidate.get("short_name")
-        )
-        val candidateToResult: Pair<String, MatchResult>? =
-            names.mapNotNull { cand ->
-                val result: MatchResult = getMatchResult(cand, query)
-                if (result.isMatched()) cand to result else null
-            }
-                .minWithOrNull(compareBy<Pair<String, MatchResult>> { it.second.diff }.thenBy { it.second.totalLevenshtein })
-        return candidateToResult
-    }*/
 
     private fun cleanString(text: String): String {
         return text.filter { it.isLetterOrDigit() || it.isWhitespace() }
     }
 
-    /**
-     * Проверяет строки на соответствие правилам.
-     * Теперь строго: кандидат должен быть равен по длине запросу или быть длиннее ровно на 1 слово.
-     */
+    //todo refactoring
     fun getMatchResult(candidate: String, query: String): MatchResult {
         val cleanedCandidate: String = cleanString(candidate)
         val cleanedQuery: String = cleanString(query)
@@ -111,29 +62,15 @@ object OsmStreetMatcher {
 
         // Сопоставляем каждое слово из запроса (smaller) со словом из кандидата (larger)
         for (sWord in smaller) {
-            /*  var matchedIdx = -1*/
-
             // 1. Ищем точное совпадение
-            ////---------------
             val idx: Int = getIdx(sWord, larger, usedInLarger)
             if (idx != -1) {
                 usedInLarger[idx] = true
                 usedInSmoller[smaller.indexOf(sWord)] = true
                 exactCount++
-                /*for (j in larger.indices) {
-                    if (!usedInLarger[j] && sWord == larger[j]) {
-                        matchedIdx = j
-                        break
-                    }
-                }
-
-                if (matchedIdx != -1) {
-                    usedInLarger[matchedIdx] = true
-                    usedInSmoller[smaller.indexOf(sWord)] = true
-                    exactCount++*/
             } else {
                 // 2. Если точного нет, ищем с опечаткой в 1 символ
-                val maxLev: Int = 1
+                val maxLev = 1
                 val idxl: Int = getIdx(sWord, larger, usedInLarger, maxLev)
                 if (idxl != -1) {
                     flags.add(MatchFlag.DIFF_LEV)
@@ -142,26 +79,6 @@ object OsmStreetMatcher {
                     usedInLarger[idxl] = true
                     usedInSmoller[smaller.indexOf(sWord)] = true
                 }
-                /*for (j in larger.indices) {
-                    if (!usedInLarger[j]) {
-                        val lev = levenshtein(sWord, larger[j])
-                        if (lev <= 1) { // эту проверку надо вынести из этого метода наружу
-                            // Запрещаем опечатки в цифрах/числах
-                            if (containDigit(sWord) || containDigit(larger[j])) {
-                                break
-                            }
-                            matchedIdx = j
-                            totalLev += lev
-                            flags.add(MatchFlag.DIFF_ONE_LETTER)
-                            break
-                        }
-                    }
-                }
-                if (matchedIdx != -1) {
-                    exactCount++
-                    usedInLarger[matchedIdx] = true
-                    usedInSmoller[smaller.indexOf(sWord)] = true
-                }*/
             }
         }
 
@@ -237,28 +154,6 @@ object OsmStreetMatcher {
         }
         return -1
     }
-
-
-//    fun Collection<String>.indexOf(str: String): Integer {
-//        return this.filter {
-//            it !is Node &&
-//                    it.hasTag(BUILDING_TAG) &&
-//                    ignoreTags.all { (key, values) ->
-//                        values.none { tagValue ->
-//                            it.hasTag(key, tagValue) || (it.hasKey(key) && tagValue == "*")
-//                        }
-//                    }
-//        }
-//    }
-//
-//    private fun
-//            for (j in larger.indices)
-//    {
-//        if (!usedInLarger[j] && sWord == larger[j]) {
-//            matchedIdx = j
-//            break
-//        }
-//    }
 
     val romanDigits = setOf('I', 'V', 'X', 'L'/*, 'C', 'D', 'M'*/)
 

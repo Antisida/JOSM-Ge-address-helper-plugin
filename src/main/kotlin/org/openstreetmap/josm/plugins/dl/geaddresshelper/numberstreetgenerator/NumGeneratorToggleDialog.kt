@@ -171,11 +171,12 @@ class NumGeneratorToggleDialog : ToggleDialog(
             val streets = OsmDataManager.getInstance().editDataSet?.selected?.getStreets() ?: return
             if (streets.isEmpty()) return
 
-            val commands = CommandHelper.toChangeCommandsSimple(toTags(namesTextArea.text), streets)
+            val commands = CommandHelper.toChangeCommandsSimple(getCurrentTags(), streets)
             val sequenceCommand = SequenceCommand(I18n.tr("Added node from GeorgiaAddressHelper"), commands)
             UndoRedoHandler.getInstance().add(sequenceCommand)
         }
     }
+
     /** Перенести теги на выбранные здания */
     inner class ApplyBuildingTagsAction : JosmAction(
         "Apply addr:street", "building_blue.svg", "Apply addr:street to selected buildings", Shortcut.registerShortcut(
@@ -189,7 +190,7 @@ class NumGeneratorToggleDialog : ToggleDialog(
             val buildings = OsmDataManager.getInstance().editDataSet?.selected?.getBuildings() ?: return
             if (buildings.isEmpty()) return
 
-            val commands = CommandHelper.toChangeCommandsSimple(toTags(addrStreetTextArea.text), buildings)
+            val commands = CommandHelper.toChangeCommandsSimple(getCurrentTags(), buildings)
             val sequenceCommand = SequenceCommand(I18n.tr("Added node from GeorgiaAddressHelper"), commands)
             UndoRedoHandler.getInstance().add(sequenceCommand)
         }
@@ -299,6 +300,21 @@ class NumGeneratorToggleDialog : ToggleDialog(
         if (event.primitive.hasKey("highway")) applyStreetTagsAction.setEnabled(true)
         // отключен, т.к. здания добавляются чаще всего с помощью режима B, который не выделяет здания после добавления
 //        if (event.primitive.hasKey("building")) applyBuildingTagsAction.setEnabled(true)
+    }
+
+    /** Преобразования текста в теги */
+    private fun getCurrentTags(): Map<String, String> {
+        val tagsText = namesTextArea.text
+        if (tagsText == null) return mapOf()
+        return tagsText
+            .trimIndent()
+            .lineSequence() // Построчный разбор
+            .map { it.trim() }
+            .filter { it.isNotEmpty() && it.contains("=") }
+            .associate { line ->
+                val (key, value) = line.split("=", limit = 2)
+                key.trim() to value.trim()
+            }
     }
 
 }

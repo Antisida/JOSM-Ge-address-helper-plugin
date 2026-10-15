@@ -42,6 +42,7 @@ import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.parsers.ActionType
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.parsers.OsmStreetMatcher
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.funs.getNamedStreets
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.validation.N_ValidationRecord
+import org.openstreetmap.josm.tools.Geometry
 import org.openstreetmap.josm.tools.I18n
 import org.openstreetmap.josm.tools.Logging
 import org.openstreetmap.josm.tools.Shortcut
@@ -114,12 +115,10 @@ class SelectAction :
                     val fullAddresses = parsedAddressList.filter { it.isSuccess }
                     var matchedOsmStreetName: String? = null
                     if (fullAddresses.size == 1) {
-                        matchedOsmStreetName = OsmStreetMatcher.findByNameAndDistance(
-                            dataSet.getNamedStreets(),
-                            fullAddresses.first().street.extractedName,
-                            naprResult.second,
-                            DISTANCE_FOR_STREET_WAY_SEARCH.get(),
-                        )
+                        val filterByDistance: List<OsmPrimitive> = dataSet.getNamedStreets()
+                            .filter { Geometry.getDistance(naprResult.second, it) < DISTANCE_FOR_STREET_WAY_SEARCH.get() }
+                        val extractedName = fullAddresses.first().street.extractedName
+                        matchedOsmStreetName = OsmStreetMatcher.findBestOrNull(filterByDistance,extractedName)
                     }
                     parsingResults.add(
                         ParseResult(

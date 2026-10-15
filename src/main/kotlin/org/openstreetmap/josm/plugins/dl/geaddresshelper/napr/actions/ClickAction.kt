@@ -12,14 +12,14 @@ import org.openstreetmap.josm.plugins.dl.geaddresshelper.dictionary.StreetDictio
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.dictionary.StreetTranslation
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.OsmPrimitiveHelper
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.TagCreator
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.TagCreator.NAME_EN_TAG
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.TagCreator.NAME_KA_TAG
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.TagCreator.NAME_RU_TAG
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.api.NaprClient
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.api.RawNaprDto
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.parsers.MainParser
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.parsers.dto.Address
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.CommandHelper
-import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.NAME_EN_TAG
-import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.NAME_KA_TAG
-import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.NAME_RU_TAG
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.funs.containsStreetsOnly
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.funs.getStreets
 import org.openstreetmap.josm.tools.I18n

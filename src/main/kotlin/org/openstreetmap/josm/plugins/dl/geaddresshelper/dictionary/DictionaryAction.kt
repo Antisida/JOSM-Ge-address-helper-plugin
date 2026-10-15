@@ -9,11 +9,11 @@ import org.openstreetmap.josm.data.osm.OsmDataManager
 import org.openstreetmap.josm.data.osm.OsmPrimitive
 import org.openstreetmap.josm.data.osm.OsmPrimitiveType
 import org.openstreetmap.josm.gui.MainApplication
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.TagCreator.NAME_EN_TAG
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.TagCreator.NAME_KA_TAG
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.TagCreator.NAME_RU_TAG
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.TagCreator.NAME_TAG
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.CommandHelper
-import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.NAME_EN_TAG
-import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.NAME_KA_TAG
-import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.NAME_RU_TAG
-import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.NAME_TAG
 import org.openstreetmap.josm.tools.I18n
 import org.openstreetmap.josm.tools.Shortcut
 import java.awt.event.ActionEvent

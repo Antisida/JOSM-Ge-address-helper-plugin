@@ -1,7 +1,6 @@
 package org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.parsers
 
 import org.junit.jupiter.api.Assertions.*
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 
@@ -17,33 +16,33 @@ class OsmStreetMatcherTest {
 
     @Test
     @DisplayName("одинаковые имена и разные фамилии")
-    fun getBestOrNull_1() {
+    fun bestOrNull_1() {
         val street1 = "შალვა ნუცუბიძის ქუჩა"
         val street2 = "შალვა ამირანაშვილის ქუჩა"
         val raw = " შალვა ნუცუბიძის ქუჩა"
-        val result = OsmStreetMatcher.getBestOrNull(listOf(street1, street2), query = raw)
+        val result = OsmStreetMatcher.bestOrNull(listOf(street1, street2), query = raw)
 
         assertEquals(result, street1)
     }
 
     @Test
     @DisplayName("одинаковые имена и разные фамилии, кандидат без имени")
-    fun getBestOrNull_2() {
+    fun bestOrNull_2() {
         val street1 = "შალვა ნუცუბიძის ქუჩა"
         val street2 = "შალვა ამირანაშვილის ქუჩა"
         val raw = "ნუცუბიძის ქუჩა"
-        val result = OsmStreetMatcher.getBestOrNull(listOf(street1, street2), query = raw)
+        val result = OsmStreetMatcher.bestOrNull(listOf(street1, street2), query = raw)
 
         assertEquals(result, street1)
     }
 
     @Test
     @DisplayName("одинаковые имена и разные фамилии, кандидат с сокращением")
-    fun getBestOrNull_3() {
+    fun bestOrNull_3() {
         val street1 = "შალვა ნუცუბიძის ქუჩა"
         val street2 = "შალვა ამირანაშვილის ქუჩა"
         val raw = "შ ნუცუბიძის ქუჩა"
-        val result = OsmStreetMatcher.getBestOrNull(listOf(street1, street2), query = raw)
+        val result = OsmStreetMatcher.bestOrNull(listOf(street1, street2), query = raw)
 
         assertEquals(result, street1)
     }
