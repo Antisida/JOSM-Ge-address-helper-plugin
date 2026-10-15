@@ -118,7 +118,7 @@ class SelectAction :
                         val filterByDistance: List<OsmPrimitive> = dataSet.getNamedStreets()
                             .filter { Geometry.getDistance(naprResult.second, it) < DISTANCE_FOR_STREET_WAY_SEARCH.get() }
                         val extractedName = fullAddresses.first().street.extractedName
-                        matchedOsmStreetName = OsmStreetMatcher.findBestOrNull(filterByDistance,extractedName)
+                        matchedOsmStreetName = OsmStreetMatcher.findBestOrNull(filterByDistance, extractedName)
                     }
                     parsingResults.add(
                         ParseResult(
@@ -202,7 +202,14 @@ class SelectAction :
     private fun getAdditionalTags(actionType: ActionType, matchStreet: String?): Map<String, String> {
         return when (actionType) {
             ADD_ADDR_TAGS -> if (matchStreet != null) mapOf("addr:street" to matchStreet) else emptyMap()
-            CREATE_NODE_DOUBLE -> mapOf("napr:warn" to "DUPLICATE ADDRESS")
+            CREATE_NODE_DOUBLE -> {
+                if (matchStreet != null) mapOf(
+                    "addr:street" to matchStreet,
+                    "napr:warn" to "DUPLICATE ADDRESS"
+                )
+                else mapOf("napr:warn" to "DUPLICATE ADDRESS")
+            }
+
             CREATE_MULTIPLE_ADDR_NODE, CREATE_NODE -> emptyMap()
         }
     }
