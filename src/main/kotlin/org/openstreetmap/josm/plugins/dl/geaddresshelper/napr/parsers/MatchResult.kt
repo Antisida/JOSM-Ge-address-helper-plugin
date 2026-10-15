@@ -19,7 +19,7 @@ data class MatchResult(
     }
 
     fun isMatchAndFirstLonger() : Boolean {
-        return isMatched() && firstLength > secondLength
+        return isMatched() && firstLength >= secondLength//
     }
 
     /** Меньшее - наиболее совпавшее  */

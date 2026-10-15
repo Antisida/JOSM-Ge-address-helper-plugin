@@ -171,7 +171,7 @@ class NumGeneratorToggleDialog : ToggleDialog(
             val streets = OsmDataManager.getInstance().editDataSet?.selected?.getStreets() ?: return
             if (streets.isEmpty()) return
 
-            val commands = CommandHelper.toChangeCommandsSimple(getCurrentTags(), streets)
+            val commands = CommandHelper.toChangeCommandsSimple(toTags(namesTextArea.text), streets)
             val sequenceCommand = SequenceCommand(I18n.tr("Added node from GeorgiaAddressHelper"), commands)
             UndoRedoHandler.getInstance().add(sequenceCommand)
         }
@@ -190,7 +190,7 @@ class NumGeneratorToggleDialog : ToggleDialog(
             val buildings = OsmDataManager.getInstance().editDataSet?.selected?.getBuildings() ?: return
             if (buildings.isEmpty()) return
 
-            val commands = CommandHelper.toChangeCommandsSimple(getCurrentTags(), buildings)
+            val commands = CommandHelper.toChangeCommandsSimple(toTags(addrStreetTextArea.text), buildings)
             val sequenceCommand = SequenceCommand(I18n.tr("Added node from GeorgiaAddressHelper"), commands)
             UndoRedoHandler.getInstance().add(sequenceCommand)
         }
@@ -260,8 +260,7 @@ class NumGeneratorToggleDialog : ToggleDialog(
         val streetNames = selection.mapNotNull {
             when {
                 it.hasKey("highway") -> it["name"]
-                it.hasKey("building") -> it["addr:street"]
-                else -> null
+                else -> it["addr:street"]
             }
         }.distinct()
 
@@ -303,8 +302,8 @@ class NumGeneratorToggleDialog : ToggleDialog(
     }
 
     /** Преобразования текста в теги */
-    private fun getCurrentTags(): Map<String, String> {
-        val tagsText = namesTextArea.text
+    // todo переписать логики, чтобы из диалога возвращалась сразу мапа
+    fun toTags(tagsText: String?): Map<String, String> {
         if (tagsText == null) return mapOf()
         return tagsText
             .trimIndent()

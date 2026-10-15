@@ -70,7 +70,7 @@ object OsmStreetMatcher {
                 exactCount++
             } else {
                 // 2. Если точного нет, ищем с опечаткой в 1 символ
-                val maxLev = 1
+                val maxLev = 2
                 val idxl: Int = getIdx(sWord, larger, usedInLarger, maxLev)
                 if (idxl != -1) {
                     flags.add(MatchFlag.DIFF_LEV)
