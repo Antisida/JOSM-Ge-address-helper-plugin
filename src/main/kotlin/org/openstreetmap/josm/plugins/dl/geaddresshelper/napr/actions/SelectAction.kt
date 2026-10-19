@@ -39,7 +39,7 @@ import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.TagCreator
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.TagCreator.FIXME_TAG
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.TagCreator.REMOVE_ME
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.parsers.ActionType.*
-import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.parsers.OsmStreetMatcher
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.parsers.StreetNameMatcher
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.funs.getNamedStreets
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.validation.N_ValidationRecord
 import org.openstreetmap.josm.tools.Geometry
@@ -106,7 +106,7 @@ class SelectAction :
             }
 
             override fun finish() {
-                val commands: MutableList<Command> = mutableListOf()
+
                 val parsingResults: MutableList<ParseResult> = mutableListOf()
                 for (naprResult in naprResults.filter { it.third.isUseful() }) {
                     val rawNaprDto: RawNaprDto = naprResult.third
@@ -118,7 +118,7 @@ class SelectAction :
                         val filterByDistance: List<OsmPrimitive> = dataSet.getNamedStreets()
                             .filter { Geometry.getDistance(naprResult.second, it) < DISTANCE_FOR_STREET_WAY_SEARCH.get() }
                         val extractedName = fullAddresses.first().street.extractedName
-                        matchedOsmStreetName = OsmStreetMatcher.findBestOrNull(filterByDistance, extractedName)
+                        matchedOsmStreetName = StreetNameMatcher.findBestOrNull(filterByDistance, extractedName)
                     }
                     parsingResults.add(
                         ParseResult(
@@ -136,6 +136,7 @@ class SelectAction :
                     parsingResults.filter { it.parsedAddressList.size == 1 }
                 )
 
+                val commands: MutableList<Command> = mutableListOf()
                 for (result: ParseResult in parsingResults) {
                     val resultAction = analyzer.defineAction(result)
 

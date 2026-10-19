@@ -9,7 +9,7 @@ class OsmStreetMatcherTest {
     fun checkMatch() {
         val raw1 = "აქვსენტი ცაგარელის ქუჩა"
         val raw2 = "ქუჩა ა. ცაგარელი"
-        val result = OsmStreetMatcher.getMatchResult(raw1, query = raw2)
+        val result = Matcher(raw1, raw2).match()
 
         assertNotNull(result)
     }
@@ -20,7 +20,7 @@ class OsmStreetMatcherTest {
         val street1 = "შალვა ნუცუბიძის ქუჩა"
         val street2 = "შალვა ამირანაშვილის ქუჩა"
         val raw = " შალვა ნუცუბიძის ქუჩა"
-        val result = OsmStreetMatcher.bestOrNull(listOf(street1, street2), query = raw)
+        val result = StreetNameMatcher.bestLongerMatchedOrNull(listOf(street1, street2), query = raw)
 
         assertEquals(result, street1)
     }
@@ -31,7 +31,7 @@ class OsmStreetMatcherTest {
         val street1 = "შალვა ნუცუბიძის ქუჩა"
         val street2 = "შალვა ამირანაშვილის ქუჩა"
         val raw = "ნუცუბიძის ქუჩა"
-        val result = OsmStreetMatcher.bestOrNull(listOf(street1, street2), query = raw)
+        val result = StreetNameMatcher.bestLongerMatchedOrNull(listOf(street1, street2), query = raw)
 
         assertEquals(result, street1)
     }
@@ -42,7 +42,7 @@ class OsmStreetMatcherTest {
         val street1 = "შალვა ნუცუბიძის ქუჩა"
         val street2 = "შალვა ამირანაშვილის ქუჩა"
         val raw = "შ ნუცუბიძის ქუჩა"
-        val result = OsmStreetMatcher.bestOrNull(listOf(street1, street2), query = raw)
+        val result = StreetNameMatcher.bestLongerMatchedOrNull(listOf(street1, street2), query = raw)
 
         assertEquals(result, street1)
     }

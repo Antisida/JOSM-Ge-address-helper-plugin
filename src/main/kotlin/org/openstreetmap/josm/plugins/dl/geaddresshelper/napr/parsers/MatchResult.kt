@@ -6,20 +6,19 @@ data class MatchResult(
     val firstWordCount: Int,            // количество слов 1 аргумента
     val secondWordCount: Int,           // количество слов 2 аргумента
     val wordCountNotMatch: Int,     // количество не совпавших слов
-    val wordCountMatch: Int,        // количество совпавших слов
-    val diff: Int,                  // разница количества слов
+    val wordExactMatch: Int,        // количество совпавших слов
+    val wordFuzzyMatch: Int,        // количество не четко совпавших слов
     val totalLevenshtein: Int,
     val flags: List<MatchFlag>
 ) : Comparable<MatchResult> {
+    /** Логика такая, что нам интересны только строки, равные или большие по количеству слов на 1 */
     fun isMatched(): Boolean {
-        if (flags.contains(MatchFlag.DIFF_MORE_THEN_ONE_WORD)) return false
+        //нам интересны только строки, равные или большие по количеству слов на 1
+        if (firstWordCount - secondWordCount !in 0..1) return false
+        // Обязательно должно быть хотя бы 2 совпадения (статусная часть и еще что-нибудь)
+        if (wordExactMatch + wordFuzzyMatch < 2) return false
         if (flags.contains(MatchFlag.ONLY_ONE_DIFF_WORD_CONTAINS_DIGIT)) return false
-        if (flags.contains(MatchFlag.MATCHED_WORD_LESS_THEN_TWO)) return false
         return true
-    }
-
-    fun isMatchAndFirstLonger() : Boolean {
-        return isMatched() && firstLength >= secondLength//
     }
 
     /** Меньшее - наиболее совпавшее  */
@@ -36,5 +35,5 @@ enum class MatchFlag {
     DIFF_MORE_THEN_ONE_WORD,
     ONLY_ONE_DIFF_WORD_CONTAINS_DIGIT, // разница в одно слово и оно содержит числа
     DIFF_LEV,
-    MATCHED_WORD_LESS_THEN_TWO,
+//    MATCHED_WORD_LESS_THEN_TWO,
 }

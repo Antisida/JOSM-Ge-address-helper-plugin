@@ -30,7 +30,13 @@ fun reduceByStreetName(list: List<Address>): List<Address> {
         // 2. Ищем все более длинные улицы, которые подходят под наш запрос
         val matchingCandidates: List<Address> = sorted.drop(i + 1)
             .filter { candidate -> candidate !in toRemove }
-            .filter { candidate -> OsmStreetMatcher.getMatchResult(candidate.street.extractedName, query).isMatchAndFirstLonger() }
+//            .filter { candidate -> candidate.street.extractedName > query }
+//            .filter { candidate -> StreetNameMatcher.getMatchResult(candidate.street.extractedName, query).isMatched() }
+            .filter { candidate ->
+                val matcher = Matcher(candidate.street.extractedName, query).match()
+                matcher.isMatched() && matcher.isFirstLongerThanSecond()
+            }
+
 
         if (matchingCandidates.isNotEmpty()) {
             // Короткую строку (базис) удаляем, так как нашли более полные описания
