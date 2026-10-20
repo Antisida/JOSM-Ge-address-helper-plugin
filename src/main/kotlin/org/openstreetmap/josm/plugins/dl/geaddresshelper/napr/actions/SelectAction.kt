@@ -39,7 +39,7 @@ import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.TagCreator
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.TagCreator.FIXME_TAG
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.TagCreator.REMOVE_ME
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.parsers.ActionType.*
-import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.parsers.StreetNameMatcher
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.matching.StreetNameMatcher
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.funs.getNamedStreets
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.validation.N_ValidationRecord
 import org.openstreetmap.josm.tools.Geometry

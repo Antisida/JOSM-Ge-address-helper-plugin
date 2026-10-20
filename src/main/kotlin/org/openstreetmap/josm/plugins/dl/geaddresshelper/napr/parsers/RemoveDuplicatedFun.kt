@@ -1,6 +1,9 @@
 package org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.parsers
 
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.parsers.dto.Address
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.matching.Matcher
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.matching.clean
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.matching.longerThen
 
 fun removeDuplicated(addresses: List<Address>): List<Address> {
     //исключение полностью одинаковых
@@ -30,12 +33,8 @@ fun reduceByStreetName(list: List<Address>): List<Address> {
         // 2. Ищем все более длинные улицы, которые подходят под наш запрос
         val matchingCandidates: List<Address> = sorted.drop(i + 1)
             .filter { candidate -> candidate !in toRemove }
-//            .filter { candidate -> candidate.street.extractedName > query }
-//            .filter { candidate -> StreetNameMatcher.getMatchResult(candidate.street.extractedName, query).isMatched() }
-            .filter { candidate ->
-                val matcher = Matcher(candidate.street.extractedName, query).match()
-                matcher.isMatched() && matcher.isFirstLongerThanSecond()
-            }
+            .filter { candidate -> candidate.street.extractedName.clean().longerThen(query.clean()) }
+            .filter { candidate -> Matcher(candidate.street.extractedName, query).match().isMatched() }
 
 
         if (matchingCandidates.isNotEmpty()) {
