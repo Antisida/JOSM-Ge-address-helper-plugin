@@ -99,7 +99,18 @@ fun ParseContext.collapseDuplicateCommas(vararg availableFlags: ParsingFlags): P
 fun ParseContext.cleanRomanNumerals(vararg availableFlags: ParsingFlags): ParseContext =
     modifyAndFlag { s, addedFlags ->
         availableFlags.getOrNull(0)?.let { addedFlags.add(it) }
-        val regex = """(?U)\b(I|II|III|IV|V|VI|VII|VIII|IX|X)ს\b""".toRegex()
+        val regex = """(?U)([IVX])ს""".toRegex()
+        s.replace(regex, "$1")
+    }
+
+/**
+ * удаляет ს после латинского номера
+ * ParsingFlags.ROMAN_NUMERAL_CLEANED
+ */
+fun ParseContext.cleanArabNumerals(vararg availableFlags: ParsingFlags): ParseContext =
+    modifyAndFlag { s, addedFlags ->
+        availableFlags.getOrNull(0)?.let { addedFlags.add(it) }
+        val regex = """(?U)([0-9])ს""".toRegex()
         s.replace(regex, "$1")
     }
 

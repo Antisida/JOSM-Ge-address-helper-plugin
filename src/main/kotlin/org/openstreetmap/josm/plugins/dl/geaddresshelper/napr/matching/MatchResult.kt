@@ -8,9 +8,11 @@ data class MatchResult(
 ) : Comparable<MatchResult> {
     /** Логика такая, что нам интересны только строки, равные или большие по количеству слов на 1 */
     fun isMatched(): Boolean {
+        // если есть цифры - то долно быть полное совпадение
+        if (flags.contains(MatchFlag.CONTAINS_DIGIT) && getNotExactMatchWordCount() > 0) return false
         //нам интересны только строки, равные или большие по количеству слов на 1
         if (fWordList.size - sWordList.size !in -1..1) return false
-        // должно быть не не более 1 отличающегося слова
+        // должно быть не более 1 отличающегося слова
         if (getNotMatchWordCount() > 1) return false
         // Обязательно должно быть хотя бы 2 совпадения (статусная часть и еще что-нибудь)
         if (getMatchWordCount() < 2) return false
@@ -29,6 +31,11 @@ data class MatchResult(
     /** @return количество не совпавших слов */
     private fun getMatchWordCount(): Int {
         return fWordList.count { it.second != MatchStatus.NOT_MATCHED }
+    }
+
+    /** @return количество не совпавших полностью слов */
+    private fun getNotExactMatchWordCount(): Int {
+        return fWordList.count { it.second != MatchStatus.MATCHED }
     }
 
     /** Меньшее - наиболее совпавшее  */

@@ -8,7 +8,6 @@ import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.matching.MatchResu
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.matching.MatchStatus
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.matching.Matcher
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.matching.MutablePair
-import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.matching.StreetNameMatcher
 
 class MatchResultTest {
     @Test
@@ -36,7 +35,7 @@ class MatchResultTest {
         val matchResult1 = MatchResult(
             listOf(MutablePair("", MatchStatus.NOT_MATCHED)),
             listOf(MutablePair("", MatchStatus.NOT_MATCHED)),
-            mutableListOf(MatchFlag.ONLY_ONE_DIFF_WORD_CONTAINS_DIGIT),
+            mutableListOf(MatchFlag.CONTAINS_DIGIT),
             0,
         )
         val matchResult2 = MatchResult(

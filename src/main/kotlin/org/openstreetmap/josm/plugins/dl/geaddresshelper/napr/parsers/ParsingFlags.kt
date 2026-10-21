@@ -24,7 +24,7 @@ enum class ParsingFlags {
     HAS_ABBREVIATIONS, // развернуты аббревиатуры статусных частей улицы
     PARENTHESES_REMOVED, // удален контент в скобках
     COMMAS_COLLAPSED, // двойные запятые удалены
-    ROMAN_NUMERAL_CLEANED, //удалена 'c' после римской цифры
+    NUMERAL_CLEANED, //удалена 'c' после римской цифры
     STATUS_MOVED, // статус перемещен в конец
     GENITIVE_APPLIED, // слово переведено в родительный падеж
     IDIOMS_NORMALIZED, // преобразование согласно словарю

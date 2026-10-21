@@ -49,4 +49,24 @@ class OsmStreetMatcherTest {
         assertEquals(result, street1)
     }
 
+    @Test
+    @DisplayName("улицы в цифрами должны полностью совпадать")
+    fun matchNumeral() {
+        val street1 = "მე-4 ქუჩის IV ჩიხი"
+        val street2 = "მე-4 ქუჩის VI ჩიხი"
+        val match = Matcher(street1, street2).match().isMatched()
+
+        assertEquals(false, match)
+    }
+
+    @Test
+    @DisplayName("улицы в цифрами должны полностью совпадать")
+    fun matchNumeral2() {
+        val street1 = "მე-4 ქუჩის IV ჩიხი"
+        val street2 = "მე-4 ქუჩის VI ჩიხი"
+        val match = Matcher(street2, street1).match().isMatched()
+
+        assertEquals(false, match)
+    }
+
 }

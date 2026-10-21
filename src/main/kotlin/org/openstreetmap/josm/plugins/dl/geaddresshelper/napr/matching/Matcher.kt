@@ -7,12 +7,15 @@ class Matcher(private val first: String, private val second: String) {
 
 
     fun match(): MatchResult {
+        val flags: MutableList<MatchFlag> = mutableListOf()
+        if (listOf(first, second).any { containDigit(it) }) {
+            flags.add(MatchFlag.CONTAINS_DIGIT)
+        }
+
         val firstWordList: List<String> = first.clean()
-            .lowercase()
             .split(Regex("\\s+"))
             .filter { it.isNotEmpty() }
         val secondWordList: List<String> = second.clean()
-            .lowercase()
             .split(Regex("\\s+"))
             .filter { it.isNotEmpty() }
 
@@ -49,7 +52,7 @@ class Matcher(private val first: String, private val second: String) {
                 }
             }
         }
-        val flags: MutableList<MatchFlag> = mutableListOf()
+
         // 4. Если кандидат длиннее на 1 слово, проверяем лишнее слово на "запрещенность" (не должно содержать цифры) случай с В Ленина и Ленина
         if (fWordList.size - sWordList.size == 1 || sWordList.size - fWordList.size == 1) {
 
@@ -67,7 +70,7 @@ class Matcher(private val first: String, private val second: String) {
     }
 
 
-    val romanDigits = setOf('I', 'V', 'X', 'L'/*, 'C', 'D', 'M'*/)
+    val romanDigits = setOf('i', 'v', 'x', 'l', 'I', 'V', 'X', 'L'/*, 'C', 'D', 'M'*/)
 
     private fun containDigit(word: String): Boolean {
         if (word.any { it.isDigit() }) return true
