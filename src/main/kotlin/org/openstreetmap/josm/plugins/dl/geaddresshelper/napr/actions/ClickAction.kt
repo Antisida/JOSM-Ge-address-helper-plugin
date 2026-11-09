@@ -7,6 +7,7 @@ import org.openstreetmap.josm.command.SequenceCommand
 import org.openstreetmap.josm.data.UndoRedoHandler
 import org.openstreetmap.josm.gui.MainApplication
 import org.openstreetmap.josm.gui.MapFrame
+import org.openstreetmap.josm.gui.Notification
 import org.openstreetmap.josm.gui.util.KeyPressReleaseListener
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.dictionary.StreetDictionary
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.dictionary.StreetTranslation
@@ -28,6 +29,7 @@ import org.openstreetmap.josm.tools.Shortcut
 import java.awt.Cursor
 import java.awt.event.KeyEvent
 import java.awt.event.MouseEvent
+import javax.swing.JOptionPane
 import javax.swing.SwingUtilities
 
 class ClickAction :
@@ -119,6 +121,10 @@ class ClickAction :
                     commands.addAll(chStreetCommands)
 
                     streetSuccess = true
+                } else {
+                    val joinStreetNames = distinctByStreet.joinToString(separator = "\n", prefix = "\n") { it.street.extractedName }
+                    val msg = I18n.tr("Ambiguity: $joinStreetNames")
+                    Notification(msg).setIcon(JOptionPane.WARNING_MESSAGE).show()
                 }
             }
 
