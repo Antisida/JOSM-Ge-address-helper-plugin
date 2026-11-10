@@ -1,6 +1,6 @@
 package org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.parsers
 
-import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.TagCreator.STATUSES_SET
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.TagCreator.STREET_STATUS_SET
 import org.openstreetmap.josm.tools.Logging
 
 data class ParseContext(
@@ -123,11 +123,11 @@ fun ParseContext.trim(vararg availableFlags: ParsingFlags): ParseContext =
 fun ParseContext.moveStatusToBack(vararg availableFlags: ParsingFlags): ParseContext =
     modifyAndFlag { s, addedFlags ->
         //логика выполняется если содержится только один статус (исключаем 1 переулок 1 улицы)
-        if (STATUSES_SET.count { s.contains(it) } > 1) return@modifyAndFlag s
+        if (STREET_STATUS_SET.count { s.contains(it) } > 1) return@modifyAndFlag s
 
 //        Logging.info("4: $s")
 
-        val keywordsPattern = STATUSES_SET.joinToString("|") { Regex.escape(it) }
+        val keywordsPattern = STREET_STATUS_SET.joinToString("|") { Regex.escape(it) }
 //        Logging.info("5: $keywordsPattern")
         // Регулярное выражение ищет статус в начале строки
         val regex = """(?U)^($keywordsPattern)\b\s*(.*)""".toRegex(RegexOption.IGNORE_CASE)
@@ -267,7 +267,6 @@ fun toGeorgianGenitive(noun: String): String {
     }
 }
 
-//todo перенести в ямл
 fun ParseContext.normalizeIdioms(vararg availableFlags: ParsingFlags): ParseContext =
     modifyAndFlag { s, addedFlags ->
         availableFlags.getOrNull(0)?.let { addedFlags.add(it) }
@@ -292,6 +291,6 @@ fun ParseContext.replace(regex: Regex, replacement: String, vararg availableFlag
 
 
 fun ParseContext.log(logPattern: String): ParseContext {
-    Logging.info("$logPattern: $this")
+    Logging.debug("$logPattern: $this")
     return this
 }

@@ -8,15 +8,14 @@ data class MatchResult(
 ) : Comparable<MatchResult> {
     /** Логика такая, что нам интересны только строки, равные или большие по количеству слов на 1 */
     fun isMatched(): Boolean {
-        // если есть цифры - то долно быть полное совпадение
-        if (flags.contains(MatchFlag.CONTAINS_DIGIT) && getNotExactMatchWordCount() > 0) return false
+        // если есть цифры - то должно быть полное совпадение
+        if (flags.contains(MatchFlag.CONTAINS_DIGIT) && getNotExactMatchWordCount() > 0) return false //fixme конфликт с последним ONLY_ONE_DIFF_WORD_CONTAINS_DIGIT
         //нам интересны только строки, равные или большие по количеству слов на 1
         if (fWordList.size - sWordList.size !in -1..1) return false
         // должно быть не более 1 отличающегося слова
         if (getNotMatchWordCount() > 1) return false
         // Обязательно должно быть хотя бы 2 совпадения (статусная часть и еще что-нибудь)
         if (getMatchWordCount() < 2) return false
-        if (flags.contains(MatchFlag.ONLY_ONE_DIFF_WORD_CONTAINS_DIGIT)) return false
         return true
     }
 

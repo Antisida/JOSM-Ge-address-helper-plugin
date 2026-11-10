@@ -5,7 +5,6 @@ class Matcher(private val first: String, private val second: String) {
 
     var res: MatchResult? = null
 
-
     fun match(): MatchResult {
         val flags: MutableList<MatchFlag> = mutableListOf()
         if (listOf(first, second).any { containDigit(it) }) {
@@ -53,19 +52,6 @@ class Matcher(private val first: String, private val second: String) {
             }
         }
 
-        // 4. Если кандидат длиннее на 1 слово, проверяем лишнее слово на "запрещенность" (не должно содержать цифры) случай с В Ленина и Ленина
-        if (fWordList.size - sWordList.size == 1 || sWordList.size - fWordList.size == 1) {
-
-            val fNotMatch = fWordList.filter { it.second == MatchStatus.NOT_MATCHED }
-            val sNotMatch = sWordList.filter { it.second == MatchStatus.NOT_MATCHED }
-
-            val notMatchWord = listOf(fNotMatch.size, sNotMatch.size).max()
-            if (notMatchWord == 1) {
-                if (listOf(fNotMatch, sNotMatch).flatten().any { containDigit(it.first) }) {
-                    flags.add(MatchFlag.ONLY_ONE_DIFF_WORD_CONTAINS_DIGIT)
-                }
-            }
-        }
         return MatchResult(fWordList, sWordList, flags, totalLev)
     }
 

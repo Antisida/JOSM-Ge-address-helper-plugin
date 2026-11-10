@@ -25,21 +25,14 @@ object TagCreator {
     const val NAME_RU_TAG = "name:ru"
 
 
-    val STREET_STATUS_AND_ABBR_SET =
+    val STREET_STATUS_ABBR_SET =
         setOf(
-            "ქუჩა",
-            "ქ.",
-            "გამზირი",
-            "გამზ.",
-            "ბულვარი",
-            "ჩიხი",
-            "შესახვევი",
-            "შეს.",
-            "გასასვლელი",
-            "აღმართი",
-            "გზატკეცილი"
+            "ქ.", // улица
+            "გამზ.", // проспект
+            "შეს." // переулок
         )
-    val STATUSES_SET =
+
+    val STREET_STATUS_SET =
         setOf(
             "ქუჩა", // улица
             "გამზირი", // проспект
@@ -49,8 +42,10 @@ object TagCreator {
             "გასასვლელი", // съезд
             "აღმართი", // склон, подъем, спуск
             "ხევი", // овраг
-            "გზატკეცილი" //шоссе
+            "გზატკეცილი", //шоссе
+            "რკალი" //кольцо
         )
+    val STREET_STATUS_AND_ABBR_SET = STREET_STATUS_ABBR_SET + STREET_STATUS_SET
 
     val PLACE_SET =
         setOf(

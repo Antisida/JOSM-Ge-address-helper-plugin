@@ -1,7 +1,6 @@
 package org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.parsers
 
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.parsers.dto.HouseNumber
-import kotlin.text.trim
 
 object HouseNumberParser {
     private const val NOT_PARSED: String = "NOT_PARSED"
@@ -13,20 +12,22 @@ object HouseNumberParser {
             ParseContext(sourceString)
                 .removeParenthesesContent(ParsingFlags.PARENTHESES_REMOVED)
                 .trim()
-                //            .log("After removeParenthesesContent")
+                .log("After removeParenthesesContent")
                 .collapseDuplicateCommas(ParsingFlags.COMMAS_COLLAPSED)
                 .trim()
-                //            .log("After collapseDuplicateCommas")
+                .log("After collapseDuplicateCommas")
                 .replace("N", "")
                 .replace(" ", "")
                 // 1. Удаляем не-буквы и не-цифры в самом начале строки
                 .replace(Regex("(?U)^[^\\p{L}\\p{N}]+"), "")
-                //            .log("After Удаляем не-буквы и не-цифры в начале строки")
+                .log("After Удаляем не-буквы и не-цифры в начале строки")
                 // 2. Удаляем не-буквы и не-цифры в самом конце строки
                 .replace(Regex("(?U)[^\\p{L}\\p{N}]+$"), "")
-        //            .log("After Удаляем не-буквы и не-цифры в конце строки")
+                .log("After Удаляем не-буквы и не-цифры в конце строки")
         val regex = """(?U)\d{4}""".toRegex() // 4 цифры подряд
-        if (regex.containsMatchIn(parseContext.str)) {
+        if (regex.containsMatchIn(parseContext.str)
+            || parseContext.str.count { it.isLetter() } > 2
+        ) { //больше 2 букв
             parsingFlags.add(ParsingFlags.HOUSENUMBER_CANNOT_BE_PARSED)
             return HouseNumber(sourceString, NOT_PARSED, parseContext.flags, false)
         }
