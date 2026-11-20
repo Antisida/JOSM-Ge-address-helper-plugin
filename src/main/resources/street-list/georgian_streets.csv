@@ -1328,6 +1328,9 @@ XII შესახვევი,12th Lane,12-й переулок
 გალაკტიონ ტაბიძის I შესახვევი,Galaktion Tabidze 1st Lane,1-й переулок Галактиона Табидзе
 გალაკტიონ ტაბიძის II შესახვევი,Galaktion Tabidze 2nd Lane,2-й переулок Галактиона Табидзе
 გალაკტიონ ტაბიძის III შესახვევი,Galaktion Tabidze 3rd Lane,3-й переулок Галактиона Табидзе
+გალაკტიონ ტაბიძის I ჩიხი,Galaktion Tabidze 1st Dead End,1-й тупик Галактиона Табидзе
+გალაკტიონ ტაბიძის II ჩიხი,Galaktion Tabidze 2nd Dead End,2-й тупик Галактиона Табидзе
+გალაკტიონ ტაბიძის III ჩიხი,Galaktion Tabidze 3rd Dead End,3-й тупик Галактиона Табидзе
 გალაკტიონ ტაბიძის ქუჩა,Galaktion Tabidze Street,улица Галактиона Табидзе
 გალაკტიონ ტაბიძის ჩიხი,Galaktion Tabidze Dead End,тупик Галактиона Табидзе
 გალაკტიონ ტაბიძის ხიდი,Galaktion Tabidze Bridge,мост Галактиона Табидзе
@@ -1812,7 +1815,7 @@ XII შესახვევი,12th Lane,12-й переулок
 დავით ანდღულაძის ქუჩა,David Andghuladze Street,улица Давида Андгуладзе
 დავით ართმელაძის ქუჩა,David Artmeladze Street,улица Давида Артмеладзе
 დავით ართმელიძის ქუჩა,David Artmelidze Street,улица Давида Артмелидзе
-დავით აღმაშენებელის ქუჩა,David Aghmashenebeli Street,улица Давида Агмашенебели
+დავით აღმაშენებლის ქუჩა,David Aghmashenebeli Street,улица Давида Агмашенебели
 დავით აღმაშენებლის I გასასვლელი,David Aghmashenebeli 1st Exit,1-й съезд Давида Агмашенебели
 დავით აღმაშენებლის I შესახვევი,David Aghmashenebeli 1st Lane,1-й переулок Давида Агмашенебели
 დავით აღმაშენებლის I ჩიხი,David Aghmashenebeli 1st Dead End,1-й тупик Давида Агмашенебели
@@ -5990,3 +5993,29 @@ XII შესახვევი,12th Lane,12-й переулок
 ვარლამ ჯანაშიას ქუჩა,Varlam Janashia Street,улица Варлама Джанашиа
 სერგო შენგელიას ქუჩა,Sergo Shengelia Street,улица Серго Шенгелия
 შოთა რუსთაველის რკალი,Shota Rustaveli Encirclement,кольцо Шота Руставели
+აბესალომ საჯაიას ქუჩა,Avessalom Sajaia Street,Sулица Авессалома Саджаи
+გიორგი ურიდიას ქუჩა,Georgy Uridia Street,улица Георгия Уридиа
+ნიზან ცერცვაძის ქუჩა,Nizan Tsertsvadze Street,улица Низана Церцвадзе
+ვახტანგ მეფის ქუჩა,Vakhtang Mepe Street,улица Вахтанг Мепе
+რაკვერეს ქუჩა,Rakvere Street,улица Раквере
+დამიანე ჯიჯელავას ქუჩა,Damiane Jijelava Street,улица Дамиане Джиджелава
+ალექსანდრე სანაიას ქუჩა,Aleksndre Sanaya Street,улица Александра Саная
+ზურაბ ნაფეტვარიძის ქუჩა,Zurab Napetvaridze Street,улица Зураба Напетваридзе
+ზურაბ ნაფეტვარიძის შესახვევი,Zurab Napetvaridze Lane,переулок Зураба Напетваридзе
+იგორ ნარმანიას ქუჩა,Igor Normania Street,улица Игоря Нарманиа
+იგორ ნარმანიას I ჩიხი,Igor Normania 1st Lane,1-й переулок Игоря Нарманиа
+გია ნადარეიშვილის ქუჩა,Gia Nadareishvili Street,улица Гии Надареишвили
+დედის ქუჩა,Deda Street,улица Деда
+რომან რუსიას ქუჩა,Roman Rusia Street,улица Романа Русиа
+მოსე ნაროუშვილის ქუჩა,Mose Naroushvili Street,улица Мосе Нарушвили
+მოსე ნაროუშვილის I ჩიხი,Mose Naroushvili 1sr Dead End,1-й тупик Мосе Нарушвили
+მოსე ნაროუშვილის II ჩიხი,Mose Naroushvili 2nd Dead End,2-й тупик Мосе Нарушвили
+მოსე ნაროუშვილის III ჩიხი,Mose Naroushvili 3rd Dead End,3-й тупик Мосе Нарушвили
+მოსე ნაროუშვილის I შესახვევი,Mose Naroushvili 1st Lane,1-й переулок Мосе Нарушвили
+გაგრის ქუჩა,Gagra Street,улица Гагры
+ანტონ ნადარეიშვილის ქუჩა,Anton Nadareishvili Street,улица Антона Надареишвили
+შავი ზღვის I შესახვევი,Shavi Zghva 1st Lane,1-й переулок Шави Згва
+შავი ზღვის II შესახვევი,Shavi Zghva 2nd Lane,2-й переулок Шави Згва
+არქეოპოლისის ქუჩა,Archaeopolis Street,улица Археополиса
+სილოვან შამათავას ქუჩა,Silovan Shamatava Street,улица Силован Шаматава
+სილოვან შამათავას I ჩიხი,Silovan Shamatava 1st Dead End,1-й тупик Силован Шаматава

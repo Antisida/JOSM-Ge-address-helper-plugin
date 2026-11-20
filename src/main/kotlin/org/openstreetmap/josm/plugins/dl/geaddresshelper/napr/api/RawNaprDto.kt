@@ -1,11 +1,9 @@
 package org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.api
 
-import kotlinx.serialization.Serializable
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.TagCreator.STREET_STATUS_AND_ABBR_SET
 
-@Serializable
 data class RawNaprDto(
-    val result: List<NaprResult>?,
+    var result: List<NaprResult>? = null,
 ) {
     fun isUseful(): Boolean {
         return result?.any {
@@ -22,7 +20,6 @@ data class RawNaprDto(
                 ?.filter { it.isNotEmpty() }
 //                ?.filter { line -> "N" in line } // todo не теряем ли мы номера без N // это мешает парсить улицы, когда нет номера дома
                 ?.filter { line -> STREET_STATUS_AND_ABBR_SET.any { status -> status in line } }
-            //    ?.filter { line -> !line.contains("ნაკვეთი") } //todo участок удалять при сплите
                 ?: emptyList()
         return allAddrStrings
     }
@@ -37,29 +34,27 @@ data class RawNaprDto(
 }
 
 @SuppressWarnings("kotlin:S117")
-@Serializable
 data class NaprResult(
-    val id: Int?, //  10616182
-    val name: String?, //  "20.42.09.560"
-    val descript: String?, //  "ქობულეთის მუნიციპალიტეტი, ქალაქი ქობულეთი, გიორგი ლეონიძის შესახვევი N 8"
-    val resulttext: String?, //  "ქობულეთის მუნიციპალიტეტი, ქალაქი ქობულეთი, გიორგი ლეონიძის შესახვევი N 8"
-    val resultlink: String?, //  "/map/portal/getbylbl?lbl=lr_parcels:AAArWyACtAAAnd2AAQ"
-    val details: NaprDetails?,
-    val geo_coords: String?, //  ""
+    var id: Int? = null, //  10616182
+    var name: String? = null, //  "20.42.09.560"
+    var descript: String? = null, //  "ქობულეთის მუნიციპალიტეტი, ქალაქი ქობულეთი, გიორგი ლეონიძის შესახვევი N 8"
+    var resulttext: String? = null, //  "ქობულეთის მუნიციპალიტეტი, ქალაქი ქობულეთი, გიორგი ლეონიძის შესახვევი N 8"
+    var resultlink: String? = null, //  "/map/portal/getbylbl?lbl=lr_parcels:AAArWyACtAAAnd2AAQ"
+    var details: NaprDetails? = null,
+    var geo_coords: String? = null, //  ""
     //    val layers: List<>,           //  ?
-    val sdo_gtype: String?, //  "2003"
-    val dist: String?, //  "0"
-    val rank: String?, //  "0"
-    val sdo_srid: String?, //  "4326"
-    val shape_wkt: String?, //  ""
-    val env: String?, //  "alpha"
+    var sdo_gtype: String? = null, //  "2003"
+    var dist: String? = null, //  "0"
+    var rank: String? = null, //  "0"
+    var sdo_srid: String? = null, //  "4326"
+    var shape_wkt: String? = null, //  ""
+    var env: String? = null, //  "alpha"
 )
 
 @SuppressWarnings("kotlin:S117")
-@Serializable
 data class NaprDetails(
-    val type: String?, //  "address"
-    val mode: String?, //  "absolute"
-    val info_link: String?, //  "/lr/bo/mg/getinfo.alpha?lbl=lr_parcels:AAArWyACtAAAnd2AAQ"
-    val geometry_link: String?, //  "/lr/bo/mg/getinfo.alpha?lbl=lr_parcels:AAArWyACtAAAnd2AAQ&res=shp"
+    var type: String? = null, //  "address"
+    var mode: String? = null, //  "absolute"
+    var info_link: String? = null, //  "/lr/bo/mg/getinfo.alpha?lbl=lr_parcels:AAArWyACtAAAnd2AAQ"
+    var geometry_link: String? = null, //  "/lr/bo/mg/getinfo.alpha?lbl=lr_parcels:AAArWyACtAAAnd2AAQ&res=shp"
 )

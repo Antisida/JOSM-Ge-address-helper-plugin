@@ -16,6 +16,7 @@ object HouseNumberParser {
                 .collapseDuplicateCommas(ParsingFlags.COMMAS_COLLAPSED)
                 .trim()
                 .log("After collapseDuplicateCommas")
+                .replace("სახლი", "") //дом
                 .replace("N", "")
                 .replace(" ", "")
                 // 1. Удаляем не-буквы и не-цифры в самом начале строки

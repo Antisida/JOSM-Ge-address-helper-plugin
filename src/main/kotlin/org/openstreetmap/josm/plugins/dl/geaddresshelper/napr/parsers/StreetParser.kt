@@ -26,6 +26,7 @@ object StreetParser {
             .trim()
             .collapseDuplicateCommas(ParsingFlags.COMMAS_COLLAPSED)
             .log("After collapseDuplicateCommas")
+            .replace("N", "")//sometimes 'ქუჩა N 4'
             .trim()
             .let {
                 Street(

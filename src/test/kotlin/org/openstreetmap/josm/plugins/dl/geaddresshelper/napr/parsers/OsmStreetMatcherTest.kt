@@ -69,4 +69,34 @@ class OsmStreetMatcherTest {
         assertEquals(false, match)
     }
 
+    @Test
+    @DisplayName("улица и переулок не должен совпадать")
+    fun matchNumeral3() {
+        val street1 = "ზურაბ ნაფეტვარიძის შესახვევი"
+        val street2 = "ზურაბ ნაფეტვარიძის ქუჩა"
+        val match = Matcher(street2, street1).match().isMatched()
+
+        assertEquals(false, match)
+    }
+
+    @Test
+    @DisplayName("улица и переулок не должен совпадать")
+    fun matchNumeral4() {
+        val street1 = "ზურაბ ნაფეტვარიძის შესახვევი"
+        val street2 = "ზურაბ ნაფეტვარიძის ქუჩა"
+        val match = Matcher(street1, street2).match().isMatched()
+
+        assertEquals(false, match)
+    }
+
+    @Test
+    @DisplayName("улица и переулок не должен совпадать")
+    fun matchNumeral5() {
+        val street1 = "გურიის ქუჩა"
+        val street2 = "გურიას ქუჩა"
+        val match = Matcher(street1, street2).match().isMatched()
+
+        assertEquals(true, match)
+    }
+
 }

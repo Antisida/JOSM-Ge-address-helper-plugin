@@ -1,5 +1,7 @@
 package org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.matching
 
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.TagCreator.STREET_STATUS_AND_ABBR_SET
+
 data class MatchResult(
     val fWordList: List<MutablePair<String, MatchStatus>>,
     val sWordList: List<MutablePair<String, MatchStatus>>,
@@ -9,14 +11,21 @@ data class MatchResult(
     /** Логика такая, что нам интересны только строки, равные или большие по количеству слов на 1 */
     fun isMatched(): Boolean {
         // если есть цифры - то должно быть полное совпадение
-        if (flags.contains(MatchFlag.CONTAINS_DIGIT) && getNotExactMatchWordCount() > 0) return false //fixme конфликт с последним ONLY_ONE_DIFF_WORD_CONTAINS_DIGIT
+        if (flags.contains(MatchFlag.CONTAINS_DIGIT) && getNotExactMatchWordCount() > 0) return false
         //нам интересны только строки, равные или большие по количеству слов на 1
         if (fWordList.size - sWordList.size !in -1..1) return false
         // должно быть не более 1 отличающегося слова
         if (getNotMatchWordCount() > 1) return false
         // Обязательно должно быть хотя бы 2 совпадения (статусная часть и еще что-нибудь)
         if (getMatchWordCount() < 2) return false
+        // улица Ивана Иванова и переулок Ивана Иванова
+        if (getNotExactMatchWordCount() == 1 && STREET_STATUS_AND_ABBR_SET.contains(getNotMatchWord()[0])) return false
         return true
+    }
+
+    private fun getNotMatchWord() : List<String> {
+        return fWordList.filter { it.second != MatchStatus.MATCHED }
+            .map { it.first}
     }
 
     /** @return количество не совпавших слов */
@@ -27,14 +36,14 @@ data class MatchResult(
             .max()
     }
 
-    /** @return количество не совпавших слов */
+    /** @return количество совпавших слов, включая FUZZY_MATCHED */
     private fun getMatchWordCount(): Int {
         return fWordList.count { it.second != MatchStatus.NOT_MATCHED }
     }
 
     /** @return количество не совпавших полностью слов */
     private fun getNotExactMatchWordCount(): Int {
-        return fWordList.count { it.second != MatchStatus.MATCHED }
+        return fWordList.count { it.second != MatchStatus.MATCHED  }
     }
 
     /** Меньшее - наиболее совпавшее  */

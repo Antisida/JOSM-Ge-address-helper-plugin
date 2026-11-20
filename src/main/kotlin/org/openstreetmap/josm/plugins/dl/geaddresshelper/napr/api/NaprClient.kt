@@ -1,6 +1,6 @@
 package org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.api
 
-import kotlinx.serialization.json.Json
+import json.Json
 import org.openstreetmap.josm.data.Version
 import org.openstreetmap.josm.data.coor.EastNorth
 import org.openstreetmap.josm.data.coor.conversion.DecimalDegreesCoordinateFormat
@@ -17,8 +17,6 @@ import java.time.Duration
 
 
 object NaprClient {
-
-    private val json = Json { ignoreUnknownKeys = true }
 
     private val httpClient: HttpClient by lazy {
         HttpClient.newBuilder()
@@ -42,7 +40,7 @@ object NaprClient {
     private fun decode(response: HttpResponse<String>): RawNaprDto? {
         if (response.statusCode() != 200) return null
         Logging.info("response.body(): " + response.body().toString())
-        return json.decodeFromString<RawNaprDto>(response.body())
+        return Json.parse(response.body().toString(), RawNaprDto::class.java)
     }
 
     private fun toLonLatString(coordinate: EastNorth): Pair<String, String> {

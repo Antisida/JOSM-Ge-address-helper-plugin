@@ -43,7 +43,8 @@ object TagCreator {
             "აღმართი", // склон, подъем, спуск
             "ხევი", // овраг
             "გზატკეცილი", //шоссе
-            "რკალი" //кольцо
+            "რკალი", //кольцо
+            "სანაპირო" //набережная
         )
     val STREET_STATUS_AND_ABBR_SET = STREET_STATUS_ABBR_SET + STREET_STATUS_SET
 

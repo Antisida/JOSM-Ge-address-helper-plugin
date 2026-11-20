@@ -19,7 +19,7 @@ plugins {
 }
 
 group 'org.openstreetmap.josm.plugins.dl.geaddresshelper'
-version '17'
+version '18'
 
 repositories {
     mavenCentral()
@@ -34,11 +34,9 @@ java {
 dependencies {
     implementation 'org.jetbrains.kotlin:kotlin-stdlib:2.2.21'
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0'
-    implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0'
 
     packIntoJar 'org.jetbrains.kotlin:kotlin-stdlib:2.2.21'
     packIntoJar 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0'
-    packIntoJar 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0'
 
     testImplementation 'junit:junit:4.13.1'
     testImplementation 'org.junit.vintage:junit-vintage-engine:5.8.2'
@@ -90,8 +88,9 @@ tasks.named('runJosm') {
     ]
 }
 
-//gradle clean shrinkPluginJar
+//jar build: gradle clean shrinkPluginJar
 tasks.register('shrinkPluginJar', ProGuardTask) {
+    dependsOn 'test'
     dependsOn tasks.named('jar')
 
 //    injars(tasks.named('jar').flatMap { it.archiveFile }, filter: '!org/openstreetmap/josm/plugins/dl/geaddresshelper/settings/**')
@@ -127,7 +126,8 @@ tasks.register('shrinkPluginJar', ProGuardTask) {
     // Главная точка входа плагина JOSM
     keep 'public class * extends org.openstreetmap.josm.plugins.Plugin { public <init>(...); }'
 
-    // Сохранение DTO kotlinx.serialization
-    keepclassmembers 'class * { @kotlinx.serialization.Serializable <fields>; }'
-    keep 'class * implements kotlinx.serialization.KSerializer'
+    // Сохранение DTO
+    keep 'class org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.api.** { *; }'
+
+    printusage layout.buildDirectory.file("proguard-usage.txt")
 }

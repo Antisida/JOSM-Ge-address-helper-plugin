@@ -1,9 +1,8 @@
 package org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.parsers
 
-import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.parsers.dto.Address
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.matching.Matcher
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.matching.clean
-import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.matching.longerThen
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.parsers.dto.Address
 
 fun removeDuplicated(addresses: List<Address>): List<Address> {
     //исключение полностью одинаковых
@@ -30,10 +29,12 @@ fun reduceByStreetName(list: List<Address>): List<Address> {
         // Если улица уже помечена на удаление, пропускаем её шаг проверки
         if (sorted[i] in toRemove) continue
 
-        // 2. Ищем все более длинные улицы, которые подходят под наш запрос
+        // 2. Ищем все более длинные улицы или равные по длине, которые подходят под наш запрос
+        // в случае, когда равны, значит есть опечатка и останется рандомное название (возможно не правильное)
+        // но оно приведется к нужному на этапе поиска улицы в слое, потому что там используется тот же Matcher.match()
         val matchingCandidates: List<Address> = sorted.drop(i + 1)
             .filter { candidate -> candidate !in toRemove }
-            .filter { candidate -> candidate.street.extractedName.clean().longerThen(query.clean()) }
+            .filter { candidate -> candidate.street.extractedName.clean().sameSizeOrLongerThen(query.clean()) }
             .filter { candidate -> Matcher(candidate.street.extractedName, query).match().isMatched() }
 
 
@@ -54,4 +55,8 @@ fun reduceByStreetName(list: List<Address>): List<Address> {
 
     // Возвращаем только те строки, которые не попали в список на удаление
     return sorted.filter { it !in toRemove }
+}
+
+fun String.sameSizeOrLongerThen(string: String): Boolean {
+    return this.clean().length >= string.clean().length
 }

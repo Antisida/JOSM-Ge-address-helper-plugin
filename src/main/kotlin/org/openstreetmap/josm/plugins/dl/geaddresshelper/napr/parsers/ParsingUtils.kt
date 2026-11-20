@@ -122,7 +122,7 @@ fun ParseContext.trim(vararg availableFlags: ParsingFlags): ParseContext =
 /** Переносит статусную часть в конец, добавляет ს к названию если его там нет */
 fun ParseContext.moveStatusToBack(vararg availableFlags: ParsingFlags): ParseContext =
     modifyAndFlag { s, addedFlags ->
-        //логика выполняется если содержится только один статус (исключаем 1 переулок 1 улицы)
+        //логика выполняется если содержится только один статус (исключаем '1 переулок 1 улицы')
         if (STREET_STATUS_SET.count { s.contains(it) } > 1) return@modifyAndFlag s
 
 //        Logging.info("4: $s")
@@ -138,15 +138,14 @@ fun ParseContext.moveStatusToBack(vararg availableFlags: ParsingFlags): ParseCon
             val restOfString = matchResult.groupValues[2]
 //            Logging.info("6: $keyword")
 //            Logging.info("7: $restOfString")
-
             if (restOfString.isNotEmpty()) {
-                //к римским цифрам не добавляем "ს"
-                if (restOfString in listOf("I", "V", "X") || restOfString.endsWith("ს")) {
+                //к римским цифрам не добавляем "ს", если содержит цифры тоже
+                if (restOfString in listOf("I", "V", "X") || restOfString.endsWith("ს") || restOfString.any { it.isDigit() }) {
                     "$restOfString $keyword"
                 } else {
                     availableFlags.getOrNull(1)?.let { addedFlags.add(it) }
                     val inGenitive = toGeorgianGenitive(restOfString, true)
-                    "${inGenitive} $keyword"
+                    "$inGenitive $keyword"
                 }
             } else keyword
         }
@@ -274,6 +273,7 @@ fun ParseContext.normalizeIdioms(vararg availableFlags: ParsingFlags): ParseCont
             .replace("ზ. გამსახურდია", "ზვიად გამსახურდია")
             .replace("ც. დადიანი", "ცოტნე დადიანი")
             .replace("ნ. ბარათაშვილი", "ნიკოლოზ ბარათაშვილი")
+            .replace("1-ელი", "1-ლი")
         // .replace("პუშკინი", "ალექსანდრე პუშკინი")
     }
 

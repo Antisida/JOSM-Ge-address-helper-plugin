@@ -38,7 +38,7 @@ class Matcher(private val first: String, private val second: String) {
             if (f.second == MatchStatus.NOT_MATCHED) {
                 for (s in sWordList) {
                     if (s.second == MatchStatus.NOT_MATCHED) {
-                        // только для строк без цифт. исключаем нумерованные улицы
+                        // только для строк без цифр. исключаем нумерованные улицы
                         if (!containDigit(f.first) && !containDigit(s.first)) {
                             val lev = levenshtein(f.first, s.first)
                             if (lev <= 2) {
@@ -80,14 +80,6 @@ class Matcher(private val first: String, private val second: String) {
 
 }
 
-
-fun String.longerThen(string: String): Boolean {
-    return this.clean().length > string.clean().length
-}
-
-fun String.shorterThen(string: String): Boolean {
-    return this.clean().length < string.clean().length
-}
 
 fun String.clean(): String {
     return this.filter { it.isLetterOrDigit() || it.isWhitespace() }.trim()

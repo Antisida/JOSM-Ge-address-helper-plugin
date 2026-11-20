@@ -26,4 +26,8 @@ object StreetNameMatcher {
             .minByOrNull { it.second }?.first
     }
 
+    fun String.shorterThen(string: String): Boolean {
+        return this.clean().length < string.clean().length
+    }
+
 }
