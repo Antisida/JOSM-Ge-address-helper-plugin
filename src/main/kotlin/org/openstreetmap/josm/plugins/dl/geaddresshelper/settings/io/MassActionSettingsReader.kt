@@ -14,7 +14,7 @@ class MassActionSettingsReader {
          */
        val EGRN_MASS_ACTION_FILTER_LIST = MapStringListProperty(
             "dl.geaddresshelper.mass.filtering_tag_map",
-            mapOf("fixme" to listOf("*"), "building" to listOf("garage","shed","roof","shack"), ADDR_HOUSENUMBER_TAG to listOf("*"))
+            mapOf("fixme" to listOf("*"), "building" to listOf("garages","garage","shed","roof","shack"), ADDR_HOUSENUMBER_TAG to listOf("*"))
          )
 
         val FILTER_LIST_ADDR = MapStringListProperty(

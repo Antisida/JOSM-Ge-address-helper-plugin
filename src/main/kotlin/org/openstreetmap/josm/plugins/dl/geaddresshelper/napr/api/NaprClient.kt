@@ -24,15 +24,6 @@ object NaprClient {
     }
 
     fun executeRequest(coordinate: EastNorth): RawNaprDto? {
-        return try {
-            request(coordinate)
-        } catch (e: Exception) {
-            Logging.warn("Exception for $coordinate : $e")
-            null
-        }
-    }
-
-    private fun request(coordinate: EastNorth): RawNaprDto? {
         val response = httpClient.send(buildRequest(coordinate), HttpResponse.BodyHandlers.ofString())
         return decode(response)
     }
