@@ -1,7 +1,5 @@
 package org.openstreetmap.josm.plugins.dl.geaddresshelper.tools
 
-import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.TagCreator.ADDR_HOUSENUMBER_TAG
-import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.TagCreator.ADDR_STREET_TAG
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.settings.io.TagSettingsReader
 
 class TagHelper {

@@ -1,18 +1,18 @@
 package org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.parsers
 
-import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.TagCreator.STREET_STATUS_SET
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.STREET_STATUS_SET
 import org.openstreetmap.josm.tools.Logging
 
 data class ParseContext(
     var str: String,
-    val flags: List<ParsingFlags> = listOf()
+    val flags: List<ParsingFlag> = listOf()
 )
 
 /**
  * Применяет трансформацию к строке. Если строка изменилась, добавляет переданный флаг в список.
  */
 inline fun ParseContext.modifyAndFlag(
-    flag: ParsingFlags,
+    flag: ParsingFlag,
     transform: (String) -> String
 ): ParseContext {
     val (text, _) = this
@@ -30,10 +30,10 @@ inline fun ParseContext.modifyAndFlag(
  * Позволяет динамически добавлять несколько разных флагов изнутри логики трансформации.
  */
 private inline fun ParseContext.modifyAndFlag(
-    transform: (String, MutableList<ParsingFlags>) -> String
+    transform: (String, MutableList<ParsingFlag>) -> String
 ): ParseContext {
     // 1. Создаем пустой локальный список для сбора флагов на этом шаге
-    val localFlags = mutableListOf<ParsingFlags>()
+    val localFlags = mutableListOf<ParsingFlag>()
 
     // 2. Вызываем переданную логику.
     // В нее уходит текущая строка и наш пустой список, в который вы можете делать .add()
@@ -52,7 +52,7 @@ private inline fun ParseContext.modifyAndFlag(
 /** Расширяет сокращения в названиях грузинских улиц.
  * ParsingFlags.HAS_ABBREVIATIONS
  */
-fun ParseContext.expandAbbreviations(vararg availableFlags: ParsingFlags): ParseContext =
+fun ParseContext.expandAbbreviations(vararg availableFlags: ParsingFlag): ParseContext =
     modifyAndFlag { s, addedFlags ->
         availableFlags.getOrNull(0)?.let { addedFlags.add(it) }
         s.replace("""(?Ui)\bქ\.\s*""".toRegex(), "ქუჩა ")
@@ -65,7 +65,7 @@ fun ParseContext.expandAbbreviations(vararg availableFlags: ParsingFlags): Parse
  * Также очищает лишние двойные пробелы, которые могли образоваться после удаления.
  * ParsingFlags.PARENTHESES_REMOVED
  */
-fun ParseContext.removeParenthesesContent(vararg availableFlags: ParsingFlags): ParseContext =
+fun ParseContext.removeParenthesesContent(vararg availableFlags: ParsingFlag): ParseContext =
     modifyAndFlag { s, addedFlags ->
         availableFlags.getOrNull(0)?.let { addedFlags.add(it) }
         // Регулярное выражение находит ( и ) и всё между ними (жадный поиск исключая закрывающую скобку)
@@ -80,7 +80,7 @@ fun ParseContext.removeParenthesesContent(vararg availableFlags: ParsingFlags): 
  * Например: ", ," -> ", " или ",," -> ","
  * ParsingFlags.COMMAS_COLLAPSED
  */
-fun ParseContext.collapseDuplicateCommas(vararg availableFlags: ParsingFlags): ParseContext =
+fun ParseContext.collapseDuplicateCommas(vararg availableFlags: ParsingFlag): ParseContext =
     modifyAndFlag { s, addedFlags ->
         availableFlags.getOrNull(0)?.let { addedFlags.add(it) }
         // Регулярное выражение ищет: запятую, затем ноль или более пробелов, затем вторую запятую
@@ -96,7 +96,7 @@ fun ParseContext.collapseDuplicateCommas(vararg availableFlags: ParsingFlags): P
  * удаляет ს после латинского номера
  * ParsingFlags.ROMAN_NUMERAL_CLEANED
  */
-fun ParseContext.cleanRomanNumerals(vararg availableFlags: ParsingFlags): ParseContext =
+fun ParseContext.cleanRomanNumerals(vararg availableFlags: ParsingFlag): ParseContext =
     modifyAndFlag { s, addedFlags ->
         availableFlags.getOrNull(0)?.let { addedFlags.add(it) }
         val regex = """(?U)([IVX])ს""".toRegex()
@@ -107,20 +107,20 @@ fun ParseContext.cleanRomanNumerals(vararg availableFlags: ParsingFlags): ParseC
  * удаляет ს после латинского номера
  * ParsingFlags.ROMAN_NUMERAL_CLEANED
  */
-fun ParseContext.cleanArabNumerals(vararg availableFlags: ParsingFlags): ParseContext =
+fun ParseContext.cleanArabNumerals(vararg availableFlags: ParsingFlag): ParseContext =
     modifyAndFlag { s, addedFlags ->
         availableFlags.getOrNull(0)?.let { addedFlags.add(it) }
         val regex = """(?U)([0-9])ს""".toRegex()
         s.replace(regex, "$1")
     }
 
-fun ParseContext.trim(vararg availableFlags: ParsingFlags): ParseContext =
+fun ParseContext.trim(vararg availableFlags: ParsingFlag): ParseContext =
     modifyAndFlag { s, addedFlags ->
         s.trim()
     }
 
 /** Переносит статусную часть в конец, добавляет ს к названию если его там нет */
-fun ParseContext.moveStatusToBack(vararg availableFlags: ParsingFlags): ParseContext =
+fun ParseContext.moveStatusToBack(vararg availableFlags: ParsingFlag): ParseContext =
     modifyAndFlag { s, addedFlags ->
         //логика выполняется если содержится только один статус (исключаем '1 переулок 1 улицы')
         if (STREET_STATUS_SET.count { s.contains(it) } > 1) return@modifyAndFlag s
@@ -266,7 +266,7 @@ fun toGeorgianGenitive(noun: String): String {
     }
 }
 
-fun ParseContext.normalizeIdioms(vararg availableFlags: ParsingFlags): ParseContext =
+fun ParseContext.normalizeIdioms(vararg availableFlags: ParsingFlag): ParseContext =
     modifyAndFlag { s, addedFlags ->
         availableFlags.getOrNull(0)?.let { addedFlags.add(it) }
         s.replace("ვაჟა ფშაველა", "ვაჟა-ფშაველა")
@@ -277,13 +277,13 @@ fun ParseContext.normalizeIdioms(vararg availableFlags: ParsingFlags): ParseCont
         // .replace("პუშკინი", "ალექსანდრე პუშკინი")
     }
 
-fun ParseContext.replace(oldVal: String, newVal: String, vararg availableFlags: ParsingFlags): ParseContext =
+fun ParseContext.replace(oldVal: String, newVal: String, vararg availableFlags: ParsingFlag): ParseContext =
     modifyAndFlag { s, addedFlags ->
         availableFlags.getOrNull(0)?.let { addedFlags.add(it) }
         s.replace(oldVal, newVal)
     }
 
-fun ParseContext.replace(regex: Regex, replacement: String, vararg availableFlags: ParsingFlags): ParseContext =
+fun ParseContext.replace(regex: Regex, replacement: String, vararg availableFlags: ParsingFlag): ParseContext =
     modifyAndFlag { s, addedFlags ->
         availableFlags.getOrNull(0)?.let { addedFlags.add(it) }
         s.replace(regex, replacement)

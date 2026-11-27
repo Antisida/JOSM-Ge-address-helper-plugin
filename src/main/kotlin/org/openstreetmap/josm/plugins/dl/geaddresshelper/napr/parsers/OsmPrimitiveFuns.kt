@@ -2,9 +2,9 @@ package org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.parsers
 
 import org.openstreetmap.josm.data.osm.Node
 import org.openstreetmap.josm.data.osm.OsmPrimitive
-import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.TagCreator.ADDR_HOUSENUMBER_TAG
-import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.TagCreator.ADDR_STREET_TAG
-import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.TagCreator.BUILDING_TAG
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.ADDR_HOUSENUMBER_TAG
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.ADDR_STREET_TAG
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.BUILDING_TAG
 
 fun Collection<OsmPrimitive>.getBuildings(
   ignoreTags: Map<String, List<String>>

@@ -12,15 +12,16 @@ import org.openstreetmap.josm.gui.util.KeyPressReleaseListener
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.dictionary.StreetDictionary
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.dictionary.StreetTranslation
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.OsmPrimitiveHelper
-import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.TagCreator
-import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.TagCreator.NAME_EN_TAG
-import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.TagCreator.NAME_KA_TAG
-import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.TagCreator.NAME_RU_TAG
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.api.NaprClient
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.api.RawNaprDto
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.parsers.MainParser
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.parsers.dto.Address
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.result.strategy.forNodeFunction
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.result.strategy.forStreetFunction
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.CommandHelper
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.NAME_EN_TAG
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.NAME_KA_TAG
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.NAME_RU_TAG
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.funs.containsStreetsOnly
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.funs.getStreets
 import org.openstreetmap.josm.tools.I18n
@@ -97,7 +98,7 @@ class ClickAction :
 
             //create node
             val fullAddresses = parsedAddresses.filter { it.isSuccess }
-            val tags = TagCreator.forNodeFunction().invoke(naprDto.getDataString(), fullAddresses.singleOrNull(), emptyMap())
+            val tags = forNodeFunction.invoke(naprDto.getDataString(), fullAddresses.singleOrNull(), emptyMap())
             val node = OsmPrimitiveHelper.createNode(mouseEastNorth, tags)
             val sequenceCommand = SequenceCommand(I18n.tr("Node added"), AddCommand(dataSet, node))
             commands.add(sequenceCommand)
@@ -114,7 +115,7 @@ class ClickAction :
                         nameTags.put(NAME_EN_TAG, found.nameEn)
                         nameTags.put(NAME_RU_TAG, found.nameRu)
                     }
-                    val tags = TagCreator.forStreetFunction().invoke(naprDto.getDataString(), distinctByStreet[0], nameTags)
+                    val tags = forStreetFunction.invoke(naprDto.getDataString(), distinctByStreet[0], nameTags)
                     val streets = dataSet.selected.getStreets()
 
                     val chStreetCommands = CommandHelper.toChangeCommandsSimple(tags, streets)

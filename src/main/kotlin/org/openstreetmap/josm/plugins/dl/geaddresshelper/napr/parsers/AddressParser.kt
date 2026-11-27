@@ -1,10 +1,10 @@
 package org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.parsers
 
-import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.TagCreator.PLACE_SET
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.PLACE_SET
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.parsers.dto.Address
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.parsers.dto.HouseNumber
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.parsers.dto.Street
-import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.TagCreator.STREET_STATUS_AND_ABBR_SET
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.STREET_STATUS_AND_ABBR_SET
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.parsers.dto.Place
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.parsers.dto.SplitDto
 import org.openstreetmap.josm.tools.Logging

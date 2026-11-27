@@ -1,6 +1,6 @@
 package org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.api
 
-import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.TagCreator.STREET_STATUS_AND_ABBR_SET
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.STREET_STATUS_AND_ABBR_SET
 
 data class RawNaprDto(
     var result: List<NaprResult>? = null,

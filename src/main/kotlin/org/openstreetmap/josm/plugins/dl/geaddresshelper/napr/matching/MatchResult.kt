@@ -1,6 +1,6 @@
 package org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.matching
 
-import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.TagCreator.STREET_STATUS_AND_ABBR_SET
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.STREET_STATUS_AND_ABBR_SET
 
 data class MatchResult(
     val fWordList: List<MutablePair<String, MatchStatus>>,

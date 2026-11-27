@@ -14,6 +14,11 @@ import org.openstreetmap.josm.data.osm.OsmPrimitive
 import org.openstreetmap.josm.tools.Logging
 import kotlin.random.Random
 
+//response.body(): {
+//    "status":true,
+//    "result":[]
+//}
+
 class NaprService(
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
     private val retryPolicy: RetryPolicy = RetryPolicy()
@@ -45,7 +50,8 @@ class NaprService(
     private fun isRetryableDto(dto: RawNaprDto?): Boolean {
         // Пример условия по ответу, если DTO умеет сообщать о временной ошибке/лимите:
         // return dto?.isTemporaryFailure == true
-        return false
+//        return false
+        return dto?.result.isNullOrEmpty()
     }
 
 
@@ -69,12 +75,12 @@ class NaprService(
             try {
                 val result = requestFunction()
                 //если надо проверить результат
-//                if (attempt < policy.maxRetries && shouldRetryResult(result)) {
-//                    attempt++
-//                    delay(withJitter(currentDelay))
-//                    currentDelay = (currentDelay * policy.factor).toLong().coerceAtMost(policy.maxDelayMs)
-//                    continue
-//                }
+                if (attempt < policy.maxRetries && shouldRetryResult(result)) {
+                    attempt++
+                    delay(withJitter(currentDelay))
+                    currentDelay = (currentDelay * policy.factor).toLong().coerceAtMost(policy.maxDelayMs)
+                    continue
+                }
                 return result
             } catch (e: CancellationException) {
                 throw e

@@ -1,6 +1,6 @@
 package org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.parsers
 
-import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.TagCreator.PLACE_SET
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.PLACE_SET
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.parsers.dto.Place
 
 object PlaceParser {

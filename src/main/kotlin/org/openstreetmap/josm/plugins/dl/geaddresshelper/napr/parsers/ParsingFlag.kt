@@ -1,6 +1,6 @@
 package org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.parsers
 
-enum class ParsingFlags {
+enum class ParsingFlag {
     IS_BUILDING, //адрес здания, иначе участка
     CANNOT_EXTRACT_STREET_NAME, //не удалось извлечь имя улицы из ЕГРН адреса, аналог
     STREET_NAME_FUZZY_MATCH, //название улицы совпало нечетко

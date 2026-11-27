@@ -14,7 +14,7 @@ import org.openstreetmap.josm.gui.layer.LayerManager
 import org.openstreetmap.josm.gui.layer.LayerManager.LayerChangeListener
 import org.openstreetmap.josm.gui.layer.LayerManager.LayerRemoveEvent
 import org.openstreetmap.josm.gui.layer.OsmDataLayer
-import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.parsers.ParsingFlags
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.parsers.ParsingFlag
 
 
 class N_ValidationCache : DataSetListenerAdapter.Listener, LayerChangeListener {
@@ -130,12 +130,12 @@ class N_ValidationCache : DataSetListenerAdapter.Listener, LayerChangeListener {
 //        writer.flush()
 //    }
 
-    private fun getFlagsValues(flags: MutableList<ParsingFlags>): String {
-        return ParsingFlags.values().joinToString(";") { if (flags.contains(it)) "1" else "0" }
+    private fun getFlagsValues(flags: MutableList<ParsingFlag>): String {
+        return ParsingFlag.entries.joinToString(";") { if (flags.contains(it)) "1" else "0" }
     }
 
     private fun getFlagsHeaders(): String {
-        return ParsingFlags.values().joinToString(";") { "\"" + it.name + "\"" }
+        return ParsingFlag.entries.joinToString(";") { "\"" + it.name + "\"" }
     }
 
     private fun eastNorthToLatLon(coord: EastNorth?): String {

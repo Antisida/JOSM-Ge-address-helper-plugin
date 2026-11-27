@@ -25,12 +25,13 @@ object NaprClient {
 
     fun executeRequest(coordinate: EastNorth): RawNaprDto? {
         val response = httpClient.send(buildRequest(coordinate), HttpResponse.BodyHandlers.ofString())
+        Logging.info(coordinate.toString() + " response.body(): " + response.body().toString())
         return decode(response)
     }
 
     private fun decode(response: HttpResponse<String>): RawNaprDto? {
         if (response.statusCode() != 200) return null
-        Logging.info("response.body(): " + response.body().toString())
+
         return Json.parse(response.body().toString(), RawNaprDto::class.java)
     }
 
@@ -40,7 +41,7 @@ object NaprClient {
         val formatter = DecimalDegreesCoordinateFormat.INSTANCE
         val lon = formatter.lonToString(projected)
         val lat = formatter.latToString(projected)
-//        Logging.info("Request lonlat: $lon,$lat")
+//        Logging.debug("Request lonlat: $lon,$lat")
         return Pair(lon, lat)
     }
 

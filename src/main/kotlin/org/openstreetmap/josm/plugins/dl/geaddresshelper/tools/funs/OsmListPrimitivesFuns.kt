@@ -3,9 +3,8 @@ package org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.funs
 import org.openstreetmap.josm.data.osm.Node
 import org.openstreetmap.josm.data.osm.OsmPrimitive
 import org.openstreetmap.josm.data.osm.OsmPrimitiveType
-import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.TagCreator.FIXME_TAG
-import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.TagCreator.REMOVE_ME
-import javax.sql.rowset.Predicate
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.FIXME_TAG
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.REMOVE_ME
 import kotlin.collections.filter
 
 /** @return Список highway */

@@ -7,13 +7,13 @@ object HouseNumberParser {
 
     fun parse(sourceString: String?): HouseNumber? {
         if (sourceString == null) return null
-        val parsingFlags = mutableListOf<ParsingFlags>()
+        val parsingFlags = mutableListOf<ParsingFlag>()
         val parseContext =
             ParseContext(sourceString)
-                .removeParenthesesContent(ParsingFlags.PARENTHESES_REMOVED)
+                .removeParenthesesContent(ParsingFlag.PARENTHESES_REMOVED)
                 .trim()
                 .log("After removeParenthesesContent")
-                .collapseDuplicateCommas(ParsingFlags.COMMAS_COLLAPSED)
+                .collapseDuplicateCommas(ParsingFlag.COMMAS_COLLAPSED)
                 .trim()
                 .log("After collapseDuplicateCommas")
                 .replace("სახლი", "") //дом
@@ -29,7 +29,7 @@ object HouseNumberParser {
         if (regex.containsMatchIn(parseContext.str)
             || parseContext.str.count { it.isLetter() } > 2
         ) { //больше 2 букв
-            parsingFlags.add(ParsingFlags.HOUSENUMBER_CANNOT_BE_PARSED)
+            parsingFlags.add(ParsingFlag.HOUSENUMBER_CANNOT_BE_PARSED)
             return HouseNumber(sourceString, NOT_PARSED, parseContext.flags, false)
         }
         return HouseNumber(sourceString, parseContext.str, parseContext.flags, true)

@@ -2,14 +2,22 @@ package org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.parsers
 
 import org.openstreetmap.josm.data.osm.OsmPrimitive
 import org.openstreetmap.josm.data.osm.TagMap
-import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.TagCreator.ADDR_HOUSENUMBER_TAG
-import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.TagCreator.ADDR_STREET_TAG
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.ADDR_HOUSENUMBER_TAG
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.ADDR_STREET_TAG
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.parsers.dto.ParseResult
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.result.strategy.AddAddressStrategy
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.result.strategy.CreateNodeStrategy
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.result.strategy.DoubleAddrStrategy
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.result.strategy.ResultStrategy
 import org.openstreetmap.josm.tools.Geometry
 import org.openstreetmap.josm.tools.Geometry.getDistance
 import kotlin.collections.iterator
 
 class ResultSetAnalyzer {
+
+  private val addrCreateStrategy = AddAddressStrategy()
+  private val createNodeStrategy = CreateNodeStrategy()
+  private val doubleAddrStrategy = DoubleAddrStrategy()
 
   private val addressRegistry: MutableMap<TagMap, MutableSet<OsmPrimitive>> = mutableMapOf()
 
@@ -66,14 +74,13 @@ class ResultSetAnalyzer {
     //    Logging.info("getAddrTags res: $result")
     return result
   }
-
-  fun defineAction(result: ParseResult): ActionType {
-    if (result.parsedAddressList.size != 1) return ActionType.CREATE_MULTIPLE_ADDR_NODE
-
+  fun defineStrategy(result: ParseResult): ResultStrategy {
+    if (result.parsedAddressList.size != 1) return createNodeStrategy
     return when {
-      result.matchStreet == null -> ActionType.CREATE_NODE
-      isDouble(result.getAddrTags(), result.osmPrimitive) -> ActionType.CREATE_NODE_DOUBLE
-      else -> ActionType.ADD_ADDR_TAGS
+      result.matchStreet == null -> createNodeStrategy
+      isDouble(result.getAddrTags(), result.osmPrimitive) -> doubleAddrStrategy
+      else -> addrCreateStrategy
     }
   }
+
 }

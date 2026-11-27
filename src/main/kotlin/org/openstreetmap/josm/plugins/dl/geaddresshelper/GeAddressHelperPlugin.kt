@@ -1,13 +1,11 @@
 package org.openstreetmap.josm.plugins.dl.geaddresshelper
 
-import javax.swing.JMenu
 import org.openstreetmap.josm.actions.UploadAction
 import org.openstreetmap.josm.command.AddCommand
 import org.openstreetmap.josm.command.SequenceCommand
 import org.openstreetmap.josm.data.UndoRedoHandler
 import org.openstreetmap.josm.data.coor.EastNorth
 import org.openstreetmap.josm.data.osm.Node
-import org.openstreetmap.josm.data.osm.OsmDataManager
 import org.openstreetmap.josm.data.osm.OsmPrimitive
 import org.openstreetmap.josm.data.validation.OsmValidator
 import org.openstreetmap.josm.data.validation.ValidationTask
@@ -15,23 +13,19 @@ import org.openstreetmap.josm.gui.MainApplication
 import org.openstreetmap.josm.gui.MapFrame
 import org.openstreetmap.josm.plugins.Plugin
 import org.openstreetmap.josm.plugins.PluginInformation
-import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.actions.ClickAction
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.deletion.DeleteTmpAction
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.deletion.UploadFilter
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.dictionary.DictionaryAction
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.actions.ClickAction
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.actions.SelectAction
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.numberstreetgenerator.NumGeneratorToggleDialog
-import org.openstreetmap.josm.plugins.dl.geaddresshelper.settings.io.CommonSettingsReader
-import org.openstreetmap.josm.plugins.dl.geaddresshelper.settings.io.ValidationSettingsReader
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.GeometryHelper
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.uploadhooks.PluginCacheCleaner
-import org.openstreetmap.josm.plugins.dl.geaddresshelper.deletion.UploadFilter
-import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.TagCreator.ADDR_HOUSENUMBER_TAG
-import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.TagCreator.ADDR_STREET_TAG
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.validation.N_ValidationCache
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.validation.NaprFuzzyStreetMatchingTest
-import org.openstreetmap.josm.tools.Geometry
 import org.openstreetmap.josm.tools.I18n
 import org.openstreetmap.josm.tools.ImageProvider
+import javax.swing.JMenu
 
 class GeAddressHelperPlugin(info: PluginInformation) : Plugin(info) {
   init {
@@ -77,50 +71,6 @@ class GeAddressHelperPlugin(info: PluginInformation) : Plugin(info) {
       MainApplication.worker.submit(ValidationTask(egrnTests, selection, null))
     }
 
-    private fun getDuplicatesByDistance(
-      osmPrimitives: List<OsmPrimitive>?,
-      checkList: List<OsmPrimitive>,
-      isPlace: Boolean?,
-    ): List<OsmPrimitive> {
-      val distance = getDistanceSetting(isPlace)
-      val result = mutableListOf<OsmPrimitive>()
-      checkList.forEach { primitive ->
-        val closestOSMObject = Geometry.getClosestPrimitive(primitive, osmPrimitives)
-        if (Geometry.getDistance(primitive, closestOSMObject) < distance) {
-          result.add(primitive)
-        }
-      }
-      return result
-    }
-
-    private fun getDistanceSetting(isPlace: Boolean?): Int {
-      return if (isPlace == true) {
-        2 * ValidationSettingsReader.DISTANCE_FOR_PLACE_NODE_SEARCH.get()
-      } else {
-        return CommonSettingsReader.CLEAR_DOUBLE_DISTANCE.get()
-      }
-    }
-
-    private fun getOsmAddressesMap(): Map<String, List<OsmPrimitive>> {
-      val osmBuildingsWithAddress =
-        OsmDataManager.getInstance().editDataSet.allNonDeletedCompletePrimitives().filter { p ->
-          p !is Node &&
-            p.hasKey("building") &&
-            p.hasKey(ADDR_HOUSENUMBER_TAG) &&
-            (p.hasKey("addr:street") || p.hasKey("addr:place"))
-        }
-      val osmBuildingsAddressMap = osmBuildingsWithAddress.groupBy { getOsmInlineAddress(it) }
-      return osmBuildingsAddressMap
-    }
-
-    private fun getOsmInlineAddress(p: OsmPrimitive): String {
-      return if (p.hasKey("addr:street")) {
-        "${p[ADDR_STREET_TAG]}, ${p[ADDR_HOUSENUMBER_TAG]}"
-      } else {
-        "${p["addr:place"]}, ${p[ADDR_HOUSENUMBER_TAG]}"
-      }
-    }
-
     fun createDebugObject(coords: ArrayList<ArrayList<Double>>, requestCoord: EastNorth) {
       val map = MainApplication.getMap()
       val ds = map.mapView.layerManager.editDataSet
@@ -130,28 +80,10 @@ class GeAddressHelperPlugin(info: PluginInformation) : Plugin(info) {
     }
   }
 
-  //    override fun getPreferenceSetting(): PreferenceSetting {
-  //        return PluginSetting()
-  //    }
-
   override fun mapFrameInitialized(oldFrame: MapFrame?, newFrame: MapFrame?) {
     // this callback fired also everytime last layer is removed, cannot run layer listeners init
     // here
     OsmValidator.addTest(NaprFuzzyStreetMatchingTest::class.java)
-    //        OsmValidator.addTest(EGRNEmptyResponseTest::class.java)
-    //        OsmValidator.addTest(EGRNFuzzyStreetMatchingTest::class.java)
-    //        OsmValidator.addTest(EGRN___FuzzyStreetMatchingTest::class.java)
-    //        OsmValidator.addTest(EGRNInitialsStreetMatchingTest::class.java)
-    //        OsmValidator.addTest(EGRNMultipleValidAddressTest::class.java)
-    //        OsmValidator.addTest(EGRNStreetNotFoundTest::class.java)
-    //        OsmValidator.addTest(EGRNAddressAddedTest::class.java)
-    //        OsmValidator.addTest(EGRNCantParseAddressTest::class.java)
-    //        OsmValidator.addTest(EGRNFlatsInAddressTest::class.java)
-    //        OsmValidator.addTest(EGRNPlaceNotFoundTest::class.java)
-    //        OsmValidator.addTest(EGRNFuzzyOrInitialsPlaceMatchTest::class.java)
-    //        OsmValidator.addTest(EGRNDuplicateAddressesTest::class.java)
-    //        OsmValidator.addTest(EGRNStreetOrPlaceTooFarTest::class.java)
-    //        OsmValidator.addTest(EGRNConflictedDataTest::class.java)
 
     UploadAction.registerUploadHook(pluginCacheCleaner, true)
     UploadAction.registerUploadHook(uploadFilter, true)

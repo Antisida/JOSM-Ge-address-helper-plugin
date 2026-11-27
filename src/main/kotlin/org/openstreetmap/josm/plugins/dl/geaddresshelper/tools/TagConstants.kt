@@ -1,12 +1,6 @@
-package org.openstreetmap.josm.plugins.dl.geaddresshelper.napr
+package org.openstreetmap.josm.plugins.dl.geaddresshelper.tools
 
-import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.parsers.ActionType
-import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.parsers.ActionType.*
-import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.parsers.ParsingFlags
-import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.parsers.dto.Address
-import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.Transliterator
-
-object TagCreator {
+//object TagCreator {
     const val BUILDING_TAG = "building"
     const val ADDR_STREET_TAG = "addr:street"
     const val ADDR_HOUSENUMBER_TAG = "addr:housenumber"
@@ -57,7 +51,7 @@ object TagCreator {
     //  "მუნიციპალიტეტი", //муниципалитет
 
 
-    fun forStreetFunction(): (List<String>, Address?, Map<String, String>) -> Map<String, String> {
+    /*fun forStreetFunction(): (List<String>, Address?, Map<String, String>) -> Map<String, String> {
         return { rawString, address, additionalTags ->
             val tags = mutableMapOf<String, String>()
             if (address != null) {
@@ -75,9 +69,9 @@ object TagCreator {
             tags.putAll(additionalTags)
             tags
         }
-    }
+    }*/
 
-    fun forNodeFunction(): (List<String>, Address?, Map<String, String>) -> Map<String, String> {
+    /*fun forNodeFunction(): (List<String>, Address?, Map<String, String>) -> Map<String, String> {
         return { rawString, address, additionalTags ->
             buildMap {
                 putAll(forNode(rawString))
@@ -92,21 +86,21 @@ object TagCreator {
                     put(ADDR_STREET_TAG, address.street.extractedName)
                     put(ADDR_HOUSENUMBER_TAG, address.houseNumber.extractedNumber)
 
-                    if (address.street.flags.contains(ParsingFlags.GENITIVE_APPLIED)) {
+                    if (address.street.flags.contains(ParsingFlag.GENITIVE_APPLIED)) {
                         put(NAPR_WARN_TAG, "TO GENITIVE CASE")
                     }
                 }
                 putAll(additionalTags)
             }
         }
-    }
+    }*/
 
-    private fun forNode(rawString: List<String>): Map<String, String> = buildMap {
+   /* private fun forNode(rawString: List<String>): Map<String, String> = buildMap {
         put(FIXME_TAG, REMOVE_ME)
         putAll(toTagsIndexed(NAPR_RAW_TAG, rawString))
-    }
+    }*/
 
-    fun forBuildingFunction(): (List<String>, Address?, Map<String, String>) -> Map<String, String> {
+   /* fun forBuildingFunction(): (List<String>, Address?, Map<String, String>) -> Map<String, String> {
         return { rawString, address, additionalTags ->
             val tags = mutableMapOf<String, String>()
             requireNotNull(address) { "ParsedAddress cannot be null while creating building's tags" }
@@ -124,19 +118,19 @@ object TagCreator {
             tags.putAll(additionalTags)
             tags
         }
-    }
+    }*/
 
-    private fun toTagsIndexed(tagTemplate: String, strings: List<String>): Map<String, String> = buildMap {
+/*    private fun toTagsIndexed(tagTemplate: String, strings: List<String>): Map<String, String> = buildMap {
         strings.distinct().forEachIndexed { index, string ->
             put("$tagTemplate:${index + 1}", string)
         }
-    }
+    }*/
 
-    fun getTegCreationFunction(resultAction: ActionType): (List<String>, Address?, Map<String, String>) -> Map<String, String> {
-        return when (resultAction) {
-            CREATE_NODE, CREATE_NODE_DOUBLE, CREATE_MULTIPLE_ADDR_NODE -> forNodeFunction()
-            ADD_ADDR_TAGS -> forBuildingFunction()
-        }
-    }
+//    fun getTegCreationFunction(resultAction: ActionType): (List<String>, Address?, Map<String, String>) -> Map<String, String> {
+//        return when (resultAction) {
+//            CREATE_NODE, CREATE_NODE_DOUBLE, CREATE_MULTIPLE_ADDR_NODE -> forNodeFunction()
+//            ADD_ADDR_TAGS -> forBuildingFunction()
+//        }
+//    }
 
-}
+//}

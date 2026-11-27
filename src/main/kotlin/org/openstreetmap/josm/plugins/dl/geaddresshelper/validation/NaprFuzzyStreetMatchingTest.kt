@@ -10,7 +10,7 @@ import org.openstreetmap.josm.data.validation.TestError
 import org.openstreetmap.josm.gui.widgets.JosmTextField
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.GeAddressHelperPlugin
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.parsers.dto.Address
-import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.parsers.ParsingFlags
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.parsers.ParsingFlag
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.GeometryHelper
 import org.openstreetmap.josm.tools.I18n
 import org.openstreetmap.josm.tools.Logging
@@ -46,7 +46,7 @@ class NaprFuzzyStreetMatchingTest : Test(
             val primitive: OsmPrimitive = entry.key
             val address: Address = entry.value.parseResult.parsedAddressList[0]
 //            Logging.info("address: $address")
-            if (address.getValidatedFlags().contains(ParsingFlags.STREET_NAME_FUZZY_MATCH)
+            if (address.getValidationFlags().contains(ParsingFlag.STREET_NAME_FUZZY_MATCH)
 //                && !primitive.hasTag("addr:street")
                 && !entry.value.isIgnored(EGRNTestCode.NAPR_STREET_FUZZY_MATCHING)
             ) {

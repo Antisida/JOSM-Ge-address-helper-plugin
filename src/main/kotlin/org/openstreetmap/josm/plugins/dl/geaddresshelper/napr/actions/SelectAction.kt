@@ -1,11 +1,7 @@
 package org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.actions
 
-import java.awt.event.ActionEvent
-import java.awt.event.KeyEvent
-import javax.swing.JOptionPane
 import kotlinx.coroutines.runBlocking
 import org.openstreetmap.josm.actions.JosmAction
-import org.openstreetmap.josm.command.AddCommand
 import org.openstreetmap.josm.command.Command
 import org.openstreetmap.josm.command.DeleteCommand
 import org.openstreetmap.josm.command.SequenceCommand
@@ -21,31 +17,29 @@ import org.openstreetmap.josm.gui.PleaseWaitRunnable
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.GeAddressHelperPlugin
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.api.NaprService
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.api.RawNaprDto
-import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.parsers.ActionType
-import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.parsers.dto.Address
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.matching.StreetNameMatcher
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.parsers.MainParser
-import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.parsers.dto.ParseResult
-import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.parsers.ParsingFlags
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.parsers.ResultSetAnalyzer
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.parsers.dto.Address
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.parsers.dto.ParseResult
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.parsers.getAddrBuildings
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.parsers.getBuildings
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.result.strategy.ResultStrategy
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.settings.io.EgrnSettingsReader
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.settings.io.MassActionSettingsReader
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.settings.io.ValidationSettingsReader.Companion.DISTANCE_FOR_STREET_WAY_SEARCH
-import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.CommandHelper
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.FIXME_TAG
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.GeometryHelper
-import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.OsmPrimitiveHelper
-import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.TagCreator
-import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.TagCreator.FIXME_TAG
-import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.TagCreator.REMOVE_ME
-import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.parsers.ActionType.*
-import org.openstreetmap.josm.plugins.dl.geaddresshelper.napr.matching.StreetNameMatcher
+import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.REMOVE_ME
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.tools.funs.getNamedStreets
 import org.openstreetmap.josm.plugins.dl.geaddresshelper.validation.N_ValidationRecord
 import org.openstreetmap.josm.tools.Geometry
 import org.openstreetmap.josm.tools.I18n
 import org.openstreetmap.josm.tools.Logging
 import org.openstreetmap.josm.tools.Shortcut
+import java.awt.event.ActionEvent
+import java.awt.event.KeyEvent
+import javax.swing.JOptionPane
 
 class SelectAction :
     JosmAction(
@@ -138,35 +132,16 @@ class SelectAction :
 
                 val commands: MutableList<Command> = mutableListOf()
                 for (result: ParseResult in parsingResults) {
-                    val resultAction = analyzer.defineAction(result)
+                    val strategy: ResultStrategy = analyzer.defineStrategy(result)
+                    val coms = strategy.createCommand(dataSet, result)
+                    commands.addAll(coms)
+                    strategy.executeAdditionally(result)
 
-                    //если адрес не один - не добавляем адресные теги
-                    val address: Address? = if (result.parsedAddressList.size == 1) result.parsedAddressList[0] else null
-                    val additionalTags = getAdditionalTags(resultAction, result.matchStreet)
-                    val tegCreationFunction = TagCreator.getTegCreationFunction(resultAction)
-                    val tags: Map<String, String> = tegCreationFunction.invoke(result.rawNaprStrings, address, additionalTags)
-                    when (resultAction) {
-                        ADD_ADDR_TAGS -> {
-                            val chBuildingCommands = CommandHelper.toChangeCommands(tags, result.osmPrimitive)
-                            commands.addAll(chBuildingCommands)
-
-                            requireNotNull(address) { "ParsedAddress cannot be null while creating building's tags" }
-                            if (result.matchStreet != address.street.extractedName) {
-                                address.street.flags.add(ParsingFlags.STREET_NAME_FUZZY_MATCH)
-                            }
-                            if (address.getValidatedFlags().isNotEmpty()) {
-                                val validationRecords: List<N_ValidationRecord> =
-                                    toValidationRecords(result.eastNorth, result)
-                                GeAddressHelperPlugin.cache.add(result.osmPrimitive, validationRecords)
-                            }
-                        }
-
-                        else -> {
-                            val node = OsmPrimitiveHelper.createNode(result.eastNorth, tags)
-                            commands.add(AddCommand(dataSet, node))
-                        }
-
+                    if (result.getValidationFlags().isNotEmpty()) {
+                        val validationRecords: List<N_ValidationRecord> = toValidationRecords(result.eastNorth, result)
+                        GeAddressHelperPlugin.cache.add(result.osmPrimitive, validationRecords)
                     }
+
                 }
                 // удаление выбранных временных точек при повторных запросах
                 if (nodesForRemove.isNotEmpty()) {
@@ -200,18 +175,5 @@ class SelectAction :
         return listOf(N_ValidationRecord(eastNorth, parseResult))
     }
 
-    private fun getAdditionalTags(actionType: ActionType, matchStreet: String?): Map<String, String> {
-        return when (actionType) {
-            ADD_ADDR_TAGS -> if (matchStreet != null) mapOf("addr:street" to matchStreet) else emptyMap()
-            CREATE_NODE_DOUBLE -> {
-                if (matchStreet != null) mapOf(
-                    "addr:street" to matchStreet,
-                    "napr:warn" to "DUPLICATE ADDRESS"
-                )
-                else mapOf("napr:warn" to "DUPLICATE ADDRESS")
-            }
 
-            CREATE_MULTIPLE_ADDR_NODE, CREATE_NODE -> emptyMap()
-        }
-    }
 }
